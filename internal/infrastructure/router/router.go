@@ -8,10 +8,10 @@ import (
 
 type Router struct {
 	echo           *echo.Echo
-	UserController controller.UserController
+	UserController *controller.UserController
 }
 
-func NewRouter(e *echo.Echo, uc controller.UserController) *Router {
+func NewRouter(e *echo.Echo, uc *controller.UserController) *Router {
 	return &Router{
 		echo:           e,
 		UserController: uc,
