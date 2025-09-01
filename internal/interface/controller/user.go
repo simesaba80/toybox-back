@@ -2,7 +2,7 @@ package controller
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/simesaba80/toybox-back/internal/interface/presenter"
+	"github.com/simesaba80/toybox-back/internal/interface/schema"
 	"github.com/simesaba80/toybox-back/internal/usecase"
 )
 
@@ -17,7 +17,7 @@ func NewUserController(userusecase *usecase.UserUseCase) *UserController {
 }
 
 func (uc *UserController) CreateUser(c echo.Context) error {
-	var user presenter.CreateUserInput
+	var user schema.CreateUserInput
 	if err := c.Bind(&user); err != nil {
 		return err
 	}
@@ -27,7 +27,7 @@ func (uc *UserController) CreateUser(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(201, presenter.ToUserResponse(createdUser))
+	return c.JSON(201, schema.ToUserResponse(createdUser))
 }
 
 func (uc *UserController) GetAllUsers(c echo.Context) error {
@@ -36,10 +36,10 @@ func (uc *UserController) GetAllUsers(c echo.Context) error {
 		return err
 	}
 
-	response := make([]presenter.GetUserOutput, len(users))
+	response := make([]schema.GetUserOutput, len(users))
 	for i, user := range users {
-		response[i] = presenter.ToUserResponse(user)
+		response[i] = schema.ToUserResponse(user)
 	}
 
-	return c.JSON(200, presenter.UserListResponse{Users: response})
+	return c.JSON(200, schema.UserListResponse{Users: response})
 }

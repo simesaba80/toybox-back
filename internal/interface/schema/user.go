@@ -1,4 +1,4 @@
-package presenter
+package schema
 
 import "github.com/simesaba80/toybox-back/internal/domain/entity"
 
