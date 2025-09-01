@@ -1,20 +1,37 @@
 package main
 
 import (
-	"net/http"
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
 
-	"github.com/labstack/echo/v4"
-
+	"github.com/simesaba80/toybox-back/internal/di"
 	"github.com/simesaba80/toybox-back/pkg/config"
-	"github.com/simesaba80/toybox-back/pkg/db"
 )
 
 func main() {
 	config.LoadEnv()
-	db.Init()
-	e := echo.New()
-	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello, World!")
-	})
-	e.Logger.Fatal(e.Start(":1323"))
+
+	// Wireで依存性を注入してアプリケーションを初期化
+	app, cleanup, err := di.InitializeApp()
+	if err != nil {
+		log.Fatal("Failed to initialize app:", err)
+	}
+	defer cleanup()
+
+	// Graceful shutdown
+	go func() {
+		e := app.Start()
+		if err := e.Start(":8080"); err != nil {
+			log.Fatal("Failed to start server:", err)
+		}
+	}()
+
+	// シグナルを待機
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	log.Println("Shutting down server...")
 }
