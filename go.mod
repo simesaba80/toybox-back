@@ -4,6 +4,7 @@ go 1.24.6
 
 require (
 	github.com/google/uuid v1.6.0
+	github.com/google/wire v0.7.0
 	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.13.4
 	github.com/uptrace/bun v1.2.15
@@ -30,5 +31,6 @@ require (
 	golang.org/x/net v0.41.0 // indirect
 	golang.org/x/sys v0.34.0 // indirect
 	golang.org/x/text v0.27.0 // indirect
+	golang.org/x/time v0.11.0 // indirect
 	mellium.im/sasl v0.3.2 // indirect
 )

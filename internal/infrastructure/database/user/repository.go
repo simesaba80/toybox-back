@@ -18,12 +18,12 @@ func NewUserRepository(db *bun.DB) *UserRepository {
 	}
 }
 
-func (r *UserRepository) Create(ctx context.Context, user *entity.User) error {
+func (r *UserRepository) Create(ctx context.Context, user *entity.User) (*entity.User, error) {
 	_, err := r.db.NewInsert().Model(user).Exec(ctx)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return user, nil
 }
 
 func (r *UserRepository) GetAll(ctx context.Context) ([]*entity.User, error) {
