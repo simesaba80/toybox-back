@@ -13,6 +13,7 @@ import (
 
 	"github.com/simesaba80/toybox-back/internal/domain/repository"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/user"
+	"github.com/simesaba80/toybox-back/internal/infrastructure/database/work"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/router"
 	"github.com/simesaba80/toybox-back/internal/interface/controller"
 	"github.com/simesaba80/toybox-back/internal/usecase"
@@ -22,14 +23,18 @@ import (
 var RepositorySet = wire.NewSet(
 	user.NewUserRepository,
 	wire.Bind(new(repository.UserRepository), new(*user.UserRepository)),
+	work.NewWorkRepository,
+	wire.Bind(new(repository.WorkRepository), new(*work.WorkRepository)),
 )
 
 var UseCaseSet = wire.NewSet(
 	ProvideUserUseCase,
+	usecase.NewWorkUseCase,
 )
 
 var ControllerSet = wire.NewSet(
 	controller.NewUserController,
+	controller.NewWorkController,
 )
 
 var InfrastructureSet = wire.NewSet(

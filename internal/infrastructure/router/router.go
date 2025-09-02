@@ -9,12 +9,14 @@ import (
 type Router struct {
 	echo           *echo.Echo
 	UserController *controller.UserController
+	WorkController *controller.WorkController
 }
 
-func NewRouter(e *echo.Echo, uc *controller.UserController) *Router {
+func NewRouter(e *echo.Echo, uc *controller.UserController, wc *controller.WorkController) *Router {
 	return &Router{
 		echo:           e,
 		UserController: uc,
+		WorkController: wc,
 	}
 }
 
@@ -29,6 +31,9 @@ func (r *Router) Setup() *echo.Echo {
 
 	r.echo.POST("/users", r.UserController.CreateUser)
 	r.echo.GET("/users", r.UserController.GetAllUsers)
+
+	r.echo.GET("/works", r.WorkController.GetAllWorks)
+	r.echo.GET("/works/:work_id", r.WorkController.GetWorkByID)
 
 	return r.echo
 }
