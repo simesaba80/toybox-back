@@ -29,7 +29,7 @@ var RepositorySet = wire.NewSet(
 
 var UseCaseSet = wire.NewSet(
 	ProvideUserUseCase,
-	usecase.NewWorkUseCase,
+	ProvideWorkUseCase,
 )
 
 var ControllerSet = wire.NewSet(
@@ -61,6 +61,11 @@ func ProvideDatabase() *bun.DB {
 // ProvideUserUseCase はUserUseCaseを提供します
 func ProvideUserUseCase(repo repository.UserRepository) *usecase.UserUseCase {
 	return usecase.NewUserUseCase(repo, 30*time.Second)
+}
+
+// ProvideWorkUseCase はWorkUseCaseを提供します
+func ProvideWorkUseCase(repo repository.WorkRepository) *usecase.WorkUseCase {
+	return usecase.NewWorkUseCase(repo, 30*time.Second)
 }
 
 // ProvideEcho はEchoインスタンスを提供します

@@ -23,7 +23,7 @@ func NewWorkController(workUsecase *usecase.WorkUseCase) *WorkController {
 func (wc *WorkController) GetAllWorks(c echo.Context) error {
 	works, err := wc.workUsecase.GetAll(c.Request().Context())
 	if err != nil {
-		return err
+		return echo.NewHTTPError(500, "Failed to retrieve works")
 	}
 
 	response := make([]schema.GetWorkOutput, len(works))
@@ -46,7 +46,7 @@ func (wc *WorkController) GetWorkByID(c echo.Context) error {
 		if errors.Is(err, sql.ErrNoRows) {
 			return echo.NewHTTPError(404, "Work not found")
 		}
-		return err
+		return echo.NewHTTPError(500, "Failed to retrieve work details")
 	}
 
 	return c.JSON(200, schema.ToWorkResponse(work))

@@ -30,7 +30,7 @@ func InitializeApp() (*App, func(), error) {
 	userUseCase := ProvideUserUseCase(userRepository)
 	userController := controller.NewUserController(userUseCase)
 	workRepository := work.NewWorkRepository(db)
-	workUseCase := usecase.NewWorkUseCase(workRepository)
+	workUseCase := ProvideWorkUseCase(workRepository)
 	workController := controller.NewWorkController(workUseCase)
 	routerRouter := router.NewRouter(echo, userController, workController)
 	app := NewApp(routerRouter, db)
@@ -43,7 +43,8 @@ func InitializeApp() (*App, func(), error) {
 var RepositorySet = wire.NewSet(user.NewUserRepository, wire.Bind(new(repository.UserRepository), new(*user.UserRepository)), work.NewWorkRepository, wire.Bind(new(repository.WorkRepository), new(*work.WorkRepository)))
 
 var UseCaseSet = wire.NewSet(
-	ProvideUserUseCase, usecase.NewWorkUseCase,
+	ProvideUserUseCase,
+	ProvideWorkUseCase,
 )
 
 var ControllerSet = wire.NewSet(controller.NewUserController, controller.NewWorkController)
@@ -70,6 +71,11 @@ func ProvideDatabase() *bun.DB {
 // ProvideUserUseCase はUserUseCaseを提供します
 func ProvideUserUseCase(repo repository.UserRepository) *usecase.UserUseCase {
 	return usecase.NewUserUseCase(repo, 30*time.Second)
+}
+
+// ProvideWorkUseCase はWorkUseCaseを提供します
+func ProvideWorkUseCase(repo repository.WorkRepository) *usecase.WorkUseCase {
+	return usecase.NewWorkUseCase(repo, 30*time.Second)
 }
 
 // ProvideEcho はEchoインスタンスを提供します
