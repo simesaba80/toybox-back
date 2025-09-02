@@ -1,6 +1,9 @@
 package controller
 
 import (
+	"database/sql"
+	"errors"
+
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/simesaba80/toybox-back/internal/interface/schema"
@@ -35,11 +38,14 @@ func (wc *WorkController) GetWorkByID(c echo.Context) error {
 	idStr := c.Param("work_id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		return err
+		return echo.NewHTTPError(400, "Invalid work ID format")
 	}
 
 	work, err := wc.workUsecase.GetByID(c.Request().Context(), id)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return echo.NewHTTPError(404, "Work not found")
+		}
 		return err
 	}
 
