@@ -11,6 +11,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/simesaba80/toybox-back/internal/domain/repository"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/user"
+	"github.com/simesaba80/toybox-back/internal/infrastructure/database/work"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/router"
 	"github.com/simesaba80/toybox-back/internal/interface/controller"
 	"github.com/simesaba80/toybox-back/internal/usecase"
@@ -28,7 +29,10 @@ func InitializeApp() (*App, func(), error) {
 	userRepository := user.NewUserRepository(db)
 	userUseCase := ProvideUserUseCase(userRepository)
 	userController := controller.NewUserController(userUseCase)
-	routerRouter := router.NewRouter(echo, userController)
+	workRepository := work.NewWorkRepository(db)
+	workUseCase := ProvideWorkUseCase(workRepository)
+	workController := controller.NewWorkController(workUseCase)
+	routerRouter := router.NewRouter(echo, userController, workController)
 	app := NewApp(routerRouter, db)
 	return app, func() {
 	}, nil
@@ -36,13 +40,14 @@ func InitializeApp() (*App, func(), error) {
 
 // wire.go:
 
-var RepositorySet = wire.NewSet(user.NewUserRepository, wire.Bind(new(repository.UserRepository), new(*user.UserRepository)))
+var RepositorySet = wire.NewSet(user.NewUserRepository, wire.Bind(new(repository.UserRepository), new(*user.UserRepository)), work.NewWorkRepository, wire.Bind(new(repository.WorkRepository), new(*work.WorkRepository)))
 
 var UseCaseSet = wire.NewSet(
 	ProvideUserUseCase,
+	ProvideWorkUseCase,
 )
 
-var ControllerSet = wire.NewSet(controller.NewUserController)
+var ControllerSet = wire.NewSet(controller.NewUserController, controller.NewWorkController)
 
 var InfrastructureSet = wire.NewSet(
 	ProvideDatabase, router.NewRouter, ProvideEcho,
@@ -66,6 +71,11 @@ func ProvideDatabase() *bun.DB {
 // ProvideUserUseCase はUserUseCaseを提供します
 func ProvideUserUseCase(repo repository.UserRepository) *usecase.UserUseCase {
 	return usecase.NewUserUseCase(repo, 30*time.Second)
+}
+
+// ProvideWorkUseCase はWorkUseCaseを提供します
+func ProvideWorkUseCase(repo repository.WorkRepository) *usecase.WorkUseCase {
+	return usecase.NewWorkUseCase(repo, 30*time.Second)
 }
 
 // ProvideEcho はEchoインスタンスを提供します
