@@ -2,6 +2,7 @@ package work
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/uptrace/bun"
@@ -35,4 +36,32 @@ func (r *WorkRepository) GetByID(ctx context.Context, id uuid.UUID) (*entity.Wor
 		return nil, err
 	}
 	return &work, nil
+}
+
+func (r *WorkRepository) Create(ctx context.Context, work *entity.Work) (*entity.Work, error) {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			panic(r)
+		} else if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	_, err = tx.NewInsert().Model(work).Exec(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create work in transaction: %w", err)
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return nil, fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return work, nil
 }

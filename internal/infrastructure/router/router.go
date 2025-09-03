@@ -32,6 +32,7 @@ func (r *Router) Setup() *echo.Echo {
 	r.echo.POST("/users", r.UserController.CreateUser)
 	r.echo.GET("/users", r.UserController.GetAllUsers)
 
+	r.echo.POST("/works", r.WorkController.CreateWork)
 	r.echo.GET("/works", r.WorkController.GetAllWorks)
 	r.echo.GET("/works/:work_id", r.WorkController.GetWorkByID)
 

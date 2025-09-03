@@ -51,3 +51,33 @@ func (wc *WorkController) GetWorkByID(c echo.Context) error {
 
 	return c.JSON(200, schema.ToWorkResponse(work))
 }
+
+func (wc *WorkController) CreateWork(c echo.Context) error {
+	var input schema.CreateWorkInput
+	if err := c.Bind(&input); err != nil {
+		c.Logger().Error("Bind error:", err)
+		return echo.NewHTTPError(400, "Invalid request body")
+	}
+
+	// リクエストボディからuser_idを取得し、UUIDにパース
+	userID, err := uuid.Parse(input.UserID)
+	if err != nil {
+		c.Logger().Error("Invalid UserID format:", err)
+		return echo.NewHTTPError(400, "Invalid UserID format")
+	}
+
+	createdWork, err := wc.workUsecase.CreateWork(
+		c.Request().Context(),
+		input.Title,
+		input.Description,
+		input.DescriptionHTML,
+		input.Visibility,
+		userID,
+	)
+	if err != nil {
+		c.Logger().Error("WorkUseCase.CreateWork error:", err)
+		return echo.NewHTTPError(500, "Failed to create work")
+	}
+
+	return c.JSON(201, schema.ToCreateWorkOutput(createdWork))
+}
