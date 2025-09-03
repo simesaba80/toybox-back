@@ -15,6 +15,25 @@ type GetWorkOutput struct {
 	UpdatedAt       string `json:"updated_at"`
 }
 
+type CreateWorkInput struct {
+	Title           string `json:"title"`
+	Description     string `json:"description"`
+	DescriptionHTML string `json:"description_html"`
+	Visibility      string `json:"visibility"`
+	UserID          string `json:"user_id"`
+}
+
+type CreateWorkOutput struct {
+	ID              string `json:"id"`
+	Title           string `json:"title"`
+	Description     string `json:"description"`
+	DescriptionHTML string `json:"description_html"`
+	UserID          string `json:"user_id"`
+	Visibility      string `json:"visibility"`
+	CreatedAt       string `json:"created_at"`
+	UpdatedAt       string `json:"updated_at"`
+}
+
 type WorkListResponse struct {
 	Works []GetWorkOutput `json:"works"`
 }
@@ -24,6 +43,22 @@ func ToWorkResponse(work *entity.Work) GetWorkOutput {
 		return GetWorkOutput{}
 	}
 	return GetWorkOutput{
+		ID:              work.ID.String(),
+		Title:           work.Title,
+		Description:     work.Description,
+		DescriptionHTML: work.DescriptionHTML,
+		UserID:          work.UserID.String(),
+		Visibility:      work.Visibility,
+		CreatedAt:       work.CreatedAt.String(),
+		UpdatedAt:       work.UpdatedAt.String(),
+	}
+}
+
+func ToCreateWorkOutput(work *entity.Work) CreateWorkOutput {
+	if work == nil {
+		return CreateWorkOutput{}
+	}
+	return CreateWorkOutput{
 		ID:              work.ID.String(),
 		Title:           work.Title,
 		Description:     work.Description,

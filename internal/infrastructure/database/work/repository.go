@@ -7,6 +7,7 @@ import (
 	"github.com/uptrace/bun"
 
 	"github.com/simesaba80/toybox-back/internal/domain/entity"
+	"github.com/simesaba80/toybox-back/internal/domain/repository"
 )
 
 type WorkRepository struct {
@@ -35,4 +36,32 @@ func (r *WorkRepository) GetByID(ctx context.Context, id uuid.UUID) (*entity.Wor
 		return nil, err
 	}
 	return &work, nil
+}
+
+func (r *WorkRepository) BeginTx(ctx context.Context) (repository.WorkRepositoryTx, error) {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &workRepositoryTx{tx: tx}, nil
+}
+
+type workRepositoryTx struct {
+	tx bun.Tx
+}
+
+func (r *workRepositoryTx) Create(ctx context.Context, work *entity.Work) (*entity.Work, error) {
+	_, err := r.tx.NewInsert().Model(work).Exec(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return work, nil
+}
+
+func (r *workRepositoryTx) Commit() error {
+	return r.tx.Commit()
+}
+
+func (r *workRepositoryTx) Rollback() error {
+	return r.tx.Rollback()
 }

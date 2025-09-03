@@ -43,3 +43,47 @@ func (uc *WorkUseCase) GetByID(ctx context.Context, id uuid.UUID) (*entity.Work,
 	}
 	return work, nil
 }
+
+func (uc *WorkUseCase) CreateWork(ctx context.Context, title, description, descriptionHTML, visibility string, userID uuid.UUID) (*entity.Work, error) {
+	ctx, cancel := context.WithTimeout(ctx, uc.timeout)
+	defer cancel()
+
+	workRepoTx, err := uc.repo.BeginTx(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			workRepoTx.Rollback()
+			panic(r)
+		} else if err != nil {
+			workRepoTx.Rollback()
+		}
+	}()
+
+	work := &entity.Work{
+		ID:              uuid.New(),
+		Title:           title,
+		Description:     description,
+		DescriptionHTML: descriptionHTML,
+		UserID:          userID,
+		Visibility:      visibility,
+	}
+
+	if err := work.Validate(); err != nil {
+		return nil, fmt.Errorf("validation failed: %w", err)
+	}
+
+	createdWork, err := workRepoTx.Create(ctx, work)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create work: %w", err)
+	}
+
+	err = workRepoTx.Commit()
+	if err != nil {
+		return nil, fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return createdWork, nil
+}
