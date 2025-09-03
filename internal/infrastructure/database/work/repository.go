@@ -2,12 +2,12 @@ package work
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/uptrace/bun"
 
 	"github.com/simesaba80/toybox-back/internal/domain/entity"
-	"github.com/simesaba80/toybox-back/internal/domain/repository"
 )
 
 type WorkRepository struct {
@@ -38,30 +38,30 @@ func (r *WorkRepository) GetByID(ctx context.Context, id uuid.UUID) (*entity.Wor
 	return &work, nil
 }
 
-func (r *WorkRepository) BeginTx(ctx context.Context) (repository.WorkRepositoryTx, error) {
+func (r *WorkRepository) Create(ctx context.Context, work *entity.Work) (*entity.Work, error) {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
-	return &workRepositoryTx{tx: tx}, nil
-}
 
-type workRepositoryTx struct {
-	tx bun.Tx
-}
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			panic(r)
+		} else if err != nil {
+			tx.Rollback()
+		}
+	}()
 
-func (r *workRepositoryTx) Create(ctx context.Context, work *entity.Work) (*entity.Work, error) {
-	_, err := r.tx.NewInsert().Model(work).Exec(ctx)
+	_, err = tx.NewInsert().Model(work).Exec(ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create work in transaction: %w", err)
 	}
+
+	err = tx.Commit()
+	if err != nil {
+		return nil, fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
 	return work, nil
-}
-
-func (r *workRepositoryTx) Commit() error {
-	return r.tx.Commit()
-}
-
-func (r *workRepositoryTx) Rollback() error {
-	return r.tx.Rollback()
 }
