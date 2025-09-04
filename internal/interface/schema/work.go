@@ -5,14 +5,15 @@ import (
 )
 
 type GetWorkOutput struct {
-	ID              string `json:"id"`
-	Title           string `json:"title"`
-	Description     string `json:"description"`
-	DescriptionHTML string `json:"description_html"`
-	UserID          string `json:"user_id"`
-	Visibility      string `json:"visibility"`
-	CreatedAt       string `json:"created_at"`
-	UpdatedAt       string `json:"updated_at"`
+	ID              string         `json:"id"`
+	Title           string         `json:"title"`
+	Description     string         `json:"description"`
+	DescriptionHTML string         `json:"description_html"`
+	UserID          string         `json:"user_id"`
+	Visibility      string         `json:"visibility"`
+	Assets          []entity.Asset `json:"assets"`
+	CreatedAt       string         `json:"created_at"`
+	UpdatedAt       string         `json:"updated_at"`
 }
 
 type CreateWorkInput struct {
@@ -49,6 +50,7 @@ func ToWorkResponse(work *entity.Work) GetWorkOutput {
 		DescriptionHTML: work.DescriptionHTML,
 		UserID:          work.UserID.String(),
 		Visibility:      work.Visibility,
+		Assets:          work.Assets,
 		CreatedAt:       work.CreatedAt.String(),
 		UpdatedAt:       work.UpdatedAt.String(),
 	}
