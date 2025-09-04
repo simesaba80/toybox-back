@@ -22,7 +22,7 @@ func NewWorkRepository(db *bun.DB) *WorkRepository {
 
 func (r *WorkRepository) GetAll(ctx context.Context) ([]*entity.Work, error) {
 	var works []*entity.Work
-	err := r.db.NewSelect().Model(&works).Order("created_at DESC").Scan(ctx)
+	err := r.db.NewSelect().Model(&works).Relation("Assets").Order("created_at DESC").Scan(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +31,7 @@ func (r *WorkRepository) GetAll(ctx context.Context) ([]*entity.Work, error) {
 
 func (r *WorkRepository) GetByID(ctx context.Context, id uuid.UUID) (*entity.Work, error) {
 	var work entity.Work
-	err := r.db.NewSelect().Model(&work).Where("id = ?", id).Scan(ctx)
+	err := r.db.NewSelect().Model(&work).Relation("Assets").Where("id = ?", id).Scan(ctx)
 	if err != nil {
 		return nil, err
 	}
