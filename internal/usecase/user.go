@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/simesaba80/toybox-back/internal/domain/entity"
 	"github.com/simesaba80/toybox-back/internal/domain/repository"
 )
@@ -25,6 +26,7 @@ func (u *UserUseCase) CreateUser(ctx context.Context, name, email, passwordHash,
 	defer cancel()
 
 	user := &entity.User{
+		ID:           uuid.New(),
 		Name:         name,
 		Email:        email,
 		PasswordHash: passwordHash,
