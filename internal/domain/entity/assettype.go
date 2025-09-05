@@ -1,4 +1,4 @@
-package types
+package entity
 
 import (
 	"database/sql/driver"
@@ -28,6 +28,9 @@ func (at *AssetType) Scan(value interface{}) error {
 	}
 	switch s := value.(type) {
 	case string:
+		*at = AssetType(s)
+		return nil
+	case []byte:
 		*at = AssetType(s)
 		return nil
 	default:

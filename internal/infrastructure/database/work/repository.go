@@ -8,6 +8,7 @@ import (
 	"github.com/uptrace/bun"
 
 	"github.com/simesaba80/toybox-back/internal/domain/entity"
+	"github.com/simesaba80/toybox-back/internal/infrastructure/database/dto"
 )
 
 type WorkRepository struct {
@@ -21,24 +22,26 @@ func NewWorkRepository(db *bun.DB) *WorkRepository {
 }
 
 func (r *WorkRepository) GetAll(ctx context.Context) ([]*entity.Work, error) {
-	var works []*entity.Work
-	err := r.db.NewSelect().Model(&works).Relation("Assets").Order("created_at DESC").Limit(20).Scan(ctx)
+	var dtoWorks []*dto.Work
+	err := r.db.NewSelect().Model(&dtoWorks).Relation("Assets").Order("created_at DESC").Limit(20).Scan(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return works, nil
+	return ToEntities(dtoWorks), nil
 }
 
 func (r *WorkRepository) GetByID(ctx context.Context, id uuid.UUID) (*entity.Work, error) {
-	var work entity.Work
-	err := r.db.NewSelect().Model(&work).Relation("Assets").Where("id = ?", id).Scan(ctx)
+	var dtoWork dto.Work
+	err := r.db.NewSelect().Model(&dtoWork).Relation("Assets").Where("id = ?", id).Scan(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return &work, nil
+	return ToEntity(&dtoWork), nil
 }
 
 func (r *WorkRepository) Create(ctx context.Context, work *entity.Work) (*entity.Work, error) {
+	dtoWork := ToDTO(work)
+
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to begin transaction: %w", err)
@@ -53,7 +56,7 @@ func (r *WorkRepository) Create(ctx context.Context, work *entity.Work) (*entity
 		}
 	}()
 
-	_, err = tx.NewInsert().Model(work).Exec(ctx)
+	_, err = tx.NewInsert().Model(dtoWork).Exec(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create work in transaction: %w", err)
 	}

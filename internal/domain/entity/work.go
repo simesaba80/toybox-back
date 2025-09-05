@@ -6,20 +6,18 @@ import (
 	"unicode/utf8"
 
 	"github.com/google/uuid"
-	"github.com/uptrace/bun"
 )
 
 type Work struct {
-	bun.BaseModel   `bun:"table:works"`
-	ID              uuid.UUID `json:"id" bun:"id,pk"`
-	Title           string    `json:"title" bun:"title,notnull"`
-	Description     string    `json:"description" bun:"description,notnull"`
-	DescriptionHTML string    `json:"description_html" bun:"description_html,notnull"`
-	UserID          uuid.UUID `json:"user_id" bun:"user_id,notnull"`
-	Visibility      string    `json:"visibility" bun:"visibility"`
-	Assets          []Asset   `json:"assets" bun:"rel:has-many,join:id=work_id"`
-	CreatedAt       time.Time `json:"created_at" bun:"created_at,notnull"`
-	UpdatedAt       time.Time `json:"updated_at" bun:"updated_at,notnull"`
+	ID              uuid.UUID
+	Title           string
+	Description     string
+	DescriptionHTML string
+	UserID          uuid.UUID
+	Visibility      string
+	Assets          []Asset
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
 }
 
 func (w *Work) Validate() error {
