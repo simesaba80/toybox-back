@@ -9,6 +9,6 @@ type Asset struct {
 	AssetType     string `json:"asset_type" bun:"asset_type,notnull"`
 	Extension     string `json:"extension" bun:"extension,notnull"`
 	URL           string `json:"url" bun:"url,notnull"`
-	CreatedAt     string `json:"created_at" bun:"created_at,notnull"`
-	UpdatedAt     string `json:"updated_at" bun:"updated_at,notnull"`
+	CreatedAt     string `json:"created_at" bun:"created_at,notnull,default:current_timestamp"`
+	UpdatedAt     string `json:"updated_at" bun:"updated_at,notnull,default:current_timestamp"`
 }

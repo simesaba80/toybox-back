@@ -16,6 +16,6 @@ type Asset struct {
 	UserID        uuid.UUID       `json:"user_id" bun:"user_id,notnull"`
 	Extension     string          `json:"extension" bun:"extension,notnull"`
 	URL           string          `json:"url" bun:"url,notnull"`
-	CreatedAt     time.Time       `json:"created_at" bun:"created_at,notnull"`
-	UpdatedAt     time.Time       `json:"updated_at" bun:"updated_at,notnull"`
+	CreatedAt     time.Time       `json:"created_at" bun:"created_at,notnull,default:current_timestamp"`
+	UpdatedAt     time.Time       `json:"updated_at" bun:"updated_at,notnull,default:current_timestamp"`
 }

@@ -23,8 +23,8 @@ type User struct {
 	AvatarURL           string    `json:"avatar_url" bun:"avatar_url"`
 	TwitterID           string    `json:"twitter_id" bun:"twitter_id"`
 	GithubID            string    `json:"github_id" bun:"github_id"`
-	CreatedAt           time.Time `json:"created_at" bun:"created_at,notnull"`
-	UpdatedAt           time.Time `json:"updated_at" bun:"updated_at,notnull"`
+	CreatedAt           time.Time `json:"created_at" bun:"created_at,notnull,default:current_timestamp"`
+	UpdatedAt           time.Time `json:"updated_at" bun:"updated_at,notnull,default:current_timestamp"`
 }
 
 func (u *User) Validate() error {

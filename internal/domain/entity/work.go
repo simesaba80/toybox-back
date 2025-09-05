@@ -18,8 +18,8 @@ type Work struct {
 	UserID          uuid.UUID `json:"user_id" bun:"user_id,notnull"`
 	Visibility      string    `json:"visibility" bun:"visibility"`
 	Assets          []Asset   `json:"assets" bun:"rel:has-many,join:id=work_id"`
-	CreatedAt       time.Time `json:"created_at" bun:"created_at,notnull"`
-	UpdatedAt       time.Time `json:"updated_at" bun:"updated_at,notnull"`
+	CreatedAt       time.Time `json:"created_at" bun:"created_at,notnull,default:current_timestamp"`
+	UpdatedAt       time.Time `json:"updated_at" bun:"updated_at,notnull,default:current_timestamp"`
 }
 
 func (w *Work) Validate() error {
