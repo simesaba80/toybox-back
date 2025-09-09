@@ -12,8 +12,11 @@ services:
         condition: service_healthy
     volumes:
       - .:/app
+    networks:
+      - app-network
 
   db:
+    container_name: db
     image: postgres:13.3
     volumes:
       - dbdata:/var/lib/postgresql/data
@@ -28,6 +31,8 @@ services:
       interval: 1s
       timeout: 3s
       retries: 30
+    networks:
+      - app-network
 
   minio:
     image: quay.io/minio/minio:latest
@@ -40,6 +45,12 @@ services:
     ports:
       - '9000:9000'
       - '9001:9001'
+    networks:
+      - app-network
 
 volumes:
   dbdata:
+networks:
+  app-network:
+    name: app-network
+    driver: bridge
