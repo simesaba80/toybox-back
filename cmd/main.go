@@ -20,18 +20,25 @@ func main() {
 	}
 	defer cleanup()
 
+	// サーバー起動の失敗を捕捉できるよう、先にシグナルの待機を開始します
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+
 	// Graceful shutdown
 	go func() {
 		e := app.Start()
 		if err := e.Start(":8080"); err != nil {
-			log.Fatal("Failed to start server:", err)
+			log.Printf("ERROR: Server failed to start: %v. Sending SIGTERM to self.", err)
+			p, _ := os.FindProcess(os.Getpid())
+			p.Signal(syscall.SIGTERM)
 		}
 	}()
 
-	// シグナルを待機
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
+	// シグナルを受信するまでブロックします
+	select {
+	case sig := <-quit:
+		log.Printf("Received signal '%v'. Process will exit.", sig)
+	}
 
-	log.Println("Shutting down server...")
+	log.Println("Process finished.")
 }
