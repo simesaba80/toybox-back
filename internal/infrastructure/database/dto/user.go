@@ -4,9 +4,11 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/uptrace/bun"
 )
 
 type User struct {
+	bun.BaseModel       `bun:"table:user"`
 	ID                  uuid.UUID `json:"id" bun:"id,pk"`
 	Name                string    `json:"name" bun:"name,notnull"`
 	Email               string    `json:"email" bun:"email,notnull unique"`
