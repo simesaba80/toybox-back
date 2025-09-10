@@ -1,8 +1,8 @@
 package main
 
 import (
+	"context"
 	"log"
-	"os"
 	"os/signal"
 	"syscall"
 
@@ -20,25 +20,20 @@ func main() {
 	}
 	defer cleanup()
 
-	// サーバー起動の失敗を捕捉できるよう、先にシグナルの待機を開始します
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	// OSからの割り込みシグナルをリッスンするコンテキストを作成します。
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
 
-	// Graceful shutdown
 	go func() {
 		e := app.Start()
 		if err := e.Start(":8080"); err != nil {
-			log.Printf("ERROR: Server failed to start: %v. Sending SIGTERM to self.", err)
-			p, _ := os.FindProcess(os.Getpid())
-			p.Signal(syscall.SIGTERM)
+			log.Printf("ERROR: Server failed to start: %v.", err)
+			stop()
 		}
 	}()
 
 	// シグナルを受信するまでブロックします
-	select {
-	case sig := <-quit:
-		log.Printf("Received signal '%v'. Process will exit.", sig)
-	}
+	<-ctx.Done()
 
 	log.Println("Process finished.")
 }
