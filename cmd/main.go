@@ -3,8 +3,10 @@ package main
 import (
 	"context"
 	"log"
+	"net/http"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/simesaba80/toybox-back/internal/di"
 	"github.com/simesaba80/toybox-back/pkg/config"
@@ -20,20 +22,27 @@ func main() {
 	}
 	defer cleanup()
 
+	e := app.Start()
+
 	// OSからの割り込みシグナルをリッスンするコンテキストを作成します。
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
 	go func() {
-		e := app.Start()
-		if err := e.Start(":8080"); err != nil {
-			log.Printf("ERROR: Server failed to start: %v.", err)
+		if err := e.Start(":8080"); err != nil && err != http.ErrServerClosed {
+			e.Logger.Errorf("shutting down the server: %v", err)
 			stop()
 		}
 	}()
 
 	// シグナルを受信するまでブロックします
 	<-ctx.Done()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := e.Shutdown(ctx); err != nil {
+		e.Logger.Fatal(err)
+	}
 
 	log.Println("Process finished.")
 }
