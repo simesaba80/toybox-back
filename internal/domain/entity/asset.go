@@ -3,7 +3,7 @@ package entity
 import "github.com/uptrace/bun"
 
 type Asset struct {
-	bun.BaseModel `bun:"table:asset"`
+	bun.BaseModel `bun:"table:asset" swaggerignore:"true"`
 	WorkID        string `json:"work_id" bun:"work_id"`
 	UserID        string `json:"user_id" bun:"user_id,notnull"`
 	AssetType     string `json:"asset_type" bun:"asset_type,notnull"`

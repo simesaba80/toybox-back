@@ -10,7 +10,7 @@ import (
 )
 
 type User struct {
-	bun.BaseModel `bun:"table:user"`
+	bun.BaseModel `bun:"table:user" swaggerignore:"true"`
 	ID                  uuid.UUID `json:"id" bun:"id,pk"`
 	Name                string    `json:"name" bun:"name,notnull"`
 	Email               string    `json:"email" bun:"email,notnull unique"`
