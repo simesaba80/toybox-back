@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  # 移行元DB（本番環境の再現）
+  source-db:
+    image: postgres:13.3  # 既存DBと同じバージョンを使用
+    container_name: migration-source-db
+    environment:
+      TZ: Asia/Tokyo
+      PGTZ: Asia/Tokyo
+    env_file:
+      - ../.env
+    ports:
+      - "5433:5432"  # 既存DBとポートが被らないように
+    volumes:
+      - ../scripts/restore_backup_db.sh:/docker-entrypoint-initdb.d/restore-script.sh
+      - ../toybox_backup.sql:/tmp/toybox_backup.sql
+      - source_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    networks:
+      - migration-network
+
+  # Go移行スクリプト実行用コンテナ
+  migrator:
+    build:
+      context: ../
+      dockerfile: ./docker/migration.go.dockerfile
+    container_name: migration-script
+    depends_on:
+      source-db:
+        condition: service_healthy
+    environment:
+      # 移行元DB設定
+      SOURCE_DB_HOST: source-db
+      SOURCE_DB_PORT: 5432
+      SOURCE_DB_NAME: toybox
+      SOURCE_DB_USER: postgres
+      SOURCE_DB_PASSWORD: password
+
+      # 移行先DB設定（既存の新しいDB）
+      TARGET_DB_HOST: db  # 既存DBのコンテナ名
+      TARGET_DB_PORT: 5432
+      TARGET_DB_NAME: ${POSTGRES_DB}  # .envから取得
+      TARGET_DB_USER: ${POSTGRES_USER}       # .envから取得
+      TARGET_DB_PASSWORD: ${POSTGRES_PASSWORD}         # .envから取得
+      
+      TZ: Asia/Tokyo
+    # volumes:
+    #   - ../../:/app
+    networks:
+      - migration-network
+      - app-network  # 既存ネットワークに参加
+    # command: >
+    #   sh -c "
+    #     echo 'Waiting for source database...' &&
+    #     ./wait-for-it.sh migration-source-db:5432 --timeout=60 &&
+    #     echo 'Waiting for target database...' &&
+    #     ./wait-for-it.sh db:5432 --timeout=60 &&
+    #     echo 'Starting migration...' &&
+    #     go run cmd/migration/main.go
+    #   "
+
+volumes:
+  source_data:
+
+networks:
+  migration-network:
+    name: migration-network
+    driver: bridge
+  app-network:
+    external: true  # 既存の外部ネットワークを使用

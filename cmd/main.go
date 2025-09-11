@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/simesaba80/toybox-back/internal/di"
-	"github.com/simesaba80/toybox-back/pkg/config"
+	"github.com/simesaba80/toybox-back/internal/infrastructure/config"
 )
 
 func main() {
