@@ -58,7 +58,9 @@ func (wc *WorkController) CreateWork(c echo.Context) error {
 		c.Logger().Error("Bind error:", err)
 		return echo.NewHTTPError(400, "Invalid request body")
 	}
-
+    if err := c.Validate(&input); err != nil {
+      return err
+    }
 	// リクエストボディからuser_idを取得し、UUIDにパース
 	userID, err := uuid.Parse(input.UserID)
 	if err != nil {
