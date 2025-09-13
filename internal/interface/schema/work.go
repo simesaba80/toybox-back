@@ -17,11 +17,11 @@ type GetWorkOutput struct {
 }
 
 type CreateWorkInput struct {
-	Title           string `json:"title"`
-	Description     string `json:"description"`
-	DescriptionHTML string `json:"description_html"`
+	Title           string `json:"title" validate:"required,max=100"`
+	Description     string `json:"description" validate:"required"`
+	DescriptionHTML string `json:"description_html" validate:"required"`
 	Visibility      string `json:"visibility"`
-	UserID          string `json:"user_id"`
+	UserID          string `json:"user_id" validate:"required"`
 }
 
 type CreateWorkOutput struct {

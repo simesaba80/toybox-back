@@ -21,6 +21,9 @@ func (uc *UserController) CreateUser(c echo.Context) error {
 	if err := c.Bind(&user); err != nil {
 		return err
 	}
+    if err := c.Validate(&user); err != nil {
+      return err
+    }
 
 	createdUser, err := uc.userusecase.CreateUser(c.Request().Context(), user.Name, user.Email, user.PasswordHash, user.DisplayName, user.AvatarURL)
 	if err != nil {

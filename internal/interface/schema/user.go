@@ -3,11 +3,11 @@ package schema
 import "github.com/simesaba80/toybox-back/internal/domain/entity"
 
 type CreateUserInput struct {
-	Name         string `json:"name"`
-	Email        string `json:"email"`
-	PasswordHash string `json:"password_hash"`
-	DisplayName  string `json:"display_name"`
-	AvatarURL    string `json:"avatar_url"`
+	Name         string `json:"name" validate:"required,max=32"`
+	Email        string `json:"email" validate:"required,email,max=256"`
+	PasswordHash string `json:"password_hash" validate:"required"`
+	DisplayName  string `json:"display_name" validate:"required,max=32"`
+	AvatarURL    string `json:"avatar_url" validate:"omitempty,url"`
 }
 
 type CreateUserOutput struct {
