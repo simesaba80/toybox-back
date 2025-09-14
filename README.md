@@ -50,3 +50,12 @@ controllerではフレームワークで受け取ったHTTPリクエストの処
 `infrastructure`
 DBやフロントエンドといった外部のシステムと実際に通信する部分になる。  
 repositoryでは/domain/repositoryで定義したデータアクセスの具体的な実装、routerではEchoを使ったルーティングを実際に行っている。
+
+### APIドキュメントの更新
+
+http://localhost:8080/swagger/index.html にアクセスすることでAPIドキュメントを確認できる。
+
+APIドキュメントの更新
+```
+$ swag init -g cmd/main.go --parseDependency
+```
