@@ -1,5 +1,11 @@
 package main
 
+// @title Toybox API
+// @version 1.0
+// @description This is the API server for the Toybox application.
+// @host localhost:8080
+// @BasePath /
+
 import (
 	"context"
 	"log"
@@ -8,6 +14,7 @@ import (
 	"syscall"
 	"time"
 
+	_ "github.com/simesaba80/toybox-back/docs"
 	"github.com/simesaba80/toybox-back/internal/di"
 	"github.com/simesaba80/toybox-back/pkg/config"
 )
