@@ -21,9 +21,10 @@ func main() {
 	// This is a placeholder main function.
 	// The actual migration logic would be implemented here.
 	config.LoadEnv()
-
+	fmt.Println("Environment variables loaded.")
 	//移行後のDB接続
 	db.Init()
+	fmt.Println("Connected to the database1.")
 	//移行前のDB接続
 	err := godotenv.Load()
 	if err != nil {
@@ -40,7 +41,7 @@ func main() {
 		log.Fatalf("Failed to connect to database: %v", err)
 		return
 	}
-
+	fmt.Println("Connected to the database2.")
 	// クエリーフックを追加
 	DB.AddQueryHook(bundebug.NewQueryHook(
 		bundebug.WithVerbose(true),

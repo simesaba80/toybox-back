@@ -7,11 +7,11 @@ RUN apk --update add tzdata && \
 
 COPY go.mod go.sum ./
 RUN go mod download
-COPY . .
+COPY ./ .
 
 RUN apk --no-cache add ca-certificates postgresql-client bash curl tzdata
 
 RUN cp /usr/share/zoneinfo/Asia/Tokyo /etc/localtime && \
     echo "Asia/Tokyo" > /etc/timezone
 
-CMD ["go", "run", "cmd/movedata/main.go"]
+CMD ["go", "run", "./tools/movedata/main.go"]
