@@ -1,0 +1,243 @@
+basePath: /
+definitions:
+  echo.HTTPError:
+    properties:
+      message: {}
+    type: object
+  github_com_simesaba80_toybox-back_internal_domain_entity.Asset:
+    properties:
+      asset_type:
+        type: string
+      created_at:
+        type: string
+      extension:
+        type: string
+      updated_at:
+        type: string
+      url:
+        type: string
+      user_id:
+        type: string
+      work_id:
+        type: string
+    type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.CreateUserInput:
+    properties:
+      avatar_url:
+        type: string
+      display_name:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+      password_hash:
+        type: string
+    type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.CreateWorkInput:
+    properties:
+      description:
+        type: string
+      description_html:
+        type: string
+      title:
+        type: string
+      user_id:
+        type: string
+      visibility:
+        type: string
+    type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.CreateWorkOutput:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      description_html:
+        type: string
+      id:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+      visibility:
+        type: string
+    type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.GetUserOutput:
+    properties:
+      avatar_url:
+        type: string
+      created_at:
+        type: string
+      display_name:
+        type: string
+      email:
+        type: string
+      github_id:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      profile:
+        type: string
+      twitter_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.GetWorkOutput:
+    properties:
+      assets:
+        items:
+          $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_domain_entity.Asset'
+        type: array
+      created_at:
+        type: string
+      description:
+        type: string
+      description_html:
+        type: string
+      id:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+      visibility:
+        type: string
+    type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.UserListResponse:
+    properties:
+      users:
+        items:
+          $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.GetUserOutput'
+        type: array
+    type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.WorkListResponse:
+    properties:
+      works:
+        items:
+          $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.GetWorkOutput'
+        type: array
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: This is the API server for the Toybox application.
+  title: Toybox API
+  version: "1.0"
+paths:
+  /users:
+    get:
+      description: Get all users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.UserListResponse'
+      summary: Get all users
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      description: Create a new user with the input payload
+      parameters:
+      - description: User to create
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.CreateUserInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.GetUserOutput'
+      summary: Create a new user
+      tags:
+      - users
+  /works:
+    get:
+      description: Get all works
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.WorkListResponse'
+      summary: Get all works
+      tags:
+      - works
+    post:
+      consumes:
+      - application/json
+      description: Create a new work with the input payload
+      parameters:
+      - description: Work to create
+        in: body
+        name: work
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.CreateWorkInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.CreateWorkOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Create a new work
+      tags:
+      - works
+  /works/{work_id}:
+    get:
+      description: Get a work by ID
+      parameters:
+      - description: Work ID
+        in: path
+        name: work_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.GetWorkOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Get a work by ID
+      tags:
+      - works
+swagger: "2.0"

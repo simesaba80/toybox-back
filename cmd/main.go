@@ -1,11 +1,20 @@
 package main
 
+// @title Toybox API
+// @version 1.0
+// @description This is the API server for the Toybox application.
+// @host localhost:8080
+// @BasePath /
+
 import (
+	"context"
 	"log"
-	"os"
+	"net/http"
 	"os/signal"
 	"syscall"
+	"time"
 
+	_ "github.com/simesaba80/toybox-back/docs"
 	"github.com/simesaba80/toybox-back/internal/di"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/config"
 )
@@ -20,18 +29,27 @@ func main() {
 	}
 	defer cleanup()
 
-	// Graceful shutdown
+	e := app.Start()
+
+	// OSからの割り込みシグナルをリッスンするコンテキストを作成します。
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
 	go func() {
-		e := app.Start()
-		if err := e.Start(":8080"); err != nil {
-			log.Fatal("Failed to start server:", err)
+		if err := e.Start(":8080"); err != nil && err != http.ErrServerClosed {
+			e.Logger.Errorf("shutting down the server: %v", err)
+			stop()
 		}
 	}()
 
-	// シグナルを待機
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
+	// シグナルを受信するまでブロックします
+	<-ctx.Done()
 
-	log.Println("Shutting down server...")
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := e.Shutdown(ctx); err != nil {
+		e.Logger.Fatal(err)
+	}
+
+	log.Println("Process finished.")
 }
