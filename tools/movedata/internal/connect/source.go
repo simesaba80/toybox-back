@@ -1,7 +1,8 @@
-package db
+package connect
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"os"
 
@@ -14,16 +15,16 @@ import (
 
 var DB *bun.DB
 
-func Init() {
+func Connect() {
+	//移行前のDB接続
 	err := godotenv.Load()
-
 	if err != nil {
 		log.Printf("読み込み出来ませんでした: %v", err)
 	}
 
-	DB_DSN := os.Getenv("DB_DSN")
+	DB_DSN_BACKUP := os.Getenv("DB_DSN_BACKUP")
 	sqlDB := sql.OpenDB(pgdriver.NewConnector(
-		pgdriver.WithDSN(DB_DSN),
+		pgdriver.WithDSN(DB_DSN_BACKUP),
 	))
 	DB = bun.NewDB(sqlDB, pgdialect.New())
 
@@ -31,9 +32,10 @@ func Init() {
 		log.Fatalf("Failed to connect to database: %v", err)
 		return
 	}
-
+	fmt.Println("Connected to the database2.")
 	// クエリーフックを追加
 	DB.AddQueryHook(bundebug.NewQueryHook(
 		bundebug.WithVerbose(true),
 	))
+
 }
