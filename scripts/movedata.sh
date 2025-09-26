@@ -32,8 +32,8 @@ docker compose -f compose.migration.yaml up --build --abort-on-container-exit
 
 
 # クリーンアップ
-# echo "Cleaning up migration containers..."
-# docker compose -f compose.migration.yaml down --volumes
+echo "Cleaning up migration containers..."
+docker compose -f compose.migration.yaml down --volumes
 
 
 cd ../
