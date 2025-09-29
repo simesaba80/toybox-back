@@ -23,7 +23,7 @@ func NewWorkRepository(db *bun.DB) *WorkRepository {
 
 func (r *WorkRepository) GetAll(ctx context.Context) ([]*entity.Work, error) {
 	var dtoWorks []*dto.Work
-	err := r.db.NewSelect().Model(&dtoWorks).Order("created_at DESC").Limit(20).Scan(ctx)
+	err := r.db.NewSelect().Model(&dtoWorks).Relation("Assets").Order("created_at DESC").Limit(20).Scan(ctx)
 	if err != nil {
 		return nil, err
 	}
