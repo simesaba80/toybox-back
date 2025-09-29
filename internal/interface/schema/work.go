@@ -8,7 +8,6 @@ type GetWorkOutput struct {
 	ID              string         `json:"id"`
 	Title           string         `json:"title"`
 	Description     string         `json:"description"`
-	DescriptionHTML string         `json:"description_html"`
 	UserID          string         `json:"user_id"`
 	Visibility      string         `json:"visibility"`
 	Assets          []entity.Asset `json:"assets"`
@@ -47,7 +46,6 @@ func ToWorkResponse(work *entity.Work) GetWorkOutput {
 		ID:              work.ID.String(),
 		Title:           work.Title,
 		Description:     work.Description,
-		DescriptionHTML: work.DescriptionHTML,
 		UserID:          work.UserID.String(),
 		Visibility:      work.Visibility,
 		Assets:          work.Assets,

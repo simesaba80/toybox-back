@@ -14,7 +14,6 @@ type Work struct {
 	ID              uuid.UUID `json:"id" bun:"id,pk"`
 	Title           string    `json:"title" bun:"title,notnull"`
 	Description     string    `json:"description" bun:"description,notnull"`
-	DescriptionHTML string    `json:"description_html" bun:"description_html,notnull"`
 	UserID          uuid.UUID `json:"user_id" bun:"user_id,notnull"`
 	Visibility      string    `json:"visibility" bun:"visibility"`
 	Assets          []Asset   `json:"assets" bun:"rel:has-many,join:id=work_id"`
@@ -31,9 +30,6 @@ func (w *Work) Validate() error {
 	}
 	if w.Description == "" {
 		return errors.New("description is required")
-	}
-	if w.DescriptionHTML == "" {
-		return errors.New("description_html is required")
 	}
 	if w.UserID == uuid.Nil {
 		return errors.New("user ID is required")
