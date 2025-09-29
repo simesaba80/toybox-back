@@ -18,7 +18,6 @@ type GetWorkOutput struct {
 type CreateWorkInput struct {
 	Title           string `json:"title" validate:"required,max=100"`
 	Description     string `json:"description" validate:"required"`
-	DescriptionHTML string `json:"description_html" validate:"required"`
 	Visibility      string `json:"visibility"`
 	UserID          string `json:"user_id" validate:"required"`
 }
@@ -27,7 +26,6 @@ type CreateWorkOutput struct {
 	ID              string `json:"id"`
 	Title           string `json:"title"`
 	Description     string `json:"description"`
-	DescriptionHTML string `json:"description_html"`
 	UserID          string `json:"user_id"`
 	Visibility      string `json:"visibility"`
 	CreatedAt       string `json:"created_at"`
@@ -62,7 +60,6 @@ func ToCreateWorkOutput(work *entity.Work) CreateWorkOutput {
 		ID:              work.ID.String(),
 		Title:           work.Title,
 		Description:     work.Description,
-		DescriptionHTML: work.DescriptionHTML,
 		UserID:          work.UserID.String(),
 		Visibility:      work.Visibility,
 		CreatedAt:       work.CreatedAt.String(),

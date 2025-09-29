@@ -44,7 +44,7 @@ func (uc *WorkUseCase) GetByID(ctx context.Context, id uuid.UUID) (*entity.Work,
 	return work, nil
 }
 
-func (uc *WorkUseCase) CreateWork(ctx context.Context, title, description, descriptionHTML, visibility string, userID uuid.UUID) (*entity.Work, error) {
+func (uc *WorkUseCase) CreateWork(ctx context.Context, title, description, visibility string, userID uuid.UUID) (*entity.Work, error) {
 	ctx, cancel := context.WithTimeout(ctx, uc.timeout)
 	defer cancel()
 
@@ -52,7 +52,6 @@ func (uc *WorkUseCase) CreateWork(ctx context.Context, title, description, descr
 		ID:              uuid.New(),
 		Title:           title,
 		Description:     description,
-		DescriptionHTML: descriptionHTML,
 		UserID:          userID,
 		Visibility:      visibility,
 	}
