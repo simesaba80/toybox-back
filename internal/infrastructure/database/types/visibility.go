@@ -25,8 +25,8 @@ func (v *Visibility) Scan(value interface{}) error {
 		return nil
 	}
 	switch s := value.(type) {
-	case string:
-		*v = Visibility(s)
+	case []byte:
+		*v = Visibility(string(s))
 		return nil
 	default:
 		return fmt.Errorf("cannot scan %T into Visibility", value)

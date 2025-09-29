@@ -101,7 +101,6 @@ func (wc *WorkController) CreateWork(c echo.Context) error {
 		c.Request().Context(),
 		input.Title,
 		input.Description,
-		input.DescriptionHTML,
 		input.Visibility,
 		userID,
 	)

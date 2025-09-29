@@ -1,14 +1,15 @@
 package entity
 
-import "github.com/uptrace/bun"
+import (
+	"time"
+)
 
 type Asset struct {
-	bun.BaseModel `bun:"table:asset" swaggerignore:"true"`
-	WorkID        string `json:"work_id" bun:"work_id"`
-	UserID        string `json:"user_id" bun:"user_id,notnull"`
-	AssetType     string `json:"asset_type" bun:"asset_type,notnull"`
-	Extension     string `json:"extension" bun:"extension,notnull"`
-	URL           string `json:"url" bun:"url,notnull"`
-	CreatedAt     string `json:"created_at" bun:"created_at,notnull"`
-	UpdatedAt     string `json:"updated_at" bun:"updated_at,notnull"`
+	WorkID        string    `json:"work_id"`
+	UserID        string    `json:"user_id"`
+	AssetType     string    `json:"asset_type"`
+	Extension     string    `json:"extension"`
+	URL           string    `json:"url"`
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
 }

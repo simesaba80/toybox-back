@@ -1,4 +1,4 @@
-CREATE TABLE users (
+CREATE TABLE "user" (
     id VARCHAR(255) PRIMARY KEY,
     name VARCHAR(32) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
@@ -21,7 +21,7 @@ CREATE TYPE visibility AS ENUM (
     'draft'
 );
 
-CREATE TABLE works (
+CREATE TABLE work (
     id VARCHAR(255) PRIMARY KEY,
     title VARCHAR(100) NOT NULL,
     description TEXT NOT NULL,
@@ -31,7 +31,7 @@ CREATE TABLE works (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE favorites (
+CREATE TABLE favorite (
     work_id VARCHAR(255) NOT NULL,
     user_id VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -87,7 +87,7 @@ CREATE TABLE urlinfo (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE tags (
+CREATE TABLE tag (
     id VARCHAR(255) PRIMARY KEY,
     name VARCHAR(32) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -100,7 +100,7 @@ CREATE TABLE tagging (
     PRIMARY KEY (work_id, tag_id)
 );
 
-CREATE TABLE thumbnails (
+CREATE TABLE thumbnail (
     work_id VARCHAR(255) NOT NULL,
     asset_id VARCHAR(255) NOT NULL,
     PRIMARY KEY (work_id, asset_id)

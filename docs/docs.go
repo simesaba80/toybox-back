@@ -214,18 +214,27 @@ const docTemplate = `{
         },
         "github_com_simesaba80_toybox-back_internal_interface_schema.CreateUserInput": {
             "type": "object",
+            "required": [
+                "display_name",
+                "email",
+                "name",
+                "password_hash"
+            ],
             "properties": {
                 "avatar_url": {
                     "type": "string"
                 },
                 "display_name": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 32
                 },
                 "email": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 256
                 },
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 32
                 },
                 "password_hash": {
                     "type": "string"
@@ -234,15 +243,18 @@ const docTemplate = `{
         },
         "github_com_simesaba80_toybox-back_internal_interface_schema.CreateWorkInput": {
             "type": "object",
+            "required": [
+                "description",
+                "title",
+                "user_id"
+            ],
             "properties": {
                 "description": {
                     "type": "string"
                 },
-                "description_html": {
-                    "type": "string"
-                },
                 "title": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 100
                 },
                 "user_id": {
                     "type": "string"
@@ -259,9 +271,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "description": {
-                    "type": "string"
-                },
-                "description_html": {
                     "type": "string"
                 },
                 "id": {
@@ -329,9 +338,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "description": {
-                    "type": "string"
-                },
-                "description_html": {
                     "type": "string"
                 },
                 "id": {

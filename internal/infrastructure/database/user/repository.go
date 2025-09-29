@@ -6,6 +6,7 @@ import (
 	"github.com/uptrace/bun"
 
 	"github.com/simesaba80/toybox-back/internal/domain/entity"
+	"github.com/simesaba80/toybox-back/internal/infrastructure/database/dto"
 )
 
 type UserRepository struct {
@@ -19,18 +20,27 @@ func NewUserRepository(db *bun.DB) *UserRepository {
 }
 
 func (r *UserRepository) Create(ctx context.Context, user *entity.User) (*entity.User, error) {
-	_, err := r.db.NewInsert().Model(user).Exec(ctx)
+	dtoUser := dto.ToUserDTO(user)
+
+	_, err := r.db.NewInsert().Model(dtoUser).Exec(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return user, nil
+
+	return dtoUser.ToUserEntity(), nil
 }
 
 func (r *UserRepository) GetAll(ctx context.Context) ([]*entity.User, error) {
-	var users []*entity.User
-	err := r.db.NewSelect().Model(&users).Scan(ctx)
+	var dtoUsers []*dto.User
+	err := r.db.NewSelect().Model(&dtoUsers).Scan(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return users, nil
+
+	entityUsers := make([]*entity.User, len(dtoUsers))
+	for i, dtoUser := range dtoUsers {
+		entityUsers[i] = dtoUser.ToUserEntity()
+	}
+
+	return entityUsers, nil
 }

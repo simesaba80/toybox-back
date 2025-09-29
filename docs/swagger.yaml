@@ -26,34 +26,43 @@ definitions:
       avatar_url:
         type: string
       display_name:
+        maxLength: 32
         type: string
       email:
+        maxLength: 256
         type: string
       name:
+        maxLength: 32
         type: string
       password_hash:
         type: string
+    required:
+    - display_name
+    - email
+    - name
+    - password_hash
     type: object
   github_com_simesaba80_toybox-back_internal_interface_schema.CreateWorkInput:
     properties:
       description:
         type: string
-      description_html:
-        type: string
       title:
+        maxLength: 100
         type: string
       user_id:
         type: string
       visibility:
         type: string
+    required:
+    - description
+    - title
+    - user_id
     type: object
   github_com_simesaba80_toybox-back_internal_interface_schema.CreateWorkOutput:
     properties:
       created_at:
         type: string
       description:
-        type: string
-      description_html:
         type: string
       id:
         type: string
@@ -98,8 +107,6 @@ definitions:
       created_at:
         type: string
       description:
-        type: string
-      description_html:
         type: string
       id:
         type: string
