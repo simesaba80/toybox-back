@@ -7,6 +7,18 @@
 
 ## 開発環境の準備
 
+### 開発に必要なCLIツールのインストール
+
+以下のコマンド実行後、wire, migrate, swag コマンドがそれぞれ実行できるようになることを確認してください。実行できない場合 `go env GOPATH`で表示されるディレクトリのパスが通ってない可能性が高いです。
+
+```
+$ go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@lates
+$ go install github.com/google/wire/cmd/wire@latest
+$ go install github.com/swaggo/swag/cmd/swag@latest
+```
+
+### プロジェクトのセットアップ
+
 ```
 # レポジトリをクローンする
 $ git clone git@github.com:simesaba80/toybox-back.git
@@ -23,8 +35,12 @@ $ cp .env.example .env
 # サーバーを起動
 $ docker compose up -d
 
+# マイグレーションの実行
+$ migrate --path db/migrations --database '<DBの接続文字列>' up
+
 # データの挿入(初回のみ)
-$  docker compose exec -T db psql -U postgres -d toybox < toybox_backup.sql
+# バックアップのSQLをプロジェクト直下に配置後
+$ ./scripts/movedata.sh
 
 # 以下のURLを開き、起動しているか確認
 http://localhost:8080/
@@ -35,6 +51,24 @@ $ docker compose down
 ```
 
 ※依存先が増えた場合は適切に/internal/di/wire.go に記述し、`wire ./internal/di`を実行すること
+
+### データベースのセットアップ
+
+データベースのマイグレーションには golang-migrate を使っています。
+
+基本的な使い方は以下の記事を参考にしてください。
+https://zenn.dev/farstep/books/f74e6b76ea7456/viewer/4cd440
+マイグレーション時 DSN の指定が必要になります。コンテナのネットワーク外から実行するので.env で記入した DSN と HOST の値が異なることに注意してください
+
+### API ドキュメントの更新
+
+http://localhost:8080/swagger/index.html にアクセスすることで API ドキュメントを確認できる。
+
+API ドキュメントの更新
+
+```
+$ swag init -g cmd/main.go --parseDependency
+```
 
 ### internal 内の各ディレクトリの役割
 
@@ -53,25 +87,3 @@ controller ではフレームワークで受け取った HTTP リクエストの
 `infrastructure`
 DB やフロントエンドといった外部のシステムと実際に通信する部分になる。  
 repository では/domain/repository で定義したデータアクセスの具体的な実装、router では Echo を使ったルーティングを実際に行っている。
-
-### データベースのセットアップ
-
-データベースのマイグレーションには golang-migrate を使っています。以下のコマンド実行後 migrate コマンドが実行できるようになることを確認してください。実行できない場合 `go env GOPATH`で表示されるディレクトリのパスが通ってない可能性が高いです。
-
-```
-go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
-```
-
-基本的な使い方は以下の記事を参考にしてください。
-https://zenn.dev/farstep/books/f74e6b76ea7456/viewer/4cd440
-マイグレーション時 DSN の指定が必要になります。コンテナのネットワーク外から実行するので.env で記入した DSN と HOST の値が異なることに注意してください
-
-### API ドキュメントの更新
-
-http://localhost:8080/swagger/index.html にアクセスすることで API ドキュメントを確認できる。
-
-API ドキュメントの更新
-
-```
-$ swag init -g cmd/main.go --parseDependency
-```
