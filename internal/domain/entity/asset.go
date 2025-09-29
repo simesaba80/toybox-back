@@ -9,7 +9,7 @@ import (
 type Asset struct {
 	ID        uuid.UUID
 	WorkID    uuid.UUID
-	AssetType AssetType
+	AssetType string
 	UserID    uuid.UUID
 	Extension string
 	URL       string

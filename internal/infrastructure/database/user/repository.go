@@ -20,12 +20,14 @@ func NewUserRepository(db *bun.DB) *UserRepository {
 }
 
 func (r *UserRepository) Create(ctx context.Context, user *entity.User) (*entity.User, error) {
-	dtoUser := toDTO(user)
+	dtoUser := dto.ToUserDTO(user)
+
 	_, err := r.db.NewInsert().Model(dtoUser).Exec(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return user, nil
+
+	return dtoUser.ToUserEntity(), nil
 }
 
 func (r *UserRepository) GetAll(ctx context.Context) ([]*entity.User, error) {
@@ -34,5 +36,11 @@ func (r *UserRepository) GetAll(ctx context.Context) ([]*entity.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	return toEntities(dtoUsers), nil
+
+	entityUsers := make([]*entity.User, len(dtoUsers))
+	for i, dtoUser := range dtoUsers {
+		entityUsers[i] = dtoUser.ToUserEntity()
+	}
+
+	return entityUsers, nil
 }

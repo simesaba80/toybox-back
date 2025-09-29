@@ -30,9 +30,6 @@ func (w *Work) Validate() error {
 	if w.Description == "" {
 		return errors.New("description is required")
 	}
-	if w.DescriptionHTML == "" {
-		return errors.New("description_html is required")
-	}
 	if w.UserID == uuid.Nil {
 		return errors.New("user ID is required")
 	}

@@ -5,6 +5,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/uptrace/bun"
+
+	"github.com/simesaba80/toybox-back/internal/domain/entity"
 )
 
 type User struct {
@@ -24,4 +26,42 @@ type User struct {
 	GithubID            string    `bun:"github_id"`
 	CreatedAt           time.Time `bun:"created_at,notnull"`
 	UpdatedAt           time.Time `bun:"updated_at,notnull"`
+}
+
+func (u *User) ToUserEntity() *entity.User {
+	return &entity.User{
+		ID:                  u.ID,
+		Name:                u.Name,
+		Email:               u.Email,
+		PasswordHash:        u.PasswordHash,
+		DisplayName:         u.DisplayName,
+		DiscordToken:        u.DiscordToken,
+		DiscordRefreshToken: u.DiscordRefreshToken,
+		DiscordUserID:       u.DiscordUserID,
+		Profile:             u.Profile,
+		AvatarURL:           u.AvatarURL,
+		TwitterID:           u.TwitterID,
+		GithubID:            u.GithubID,
+		CreatedAt:           u.CreatedAt,
+		UpdatedAt:           u.UpdatedAt,
+	}
+}
+
+func ToUserDTO(entity *entity.User) *User {
+	return &User{
+		ID:                  entity.ID,
+		Name:                entity.Name,
+		Email:               entity.Email,
+		PasswordHash:        entity.PasswordHash,
+		DisplayName:         entity.DisplayName,
+		DiscordToken:        entity.DiscordToken,
+		DiscordRefreshToken: entity.DiscordRefreshToken,
+		DiscordUserID:       entity.DiscordUserID,
+		Profile:             entity.Profile,
+		AvatarURL:           entity.AvatarURL,
+		TwitterID:           entity.TwitterID,
+		GithubID:            entity.GithubID,
+		CreatedAt:           entity.CreatedAt,
+		UpdatedAt:           entity.UpdatedAt,
+	}
 }

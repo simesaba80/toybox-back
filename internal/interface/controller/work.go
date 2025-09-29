@@ -20,6 +20,13 @@ func NewWorkController(workUsecase *usecase.WorkUseCase) *WorkController {
 	}
 }
 
+// GetAllWorks godoc
+// @Summary Get all works
+// @Description Get all works
+// @Tags works
+// @Produce json
+// @Success 200 {object} schema.WorkListResponse
+// @Router /works [get]
 func (wc *WorkController) GetAllWorks(c echo.Context) error {
 	works, err := wc.workUsecase.GetAll(c.Request().Context())
 	if err != nil {
@@ -34,6 +41,17 @@ func (wc *WorkController) GetAllWorks(c echo.Context) error {
 	return c.JSON(200, schema.WorkListResponse{Works: response})
 }
 
+// GetWorkByID godoc
+// @Summary Get a work by ID
+// @Description Get a work by ID
+// @Tags works
+// @Produce json
+// @Param work_id path string true "Work ID"
+// @Success 200 {object} schema.GetWorkOutput
+// @Failure 400 {object} echo.HTTPError
+// @Failure 404 {object} echo.HTTPError
+// @Failure 500 {object} echo.HTTPError
+// @Router /works/{work_id} [get]
 func (wc *WorkController) GetWorkByID(c echo.Context) error {
 	idStr := c.Param("work_id")
 	id, err := uuid.Parse(idStr)
@@ -52,13 +70,26 @@ func (wc *WorkController) GetWorkByID(c echo.Context) error {
 	return c.JSON(200, schema.ToWorkResponse(work))
 }
 
+// CreateWork godoc
+// @Summary Create a new work
+// @Description Create a new work with the input payload
+// @Tags works
+// @Accept json
+// @Produce json
+// @Param work body schema.CreateWorkInput true "Work to create"
+// @Success 201 {object} schema.CreateWorkOutput
+// @Failure 400 {object} echo.HTTPError
+// @Failure 500 {object} echo.HTTPError
+// @Router /works [post]
 func (wc *WorkController) CreateWork(c echo.Context) error {
 	var input schema.CreateWorkInput
 	if err := c.Bind(&input); err != nil {
 		c.Logger().Error("Bind error:", err)
 		return echo.NewHTTPError(400, "Invalid request body")
 	}
-
+    if err := c.Validate(&input); err != nil {
+      return err
+    }
 	// リクエストボディからuser_idを取得し、UUIDにパース
 	userID, err := uuid.Parse(input.UserID)
 	if err != nil {
@@ -70,7 +101,6 @@ func (wc *WorkController) CreateWork(c echo.Context) error {
 		c.Request().Context(),
 		input.Title,
 		input.Description,
-		input.DescriptionHTML,
 		input.Visibility,
 		userID,
 	)

@@ -16,11 +16,23 @@ func NewUserController(userusecase *usecase.UserUseCase) *UserController {
 	}
 }
 
+// CreateUser godoc
+// @Summary Create a new user
+// @Description Create a new user with the input payload
+// @Tags users
+// @Accept  json
+// @Produce  json
+// @Param   user body schema.CreateUserInput true "User to create"
+// @Success 201 {object} schema.GetUserOutput
+// @Router /users [post]
 func (uc *UserController) CreateUser(c echo.Context) error {
 	var user schema.CreateUserInput
 	if err := c.Bind(&user); err != nil {
 		return err
 	}
+    if err := c.Validate(&user); err != nil {
+      return err
+    }
 
 	createdUser, err := uc.userusecase.CreateUser(c.Request().Context(), user.Name, user.Email, user.PasswordHash, user.DisplayName, user.AvatarURL)
 	if err != nil {
@@ -30,6 +42,13 @@ func (uc *UserController) CreateUser(c echo.Context) error {
 	return c.JSON(201, schema.ToUserResponse(createdUser))
 }
 
+// GetAllUsers godoc
+// @Summary Get all users
+// @Description Get all users
+// @Tags users
+// @Produce  json
+// @Success 200 {object} schema.UserListResponse
+// @Router /users [get]
 func (uc *UserController) GetAllUsers(c echo.Context) error {
 	users, err := uc.userusecase.GetAllUser(c.Request().Context())
 	if err != nil {

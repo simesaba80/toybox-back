@@ -5,17 +5,46 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/simesaba80/toybox-back/internal/domain/entity"
+	"github.com/simesaba80/toybox-back/internal/infrastructure/database/types"
 	"github.com/uptrace/bun"
 )
 
 type Asset struct {
 	bun.BaseModel `bun:"table:asset"`
-	ID            uuid.UUID        `bun:"id,pk"`
-	WorkID        uuid.UUID        `bun:"work_id"`
-	AssetType     entity.AssetType `bun:"asset_type,notnull"`
-	UserID        uuid.UUID        `bun:"user_id,notnull"`
-	Extension     string           `bun:"extension,notnull"`
-	URL           string           `bun:"url,notnull"`
-	CreatedAt     time.Time        `bun:"created_at,notnull"`
-	UpdatedAt     time.Time        `bun:"updated_at,notnull"`
+	ID            uuid.UUID       `bun:"id,pk"`
+	WorkID        uuid.UUID       `bun:"work_id"`
+	AssetType     types.AssetType `bun:"asset_type,notnull"`
+	UserID        uuid.UUID       `bun:"user_id,notnull"`
+	Extension     string          `bun:"extension,notnull"`
+	URL           string          `bun:"url,notnull"`
+	CreatedAt     time.Time       `bun:"created_at,notnull"`
+	UpdatedAt     time.Time       `bun:"updated_at,notnull"`
+}
+
+func (a *Asset) ToAssetEntity() *entity.Asset {
+	return &entity.Asset{
+		WorkID:    a.WorkID.String(),
+		UserID:    a.UserID.String(),
+		AssetType: string(a.AssetType),
+		Extension: a.Extension,
+		URL:       a.URL,
+		CreatedAt: a.CreatedAt,
+		UpdatedAt: a.UpdatedAt,
+	}
+}
+
+func ToAssetDTO(entity *entity.Asset) *Asset {
+	workID, _ := uuid.Parse(entity.WorkID)
+	userID, _ := uuid.Parse(entity.UserID)
+
+	return &Asset{
+		ID:        uuid.Nil,
+		WorkID:    workID,
+		UserID:    userID,
+		AssetType: types.AssetType(entity.AssetType),
+		Extension: entity.Extension,
+		URL:       entity.URL,
+		CreatedAt: entity.CreatedAt,
+		UpdatedAt: entity.UpdatedAt,
+	}
 }
