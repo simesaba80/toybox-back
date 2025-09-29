@@ -11,17 +11,16 @@ import (
 )
 
 type Work struct {
-	bun.BaseModel `bun:"table:works"`
+	bun.BaseModel `bun:"table:work"`
 
-	ID              uuid.UUID `bun:"id,pk"`
-	Title           string    `bun:"title,notnull"`
-	Description     string    `bun:"description,notnull"`
-	DescriptionHTML string    `bun:"description_html,notnull"`
-	UserID          uuid.UUID `bun:"user_id,notnull"`
-	Visibility      string    `bun:"visibility"`
-	Assets          []*Asset  `bun:"rel:has-many,join:id=work_id"`
-	CreatedAt       time.Time `bun:"created_at,notnull"`
-	UpdatedAt       time.Time `bun:"updated_at,notnull"`
+	ID          uuid.UUID `bun:"id,pk"`
+	Title       string    `bun:"title,notnull"`
+	Description string    `bun:"description,notnull"`
+	UserID      uuid.UUID `bun:"user_id,notnull"`
+	Visibility  string    `bun:"visibility"`
+	Assets      []*Asset  `bun:"rel:has-many,join:id=work_id"`
+	CreatedAt   time.Time `bun:"created_at,notnull"`
+	UpdatedAt   time.Time `bun:"updated_at,notnull"`
 }
 
 func (w *Work) ToWorkEntity() *entity.Work {

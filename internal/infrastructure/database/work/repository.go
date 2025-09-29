@@ -23,13 +23,6 @@ func NewWorkRepository(db *bun.DB) *WorkRepository {
 
 func (r *WorkRepository) GetAll(ctx context.Context) ([]*entity.Work, error) {
 	var dtoWorks []*dto.Work
-<<<<<<< HEAD
-	err := r.db.NewSelect().Model(&dtoWorks).Relation("Assets").Order("created_at DESC").Limit(20).Scan(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return ToEntities(dtoWorks), nil
-=======
 	err := r.db.NewSelect().Model(&dtoWorks).Order("created_at DESC").Limit(20).Scan(ctx)
 	if err != nil {
 		return nil, err
@@ -41,28 +34,18 @@ func (r *WorkRepository) GetAll(ctx context.Context) ([]*entity.Work, error) {
 	}
 
 	return entityWorks, nil
->>>>>>> develop
 }
 
 func (r *WorkRepository) GetByID(ctx context.Context, id uuid.UUID) (*entity.Work, error) {
 	var dtoWork dto.Work
-<<<<<<< HEAD
-	err := r.db.NewSelect().Model(&dtoWork).Relation("Assets").Where("id = ?", id).Scan(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return ToEntity(&dtoWork), nil
-=======
 	err := r.db.NewSelect().Model(&dtoWork).Where("id = ?", id).Scan(ctx)
 	if err != nil {
 		return nil, err
 	}
 	return dtoWork.ToWorkEntity(), nil
->>>>>>> develop
 }
 
 func (r *WorkRepository) Create(ctx context.Context, work *entity.Work) (*entity.Work, error) {
-	dtoWork := ToDTO(work)
 
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -78,11 +61,8 @@ func (r *WorkRepository) Create(ctx context.Context, work *entity.Work) (*entity
 		}
 	}()
 
-<<<<<<< HEAD
-=======
 	dtoWork := dto.ToWorkDTO(work)
 
->>>>>>> develop
 	_, err = tx.NewInsert().Model(dtoWork).Exec(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create work in transaction: %w", err)
