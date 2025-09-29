@@ -1,11 +1,15 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"os"
 
 	"github.com/simesaba80/toybox-back/internal/infrastructure/config"
 	"github.com/simesaba80/toybox-back/pkg/db"
 	"github.com/simesaba80/toybox-back/tools/movedata/internal/connect"
+	"github.com/simesaba80/toybox-back/tools/movedata/migration"
+	"github.com/uptrace/bun"
 )
 
 func main() {
@@ -19,6 +23,48 @@ func main() {
 	//移行前のDB接続
 	connect.Connect()
 	fmt.Println("Connected to the database2.")
+
+	ctx := context.Background()
+
+	// Start a transaction on the target DB
+	tx, err := db.DB.BeginTx(ctx, nil)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "ERROR: failed to begin transaction: %v\n", err)
+		os.Exit(1)
+	}
+
+	defer tx.Rollback()
+
+	type migrationFunc struct {
+		name string
+		f    func(context.Context, bun.IDB, bun.IDB) error
+	}
+
+	migrationFuncs := []migrationFunc{
+		{name: "Users", f: migration.MigrateUsers},
+		{name: "Tags", f: migration.MigrateTags},
+		{name: "Works", f: migration.MigrateWorks},
+		{name: "Assets", f: migration.MigrateAssets},
+		{name: "Comments", f: migration.MigrateComments},
+		{name: "URLInfos", f: migration.MigrateURLInfos},
+		{name: "Favorites", f: migration.MigrateFavorites},
+		{name: "Taggings", f: migration.MigrateTaggings},
+		{name: "Thumbnails", f: migration.MigrateThumbnails},
+	}
+
+	for _, mig := range migrationFuncs {
+		if err := mig.f(ctx, connect.DB, tx); err != nil {
+			fmt.Fprintf(os.Stderr, "ERROR: migration failed on %s: %v\n", mig.name, err)
+			tx.Rollback() // Explicitly rollback before exit
+			os.Exit(1)
+		}
+	}
+
+	// If all migrations succeed, commit the transaction
+	if err := tx.Commit(); err != nil {
+		fmt.Fprintf(os.Stderr, "ERROR: failed to commit transaction: %v\n", err)
+		os.Exit(1)
+	}
 
 	fmt.Println("Migration script executed.")
 }

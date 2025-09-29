@@ -9,7 +9,7 @@ import (
 )
 
 type URLInfo struct {
-	bun.BaseModel `bun:"table:url_info"`
+	bun.BaseModel `bun:"table:urlinfo"`
 	ID            uuid.UUID     `json:"id" bun:"id,pk"`
 	WorkID        uuid.UUID     `json:"work_id" bun:"work_id,notnull"`
 	URL           string        `json:"url" bun:"url,notnull"`

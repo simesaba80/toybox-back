@@ -6,7 +6,7 @@ import (
 )
 
 type Tagging struct {
-	bun.BaseModel `bun:"table:taggings"`
+	bun.BaseModel `bun:"table:tagging"`
 	WorkID        uuid.UUID `json:"work_id" bun:"work_id,pk"`
 	TagID         uuid.UUID `json:"tag_id" bun:"tag_id,pk"`
 }

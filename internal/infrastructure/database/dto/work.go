@@ -10,11 +10,10 @@ import (
 )
 
 type Work struct {
-	bun.BaseModel   `bun:"table:works"`
+	bun.BaseModel   `bun:"table:work"`
 	ID              uuid.UUID        `json:"id" bun:"id,pk"`
 	Title           string           `json:"title" bun:"title,notnull"`
 	Description     string           `json:"description" bun:"description,notnull"`
-	DescriptionHTML string           `json:"description_html" bun:"description_html,notnull"`
 	UserID          uuid.UUID        `json:"user_id" bun:"user_id,notnull"`
 	Visibility      types.Visibility `json:"visibility" bun:"visibility"`
 	CreatedAt       time.Time        `json:"created_at" bun:"created_at,notnull"`
