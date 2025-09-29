@@ -24,9 +24,9 @@ type Work struct {
 }
 
 func (w *Work) ToWorkEntity() *entity.Work {
-	assets := make([]entity.Asset, len(w.Assets))
+	assets := make([]*entity.Asset, len(w.Assets))
 	for i, asset := range w.Assets {
-		assets[i] = *asset.ToAssetEntity()
+		assets[i] = asset.ToAssetEntity()
 	}
 
 	return &entity.Work{
@@ -44,7 +44,7 @@ func (w *Work) ToWorkEntity() *entity.Work {
 func ToWorkDTO(entity *entity.Work) *Work {
 	assets := make([]*Asset, len(entity.Assets))
 	for i, asset := range entity.Assets {
-		assets[i] = ToAssetDTO(&asset)
+		assets[i] = ToAssetDTO(asset)
 	}
 
 	return &Work{

@@ -15,7 +15,7 @@ type Work struct {
 	DescriptionHTML string
 	UserID          uuid.UUID
 	Visibility      string
-	Assets          []Asset
+	Assets          []*Asset
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 }
