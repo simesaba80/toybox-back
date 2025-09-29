@@ -10,7 +10,7 @@ import (
 )
 
 type Work struct {
-	bun.BaseModel   `bun:"table:works"`
+	bun.BaseModel   `bun:"table:work"`
 	ID              uuid.UUID        `json:"id" bun:"id,pk"`
 	Title           string           `json:"title" bun:"title,notnull"`
 	Description     string           `json:"description" bun:"description,notnull"`

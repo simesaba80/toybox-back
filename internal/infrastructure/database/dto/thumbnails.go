@@ -6,7 +6,7 @@ import (
 )
 
 type Thumbnail struct {
-	bun.BaseModel `bun:"table:thumbnails"`
+	bun.BaseModel `bun:"table:thumbnail"`
 	WorkID        uuid.UUID `json:"work_id" bun:"work_id,pk"`
 	AssetID       uuid.UUID `json:"asset_id" bun:"asset_id,pk"`
 }
