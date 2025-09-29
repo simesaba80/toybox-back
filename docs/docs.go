@@ -189,25 +189,28 @@ const docTemplate = `{
         "github_com_simesaba80_toybox-back_internal_domain_entity.Asset": {
             "type": "object",
             "properties": {
-                "asset_type": {
+                "assetType": {
                     "type": "string"
                 },
-                "created_at": {
+                "createdAt": {
                     "type": "string"
                 },
                 "extension": {
                     "type": "string"
                 },
-                "updated_at": {
+                "id": {
+                    "type": "string"
+                },
+                "updatedAt": {
                     "type": "string"
                 },
                 "url": {
                     "type": "string"
                 },
-                "user_id": {
+                "userID": {
                     "type": "string"
                 },
-                "work_id": {
+                "workID": {
                     "type": "string"
                 }
             }

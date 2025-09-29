@@ -2,14 +2,17 @@ package entity
 
 import (
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Asset struct {
-	WorkID        string    `json:"work_id"`
-	UserID        string    `json:"user_id"`
-	AssetType     string    `json:"asset_type"`
-	Extension     string    `json:"extension"`
-	URL           string    `json:"url"`
-	CreatedAt     time.Time `json:"created_at"`
-	UpdatedAt     time.Time `json:"updated_at"`
+	ID        uuid.UUID
+	WorkID    uuid.UUID
+	AssetType string
+	UserID    uuid.UUID
+	Extension string
+	URL       string
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }

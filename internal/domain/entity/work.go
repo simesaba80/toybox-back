@@ -9,14 +9,15 @@ import (
 )
 
 type Work struct {
-	ID          uuid.UUID `json:"id"`
-	Title       string    `json:"title"`
-	Description string    `json:"description"`
-	UserID      uuid.UUID `json:"user_id"`
-	Visibility  string    `json:"visibility"`
-	Assets      []Asset   `json:"assets"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ID              uuid.UUID
+	Title           string
+	Description     string
+	DescriptionHTML string
+	UserID          uuid.UUID
+	Visibility      string
+	Assets          []*Asset
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
 }
 
 func (w *Work) Validate() error {

@@ -23,7 +23,7 @@ func NewWorkRepository(db *bun.DB) *WorkRepository {
 
 func (r *WorkRepository) GetAll(ctx context.Context) ([]*entity.Work, error) {
 	var dtoWorks []*dto.Work
-	err := r.db.NewSelect().Model(&dtoWorks).Order("created_at DESC").Limit(20).Scan(ctx)
+	err := r.db.NewSelect().Model(&dtoWorks).Relation("Assets").Order("created_at DESC").Limit(20).Scan(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -46,6 +46,7 @@ func (r *WorkRepository) GetByID(ctx context.Context, id uuid.UUID) (*entity.Wor
 }
 
 func (r *WorkRepository) Create(ctx context.Context, work *entity.Work) (*entity.Work, error) {
+
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to begin transaction: %w", err)
