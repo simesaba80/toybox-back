@@ -28,8 +28,8 @@ func (ut *URLType) Scan(value interface{}) error {
 		return nil
 	}
 	switch s := value.(type) {
-	case string:
-		*ut = URLType(s)
+	case []byte:
+		*ut = URLType(string(s))
 		return nil
 	default:
 		return fmt.Errorf("cannot scan %T into URLType", value)
