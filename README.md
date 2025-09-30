@@ -3,11 +3,12 @@
 ## プロジェクト概要
 
 部員の作成した作品やブログの投稿や閲覧ができる Web アプリ、Toybox のバックエンドです。  
-既に動いている Web アプリのリプレイスを目指すものになります。(https://github.com/Kyutech-C3/toybox-server/tree/develop)
+既に動いている Web アプリのリプレイスを目指すものになります。(https://github.com/Kyutech-C3/toybox-server)
+/docs/design-doc.md に[設計ドキュメント](docs/design-doc.md)があります。
 
 ## 開発環境の準備
 
-### 開発に必要なCLIツールのインストール
+### 開発に必要な CLI ツールのインストール
 
 以下のコマンド実行後、wire, migrate, swag コマンドがそれぞれ実行できるようになることを確認してください。実行できない場合 `go env GOPATH`で表示されるディレクトリのパスが通ってない可能性が高いです。
 
