@@ -70,21 +70,3 @@ API ドキュメントの更新
 ```
 $ swag init -g cmd/main.go --parseDependency
 ```
-
-### internal 内の各ディレクトリの役割
-
-このプロジェクトではクリーンアーキテクチャを採用しています。各レイヤーの役割は以下のようになっています。
-
-`/domain`
-他の層に依存しない中心、Entity ではこのアプリが取り扱う領域や概念の定義、repository ではデータアクセスの抽象化を行っている。Entity のオブジェクトは DB のテーブル定義とは異なるので注意
-
-`/usecase`
-domain に依存しつつ、アプリケーション固有のビジネスロジックを記述する。Echo などのフレームワークには依存しない
-
-`/interface`
-infrastructure 層と usecase 層の橋渡しを行う。  
-controller ではフレームワークで受け取った HTTP リクエストの処理、schema ではリクエストおよびレスポンスの形式を変換している
-
-`infrastructure`
-DB やフロントエンドといった外部のシステムと実際に通信する部分になる。  
-repository では/domain/repository で定義したデータアクセスの具体的な実装、router では Echo を使ったルーティングを実際に行っている。
