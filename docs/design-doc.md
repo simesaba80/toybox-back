@@ -19,8 +19,9 @@
 6. [データベース](#データベース)
 7. [セキュリティ](#セキュリティ)
 8. [運用方針](#運用方針)
-9. [代替案の検討](#代替案の検討)
-10. [更新履歴](#更新履歴)
+9. [テスト方針](#テスト方針)
+10. [代替案の検討](#代替案の検討)
+11. [更新履歴](#更新履歴)
 
 # 目標
 
@@ -43,15 +44,17 @@ https://github.com/Kyutech-C3/toybox-server
 
 ## 参考 URL
 
-[前 ToyBox バックエンド](https://github.com/Kyutech-C3/toybox-server)
-[前 ToyBox フロントエンド](https://github.com/Kyutech-C3/ToyBox-frontend)
-[現 ToyBox バックエンド](https://github.com/simesaba80/toybox-back)
-[現 ToyBox フロントエンド](https://github.com/simesaba80/toybox-front)
+[前 ToyBox バックエンド](https://github.com/Kyutech-C3/toybox-server)  
+[前 ToyBox フロントエンド](https://github.com/Kyutech-C3/ToyBox-frontend)  
+[現 ToyBox バックエンド](https://github.com/simesaba80/toybox-back)  
+[現 ToyBox フロントエンド](https://github.com/simesaba80/toybox-front)  
 
 # システム概要
 
-このシステムは以下のようなアーキテクチャで提供されます。
-![toyboxtech.dwawio.png]
+このシステムは以下のようなアーキテクチャで提供されます。  
+
+![toyboxtech.dwawio.png](toyboxtech.drawio.png)  
+
 バックエンドでは開発言語として Go、Web フレームワークとして Echo、ORM として Bun を採用しています。
 また開発を補助する CLI ツールとして以下のものを採用しています。
 DI を担当する wire、マイグレーションを行う golang-migrate、Swagger 生成用の swag
@@ -62,7 +65,8 @@ DI を担当する wire、マイグレーションを行う golang-migrate、Swa
 - 調べる上で情報を見つけやすいか
 - 言語以外の技術は簡単に扱うためのラッパーとして機能してくれるか
 
-採用されていない類似技術については[代替案の検討](#代替案の検討)を参照してください
+採用されていない類似技術については[代替案の検討](#代替案の検討)を参照。
+アプリケーション、データベース共にDockerコンテナ内で動くことを想定されています。
 
 # アーキテクチャ設計
 
@@ -115,7 +119,8 @@ httpリクエストのボディの形式やレスポンスの形式の定義、�
 
 ### database
 
-データベース関連のコードがあります。後述するdto、types以外のディレクトリではrepository.goを配置し、ドメイン層で定義したインターフェースの実装を行っています。このインターフェースの実装の中でSQLを実行したりします。
+データベース関連のコードがあります。後述するdto、types以外のディレクトリではrepository.goを配置し、ドメイン層で定義したインターフェースの実装を行っています。このインターフェースの実装の中でSQLを実行したりします。  
+現在はここでトランザクションの管理も行っています。トランザクション自体はDBの概念だけでなくのより上位の概念としても存在するのでユースケース層に移動する必要があります。
 
 #### dto
 
@@ -133,14 +138,26 @@ Echoを使ったルーティングやルーティングを行うルーターオ�
 
 # DI
 
-現在/internal/diでwireを使い依存関係の注入を行っています、開発中に依存関係の追加や変更があった場合は、wire.goに変更を加え、wireコマンドを使うことで更新してください。
+現在/internal/diでwireを使い依存関係の注入を行っています、開発中に依存関係の追加や変更があった場合は、wire.goに変更を加え、wireコマンドを使うことで更新します。
 
 # データベース
 
+Docker上のPostgreSQL v17.6を使用しています。テーブル定義する場合は単数形で命名します。
+マイグレーションにはgolang-migrateと呼ばれるCLIを使用しています。
+https://github.com/golang-migrate/migrate
+テーブル定義等に変更を加える場合は既存のSQLに変更を加えるのではなく新たにマイグレーションを積み重ねるようにします。
+
 # セキュリティ
+
+このアプリケーションでは認証が必要になります。現時点では前ToyBoxと同様にDiscord認証のみを組み込むことを予定しています。Email認証やその他の認証、SSOなどは組み込みません。
 
 # 運用方針
 
-# 代替案の検討
+VPS上でDockerを使い動かすことを想定しています。1日に1度朝5時にDBに関してはバックアップを取得します。
+
+# テスト方針
+
+//TODO
 
 # 更新履歴
+2025/10/02 simesaba80
