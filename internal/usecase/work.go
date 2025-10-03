@@ -22,15 +22,26 @@ func NewWorkUseCase(repo repository.WorkRepository, timeout time.Duration) *Work
 	}
 }
 
-func (uc *WorkUseCase) GetAll(ctx context.Context) ([]*entity.Work, error) {
+func (uc *WorkUseCase) GetAll(ctx context.Context, limit, page *int) ([]*entity.Work, int, int, int, error) {
 	ctx, cancel := context.WithTimeout(ctx, uc.timeout)
 	defer cancel()
 
-	works, err := uc.repo.GetAll(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get all works: %w", err)
+	actualLimit := 20
+	actualPage := 1
+	if limit != nil {
+		actualLimit = *limit
 	}
-	return works, nil
+	if page != nil {
+		actualPage = *page
+	}
+
+	offset := (actualPage - 1) * actualLimit
+
+	works, total, err := uc.repo.GetAll(ctx, actualLimit, offset)
+	if err != nil {
+		return nil, 0, 0, 0, fmt.Errorf("failed to get all works: %w", err)
+	}
+	return works, total, actualLimit, actualPage, nil
 }
 
 func (uc *WorkUseCase) GetByID(ctx context.Context, id uuid.UUID) (*entity.Work, error) {
