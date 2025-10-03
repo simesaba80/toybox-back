@@ -22,9 +22,11 @@ func NewWorkController(workUsecase *usecase.WorkUseCase) *WorkController {
 
 // GetAllWorks godoc
 // @Summary Get all works
-// @Description Get all works
+// @Description Get all works with pagination
 // @Tags works
 // @Produce json
+// @Param limit query int false "Limit per page (default: 20, max: 100)"
+// @Param page query int false "Page number (default: 1)"
 // @Success 200 {object} schema.WorkListResponse
 // @Router /works [get]
 func (wc *WorkController) GetAllWorks(c echo.Context) error {
