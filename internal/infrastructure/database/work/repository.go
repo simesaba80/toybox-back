@@ -21,11 +21,23 @@ func NewWorkRepository(db *bun.DB) *WorkRepository {
 	}
 }
 
-func (r *WorkRepository) GetAll(ctx context.Context) ([]*entity.Work, error) {
+func (r *WorkRepository) GetAll(ctx context.Context, limit, offset int) ([]*entity.Work, int, error) {
 	var dtoWorks []*dto.Work
-	err := r.db.NewSelect().Model(&dtoWorks).Relation("Assets").Order("created_at DESC").Limit(20).Scan(ctx)
+
+	total, err := r.db.NewSelect().Model(&dtoWorks).Count(ctx)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
+	}
+
+	err = r.db.NewSelect().
+		Model(&dtoWorks).
+		Relation("Assets").
+		Order("created_at DESC").
+		Limit(limit).
+		Offset(offset).
+		Scan(ctx)
+	if err != nil {
+		return nil, 0, err
 	}
 
 	entityWorks := make([]*entity.Work, len(dtoWorks))
@@ -33,7 +45,7 @@ func (r *WorkRepository) GetAll(ctx context.Context) ([]*entity.Work, error) {
 		entityWorks[i] = dtoWork.ToWorkEntity()
 	}
 
-	return entityWorks, nil
+	return entityWorks, total, nil
 }
 
 func (r *WorkRepository) GetByID(ctx context.Context, id uuid.UUID) (*entity.Work, error) {

@@ -69,7 +69,7 @@ const docTemplate = `{
         },
         "/works": {
             "get": {
-                "description": "Get all works",
+                "description": "Get all works with pagination",
                 "produces": [
                     "application/json"
                 ],
@@ -77,6 +77,20 @@ const docTemplate = `{
                     "works"
                 ],
                 "summary": "Get all works",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Limit per page (default: 20, max: 100)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number (default: 1)",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -374,6 +388,15 @@ const docTemplate = `{
         "github_com_simesaba80_toybox-back_internal_interface_schema.WorkListResponse": {
             "type": "object",
             "properties": {
+                "limit": {
+                    "type": "integer"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "total_count": {
+                    "type": "integer"
+                },
                 "works": {
                     "type": "array",
                     "items": {
