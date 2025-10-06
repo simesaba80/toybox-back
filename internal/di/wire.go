@@ -12,6 +12,7 @@ import (
 	"github.com/uptrace/bun"
 
 	"github.com/simesaba80/toybox-back/internal/domain/repository"
+	"github.com/simesaba80/toybox-back/internal/infrastructure/database/comment"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/user"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/work"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/router"
@@ -25,16 +26,20 @@ var RepositorySet = wire.NewSet(
 	wire.Bind(new(repository.UserRepository), new(*user.UserRepository)),
 	work.NewWorkRepository,
 	wire.Bind(new(repository.WorkRepository), new(*work.WorkRepository)),
+	comment.NewCommentRepository,
+	wire.Bind(new(repository.CommentRepository), new(*comment.CommentRepository)),
 )
 
 var UseCaseSet = wire.NewSet(
 	ProvideUserUseCase,
 	ProvideWorkUseCase,
+	ProvideCommentUseCase,
 )
 
 var ControllerSet = wire.NewSet(
 	controller.NewUserController,
 	controller.NewWorkController,
+	controller.NewCommentController,
 )
 
 var InfrastructureSet = wire.NewSet(
@@ -66,6 +71,11 @@ func ProvideUserUseCase(repo repository.UserRepository) *usecase.UserUseCase {
 // ProvideWorkUseCase はWorkUseCaseを提供します
 func ProvideWorkUseCase(repo repository.WorkRepository) *usecase.WorkUseCase {
 	return usecase.NewWorkUseCase(repo, 30*time.Second)
+}
+
+// ProvideCommentUseCase はCommentUseCaseを提供します
+func ProvideCommentUseCase(repo repository.CommentRepository) *usecase.CommentUsecase {
+	return usecase.NewCommentUsecase(repo, 30*time.Second)
 }
 
 // ProvideEcho はEchoインスタンスを提供します

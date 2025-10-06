@@ -9,16 +9,18 @@ import (
 )
 
 type Router struct {
-	echo           *echo.Echo
-	UserController *controller.UserController
-	WorkController *controller.WorkController
+	echo              *echo.Echo
+	UserController    *controller.UserController
+	WorkController    *controller.WorkController
+	CommentController *controller.CommentController
 }
 
-func NewRouter(e *echo.Echo, uc *controller.UserController, wc *controller.WorkController) *Router {
+func NewRouter(e *echo.Echo, uc *controller.UserController, wc *controller.WorkController, cc *controller.CommentController) *Router {
 	return &Router{
-		echo:           e,
-		UserController: uc,
-		WorkController: wc,
+		echo:              e,
+		UserController:    uc,
+		WorkController:    wc,
+		CommentController: cc,
 	}
 }
 
@@ -40,6 +42,8 @@ func (r *Router) Setup() *echo.Echo {
 	r.echo.POST("/works", r.WorkController.CreateWork)
 	r.echo.GET("/works", r.WorkController.GetAllWorks)
 	r.echo.GET("/works/:work_id", r.WorkController.GetWorkByID)
+
+	r.echo.GET("/works/:work_id/comments", r.CommentController.GetCommentsByWorkID)
 
 	return r.echo
 }

@@ -23,6 +23,21 @@ definitions:
       workID:
         type: string
     type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.CommentResponse:
+    properties:
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      reply_at:
+        type: string
+      updated_at:
+        type: string
+      user:
+        $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.UserInCommentResponse'
+    type: object
   github_com_simesaba80_toybox-back_internal_interface_schema.CreateUserInput:
     properties:
       avatar_url:
@@ -119,6 +134,15 @@ definitions:
       user_id:
         type: string
       visibility:
+        type: string
+    type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.UserInCommentResponse:
+    properties:
+      avatar_url:
+        type: string
+      display_name:
+        type: string
+      id:
         type: string
     type: object
   github_com_simesaba80_toybox-back_internal_interface_schema.UserListResponse:
@@ -264,4 +288,33 @@ paths:
       summary: Get a work by ID
       tags:
       - works
+  /works/{work_id}/comments:
+    get:
+      description: Get all comments for a specific work
+      parameters:
+      - description: Work ID
+        in: path
+        name: work_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.CommentResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Get comments for a work
+      tags:
+      - comments
 swagger: "2.0"
