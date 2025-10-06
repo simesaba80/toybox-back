@@ -63,7 +63,6 @@ type OldComment struct {
 	WorkID        string    `bun:"work_id"`
 	UserID        *string   `bun:"user_id"`
 	ReplyAt       *string   `bun:"reply_at"`
-	Visibility    string    `bun:"visibility"`
 	CreatedAt     time.Time `bun:"created_at"`
 	UpdatedAt     time.Time `bun:"updated_at"`
 }

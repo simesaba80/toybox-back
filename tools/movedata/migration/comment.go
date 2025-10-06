@@ -6,7 +6,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/dto"
-	"github.com/simesaba80/toybox-back/internal/infrastructure/database/types"
 	"github.com/uptrace/bun"
 )
 
@@ -39,7 +38,6 @@ func MigrateComments(ctx context.Context, sourceDB, targetDB bun.IDB) error {
 			WorkID:     parsedOldWorkID,
 			UserID:     parsedOldUserID,
 			ReplyAt:    derefString(old.ReplyAt),
-			Visibility: types.Visibility(old.Visibility),
 			CreatedAt:  old.CreatedAt,
 			UpdatedAt:  old.UpdatedAt,
 		}
