@@ -2,6 +2,7 @@ package comment
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/uptrace/bun"
@@ -38,4 +39,46 @@ func (r *CommentRepository) FindByWorkID(ctx context.Context, workID uuid.UUID) 
 	}
 
 	return entityComments, nil
+}
+
+func (r *CommentRepository) FindByID(ctx context.Context, id uuid.UUID) (*entity.Comment, error) {
+	var dtoComment dto.Comment
+	err := r.db.NewSelect().
+		Model(&dtoComment).
+		Where("comment.id = ?", id).
+		Relation("User").
+		Scan(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return dtoComment.ToCommentEntity(), nil
+}
+
+func (r *CommentRepository) Create(ctx context.Context, comment *entity.Comment) (*entity.Comment, error) {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			panic(r)
+		} else if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	dtoComment := dto.ToCommentDTO(comment)
+
+	_, err = tx.NewInsert().Model(dtoComment).Exec(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create comment in transaction: %w", err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return dtoComment.ToCommentEntity(), nil
 }
