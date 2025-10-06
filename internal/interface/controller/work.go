@@ -22,13 +22,23 @@ func NewWorkController(workUsecase *usecase.WorkUseCase) *WorkController {
 
 // GetAllWorks godoc
 // @Summary Get all works
-// @Description Get all works
+// @Description Get all works with pagination
 // @Tags works
 // @Produce json
+// @Param limit query int false "Limit per page (default: 20, max: 100)"
+// @Param page query int false "Page number (default: 1)"
 // @Success 200 {object} schema.WorkListResponse
 // @Router /works [get]
 func (wc *WorkController) GetAllWorks(c echo.Context) error {
-	works, err := wc.workUsecase.GetAll(c.Request().Context())
+	var query schema.GetWorksQuery
+	if err := c.Bind(&query); err != nil {
+		return echo.NewHTTPError(400, "Invalid query parameters")
+	}
+	if err := c.Validate(&query); err != nil {
+		return err
+	}
+
+	works, total, limit, page, err := wc.workUsecase.GetAll(c.Request().Context(), query.Limit, query.Page)
 	if err != nil {
 		return echo.NewHTTPError(500, "Failed to retrieve works")
 	}
@@ -38,7 +48,12 @@ func (wc *WorkController) GetAllWorks(c echo.Context) error {
 		response[i] = schema.ToWorkResponse(work)
 	}
 
-	return c.JSON(200, schema.WorkListResponse{Works: response})
+	return c.JSON(200, schema.WorkListResponse{
+		Works:      response,
+		TotalCount: total,
+		Page:       page,
+		Limit:      limit,
+	})
 }
 
 // GetWorkByID godoc

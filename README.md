@@ -13,7 +13,7 @@
 以下のコマンド実行後、wire, migrate, swag コマンドがそれぞれ実行できるようになることを確認してください。実行できない場合 `go env GOPATH`で表示されるディレクトリのパスが通ってない可能性が高いです。
 
 ```
-$ go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@lates
+$ go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 $ go install github.com/google/wire/cmd/wire@latest
 $ go install github.com/swaggo/swag/cmd/swag@latest
 ```

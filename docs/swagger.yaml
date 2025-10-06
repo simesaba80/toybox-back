@@ -130,6 +130,12 @@ definitions:
     type: object
   github_com_simesaba80_toybox-back_internal_interface_schema.WorkListResponse:
     properties:
+      limit:
+        type: integer
+      page:
+        type: integer
+      total_count:
+        type: integer
       works:
         items:
           $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.GetWorkOutput'
@@ -178,7 +184,16 @@ paths:
       - users
   /works:
     get:
-      description: Get all works
+      description: Get all works with pagination
+      parameters:
+      - description: 'Limit per page (default: 20, max: 100)'
+        in: query
+        name: limit
+        type: integer
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
       produces:
       - application/json
       responses:

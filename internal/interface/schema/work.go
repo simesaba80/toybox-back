@@ -32,8 +32,16 @@ type CreateWorkOutput struct {
 	UpdatedAt   string `json:"updated_at"`
 }
 
+type GetWorksQuery struct {
+	Limit *int `query:"limit" validate:"omitempty,min=1,max=100"`
+	Page  *int `query:"page" validate:"omitempty,min=1"`
+}
+
 type WorkListResponse struct {
-	Works []GetWorkOutput `json:"works"`
+	Works      []GetWorkOutput `json:"works"`
+	TotalCount int             `json:"total_count"`
+	Page       int             `json:"page"`
+	Limit      int             `json:"limit"`
 }
 
 func ToWorkResponse(work *entity.Work) GetWorkOutput {
