@@ -12,7 +12,6 @@ type Comment struct {
 	WorkID     uuid.UUID
 	UserID     uuid.UUID
 	ReplyAt    string
-	Visibility string
 	User       *User
 	CreatedAt  time.Time
 	UpdatedAt  time.Time
