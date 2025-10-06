@@ -58,10 +58,6 @@ func (uc *CommentUsecase) CreateComment(ctx context.Context, content string, wor
 		ReplyAt: replyAt,
 	}
 
-	if err := comment.Validate(); err != nil {
-		return nil, fmt.Errorf("validation failed: %w", err)
-	}
-
 	createdComment, err := uc.repo.Create(ctx, comment)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create comment: %w", err)
