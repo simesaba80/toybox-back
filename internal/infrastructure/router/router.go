@@ -44,6 +44,7 @@ func (r *Router) Setup() *echo.Echo {
 	r.echo.GET("/works/:work_id", r.WorkController.GetWorkByID)
 
 	r.echo.GET("/works/:work_id/comments", r.CommentController.GetCommentsByWorkID)
+	r.echo.POST("/works/:work_id/comments", r.CommentController.CreateComment)
 
 	return r.echo
 }
