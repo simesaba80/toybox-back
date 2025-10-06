@@ -9,4 +9,6 @@ import (
 
 type CommentRepository interface {
 	FindByWorkID(ctx context.Context, workID uuid.UUID) ([]*entity.Comment, error)
+	FindByID(ctx context.Context, id uuid.UUID) (*entity.Comment, error)
+	Create(ctx context.Context, comment *entity.Comment) (*entity.Comment, error)
 }
