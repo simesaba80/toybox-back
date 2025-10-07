@@ -1,3 +1,4 @@
 .env
 tmp/
 toybox*
+!toyboxtech.drawio.png
