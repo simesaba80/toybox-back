@@ -40,6 +40,13 @@ func (uc *CommentUsecase) CreateComment(ctx context.Context, content string, wor
 	ctx, cancel := context.WithTimeout(ctx, uc.timeout)
 	defer cancel()
 
+	if workID == uuid.Nil {
+		return nil, fmt.Errorf("work ID is required")
+	}
+	if content == "" {
+		return nil, fmt.Errorf("content is required")
+	}
+
 	// Workの存在確認
 	exists, err := uc.workRepo.ExistsById(ctx, workID)
 	if err != nil {
