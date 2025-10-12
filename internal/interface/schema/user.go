@@ -1,6 +1,10 @@
 package schema
 
-import "github.com/simesaba80/toybox-back/internal/domain/entity"
+import (
+	"time"
+
+	"github.com/simesaba80/toybox-back/internal/domain/entity"
+)
 
 type CreateUserInput struct {
 	Name         string `json:"name" validate:"required,max=32"`
@@ -50,7 +54,7 @@ func ToUserResponse(user *entity.User) GetUserOutput {
 		AvatarURL:   user.AvatarURL,
 		TwitterID:   user.TwitterID,
 		GithubID:    user.GithubID,
-		CreatedAt:   user.CreatedAt.String(),
-		UpdatedAt:   user.UpdatedAt.String(),
+		CreatedAt:   user.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:   user.UpdatedAt.Format(time.RFC3339),
 	}
 }

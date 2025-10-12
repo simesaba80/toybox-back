@@ -10,7 +10,7 @@
 
 ### 開発に必要な CLI ツールのインストール
 
-以下のコマンド実行後、wire, migrate, swag コマンドがそれぞれ実行できるようになることを確認してください。実行できない場合 `go env GOPATH`で表示されるディレクトリのパスが通ってない可能性が高いです。
+以下のコマンド実行後、wire, migrate, swag コマンドがそれぞれ実行できるようになることを確認してください。実行できない場合 `go env GOPATH`で表示されるディレクトリ配下の bin へのパスが通ってない可能性が高いです。
 
 ```
 $ go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
@@ -104,4 +104,5 @@ $ swag init -g cmd/main.go --parseDependency
 ```
 [接頭辞] #issue番号 やったこと
 ```
+
 上記の命名規則でコミットすること、接頭辞はブランチ命名規則のものと同じ
