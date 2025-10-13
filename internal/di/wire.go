@@ -64,7 +64,7 @@ func ProvideDatabase() *bun.DB {
 }
 
 // ProvideUserUseCase はUserUseCaseを提供します
-func ProvideUserUseCase(repo repository.UserRepository) *usecase.UserUseCase {
+func ProvideUserUseCase(repo repository.UserRepository) usecase.UserUseCase {
 	return usecase.NewUserUseCase(repo, 30*time.Second)
 }
 
