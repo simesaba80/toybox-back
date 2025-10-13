@@ -69,7 +69,7 @@ func ProvideUserUseCase(repo repository.UserRepository) *usecase.UserUseCase {
 }
 
 // ProvideWorkUseCase はWorkUseCaseを提供します
-func ProvideWorkUseCase(repo repository.WorkRepository) *usecase.WorkUseCase {
+func ProvideWorkUseCase(repo repository.WorkRepository) usecase.WorkUseCase {
 	return usecase.NewWorkUseCase(repo, 30*time.Second)
 }
 
