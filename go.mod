@@ -4,7 +4,6 @@ go 1.24.6
 
 require (
 	github.com/go-playground/validator/v10 v10.27.0
-	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.6.0
 	github.com/google/wire v0.7.0
 	github.com/joho/godotenv v1.5.1
