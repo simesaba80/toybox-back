@@ -1,6 +1,8 @@
 package router
 
 import (
+	"net/http"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/simesaba80/toybox-back/internal/interface/controller"
@@ -38,6 +40,12 @@ func (r *Router) Setup() *echo.Echo {
 
 	r.echo.POST("/users", r.UserController.CreateUser)
 	r.echo.GET("/users", r.UserController.GetAllUsers)
+	r.echo.GET("/users/auth", func(c echo.Context) error {
+		return c.String(http.StatusOK, "Hello, World!")
+	})
+	r.echo.GET("/users/auth/callback", func(c echo.Context) error {
+		return c.String(http.StatusAccepted, "OAuth2 OK")
+	})
 
 	r.echo.POST("/works", r.WorkController.CreateWork)
 	r.echo.GET("/works", r.WorkController.GetAllWorks)

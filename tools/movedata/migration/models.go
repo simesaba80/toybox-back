@@ -1,4 +1,3 @@
-
 package migration
 
 import (
@@ -8,33 +7,33 @@ import (
 )
 
 type OldUser struct {
-	bun.BaseModel         `bun:"table:user"`
-	ID                    string    `bun:"id,pk"`
-	Name                  string    `bun:"name"`
-	Email                 string    `bun:"email"`
-	PasswordHash          *string   `bun:"password_hash"`
-	DisplayName           string    `bun:"display_name"`
-	DiscordToken          *string   `bun:"discord_token"`
+	bun.BaseModel       `bun:"table:user"`
+	ID                  string    `bun:"id,pk"`
+	Name                string    `bun:"name"`
+	Email               string    `bun:"email"`
+	PasswordHash        *string   `bun:"password_hash"`
+	DisplayName         string    `bun:"display_name"`
+	DiscordToken        *string   `bun:"discord_token"`
 	DiscordRefreshToken *string   `bun:"discord_refresh_token"`
-	DiscordUserID         *string   `bun:"discord_user_id"`
-	Profile               *string   `bun:"profile"`
-	AvatarURL             *string   `bun:"avatar_url"`
-	TwitterID             *string   `bun:"twitter_id"`
-	GithubID              *string   `bun:"github_id"`
-	CreatedAt             time.Time `bun:"created_at"`
-	UpdatedAt             time.Time `bun:"updated_at"`
+	DiscordUserID       *string   `bun:"discord_user_id"`
+	Profile             *string   `bun:"profile"`
+	AvatarURL           *string   `bun:"avatar_url"`
+	TwitterID           *string   `bun:"twitter_id"`
+	GithubID            *string   `bun:"github_id"`
+	CreatedAt           time.Time `bun:"created_at"`
+	UpdatedAt           time.Time `bun:"updated_at"`
 }
 
 type OldWork struct {
-	bun.BaseModel     `bun:"table:works"`
-	ID                string    `bun:"id,pk"`
-	Title             string    `bun:"title"`
-	Description       string    `bun:"description"`
-	DescriptionHTML   string    `bun:"description_html"`
-	UserID            *string   `bun:"user_id"`
-	Visibility        string    `bun:"visibility"`
-	CreatedAt         time.Time `bun:"created_at"`
-	UpdatedAt         time.Time `bun:"updated_at"`
+	bun.BaseModel   `bun:"table:works"`
+	ID              string    `bun:"id,pk"`
+	Title           string    `bun:"title"`
+	Description     string    `bun:"description"`
+	DescriptionHTML string    `bun:"description_html"`
+	UserID          *string   `bun:"user_id"`
+	Visibility      string    `bun:"visibility"`
+	CreatedAt       time.Time `bun:"created_at"`
+	UpdatedAt       time.Time `bun:"updated_at"`
 }
 
 type OldFavorite struct {
@@ -97,4 +96,13 @@ type OldThumbnail struct {
 	bun.BaseModel `bun:"table:thumbnails"`
 	WorkID        string `bun:"work_id,pk"`
 	AssetID       string `bun:"asset_id,pk"`
+}
+
+type OldToken struct {
+	bun.BaseModel `bun:"table:token"`
+	RefreshToken  string    `bun:"refresh_token,pk"`
+	UserID        string    `bun:"user_id"`
+	ExpiredAt     time.Time `bun:"expired_at"`
+	CreatedAt     time.Time `bun:"created_at"`
+	UpdatedAt     time.Time `bun:"updated_at"`
 }
