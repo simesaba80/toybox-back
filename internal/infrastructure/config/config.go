@@ -8,11 +8,15 @@ import (
 )
 
 var (
-	DB_DSN            string
-	POSTGRES_USER     string
-	POSTGRES_PASSWORD string
-	POSTGRES_DB       string
-	POSTGRES_HOST     string
+	DB_DSN                string
+	POSTGRES_USER         string
+	POSTGRES_PASSWORD     string
+	POSTGRES_DB           string
+	POSTGRES_HOST         string
+	DISCORD_CRIENT_ID     string
+	DISCORD_CRIENT_SECRET string
+	TOKEN_SECRET          string
+	DISCORD_GUILD_ID      string
 )
 
 // .envを呼び出します。
