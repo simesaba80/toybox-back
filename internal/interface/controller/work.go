@@ -12,10 +12,10 @@ import (
 )
 
 type WorkController struct {
-	workUsecase usecase.WorkUseCase
+	workUsecase usecase.IWorkUseCase
 }
 
-func NewWorkController(workUsecase usecase.WorkUseCase) *WorkController {
+func NewWorkController(workUsecase usecase.IWorkUseCase) *WorkController {
 	return &WorkController{
 		workUsecase: workUsecase,
 	}

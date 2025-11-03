@@ -28,14 +28,14 @@ func InitializeApp() (*App, func(), error) {
 	echo := ProvideEcho()
 	db := ProvideDatabase()
 	userRepository := user.NewUserRepository(db)
-	userUseCase := ProvideUserUseCase(userRepository)
-	userController := controller.NewUserController(userUseCase)
+	iUserUseCase := ProvideUserUseCase(userRepository)
+	userController := controller.NewUserController(iUserUseCase)
 	workRepository := work.NewWorkRepository(db)
-	workUseCase := ProvideWorkUseCase(workRepository)
-	workController := controller.NewWorkController(workUseCase)
+	iWorkUseCase := ProvideWorkUseCase(workRepository)
+	workController := controller.NewWorkController(iWorkUseCase)
 	commentRepository := comment.NewCommentRepository(db)
-	commentUsecase := ProvideCommentUseCase(commentRepository)
-	commentController := controller.NewCommentController(commentUsecase)
+	iCommentUsecase := ProvideCommentUseCase(commentRepository)
+	commentController := controller.NewCommentController(iCommentUsecase)
 	routerRouter := router.NewRouter(echo, userController, workController, commentController)
 	app := NewApp(routerRouter, db)
 	return app, func() {
@@ -74,17 +74,17 @@ func ProvideDatabase() *bun.DB {
 }
 
 // ProvideUserUseCase はUserUseCaseを提供します
-func ProvideUserUseCase(repo repository.UserRepository) usecase.UserUseCase {
+func ProvideUserUseCase(repo repository.UserRepository) usecase.IUserUseCase {
 	return usecase.NewUserUseCase(repo, 30*time.Second)
 }
 
 // ProvideWorkUseCase はWorkUseCaseを提供します
-func ProvideWorkUseCase(repo repository.WorkRepository) usecase.WorkUseCase {
+func ProvideWorkUseCase(repo repository.WorkRepository) usecase.IWorkUseCase {
 	return usecase.NewWorkUseCase(repo, 30*time.Second)
 }
 
 // ProvideCommentUseCase はCommentUseCaseを提供します
-func ProvideCommentUseCase(repo repository.CommentRepository) usecase.CommentUsecase {
+func ProvideCommentUseCase(repo repository.CommentRepository) usecase.ICommentUsecase {
 	return usecase.NewCommentUsecase(repo, 30*time.Second)
 }
 

@@ -10,7 +10,7 @@ import (
 	"github.com/simesaba80/toybox-back/internal/domain/repository"
 )
 
-type WorkUseCase interface {
+type IWorkUseCase interface {
 	GetAll(ctx context.Context, limit, page *int) ([]*entity.Work, int, int, int, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*entity.Work, error)
 	CreateWork(ctx context.Context, title, description, visibility string, userID uuid.UUID) (*entity.Work, error)
@@ -21,7 +21,7 @@ type workUseCase struct {
 	timeout time.Duration
 }
 
-func NewWorkUseCase(repo repository.WorkRepository, timeout time.Duration) WorkUseCase {
+func NewWorkUseCase(repo repository.WorkRepository, timeout time.Duration) IWorkUseCase {
 	return &workUseCase{
 		repo:    repo,
 		timeout: time.Second * 30,

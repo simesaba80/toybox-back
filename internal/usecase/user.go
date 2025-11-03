@@ -8,7 +8,7 @@ import (
 	"github.com/simesaba80/toybox-back/internal/domain/repository"
 )
 
-type UserUseCase interface {
+type IUserUseCase interface {
 	CreateUser(ctx context.Context, name, email, passwordHash, displayName, avatar_url string) (*entity.User, error)
 	GetAllUser(ctx context.Context) ([]*entity.User, error)
 }
@@ -18,7 +18,7 @@ type userUseCase struct {
 	timeout time.Duration
 }
 
-func NewUserUseCase(repo repository.UserRepository, timeout time.Duration) UserUseCase {
+func NewUserUseCase(repo repository.UserRepository, timeout time.Duration) IUserUseCase {
 	return &userUseCase{
 		repo:    repo,
 		timeout: time.Second * 30,

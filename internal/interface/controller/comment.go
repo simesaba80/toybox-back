@@ -10,10 +10,10 @@ import (
 )
 
 type CommentController struct {
-	commentUsecase usecase.CommentUsecase
+	commentUsecase usecase.ICommentUsecase
 }
 
-func NewCommentController(commentUsecase usecase.CommentUsecase) *CommentController {
+func NewCommentController(commentUsecase usecase.ICommentUsecase) *CommentController {
 	return &CommentController{
 		commentUsecase: commentUsecase,
 	}

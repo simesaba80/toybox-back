@@ -10,7 +10,7 @@ import (
 	"github.com/simesaba80/toybox-back/internal/domain/repository"
 )
 
-type CommentUsecase interface {
+type ICommentUsecase interface {
 	GetCommentsByWorkID(ctx context.Context, workID uuid.UUID) ([]*entity.Comment, error)
 }
 
@@ -19,7 +19,7 @@ type commentUsecase struct {
 	timeout time.Duration
 }
 
-func NewCommentUsecase(repo repository.CommentRepository, timeout time.Duration) CommentUsecase {
+func NewCommentUsecase(repo repository.CommentRepository, timeout time.Duration) ICommentUsecase {
 	return &commentUsecase{
 		repo:    repo,
 		timeout: time.Second * 30,
