@@ -12,10 +12,10 @@ import (
 	"github.com/uptrace/bun"
 
 	"github.com/simesaba80/toybox-back/internal/domain/repository"
-	"github.com/simesaba80/toybox-back/internal/infrastructure/config/auth"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/comment"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/user"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/work"
+	"github.com/simesaba80/toybox-back/internal/infrastructure/external/oauth"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/router"
 	"github.com/simesaba80/toybox-back/internal/interface/controller"
 	"github.com/simesaba80/toybox-back/internal/usecase"
@@ -29,22 +29,22 @@ var RepositorySet = wire.NewSet(
 	wire.Bind(new(repository.WorkRepository), new(*work.WorkRepository)),
 	comment.NewCommentRepository,
 	wire.Bind(new(repository.CommentRepository), new(*comment.CommentRepository)),
-	auth.NewAuthRepository,
-	wire.Bind(new(repository.AuthRepository), new(*auth.AuthRepository)),
+	oauth.NewDiscordRepository,
+	wire.Bind(new(repository.DiscordRepository), new(*oauth.DiscordRepository)),
 )
 
 var UseCaseSet = wire.NewSet(
 	ProvideUserUseCase,
 	ProvideWorkUseCase,
 	ProvideCommentUseCase,
-	ProvideAuthUseCase,
+	ProvideDiscordUseCase,
 )
 
 var ControllerSet = wire.NewSet(
 	controller.NewUserController,
 	controller.NewWorkController,
 	controller.NewCommentController,
-	controller.NewAuthController,
+	controller.NewDiscordController,
 )
 
 var InfrastructureSet = wire.NewSet(
@@ -83,9 +83,9 @@ func ProvideCommentUseCase(repo repository.CommentRepository) *usecase.CommentUs
 	return usecase.NewCommentUsecase(repo, 30*time.Second)
 }
 
-// ProvideAuthUseCase はAuthUseCaseを提供します
-func ProvideAuthUseCase(repo repository.AuthRepository) *usecase.AuthUsecase {
-	return usecase.NewAuthUsecase(repo)
+// ProvideDiscordUseCase はDiscordUseCaseを提供します
+func ProvideDiscordUseCase(repo repository.DiscordRepository) *usecase.DiscordUsecase {
+	return usecase.NewDiscordUsecase(repo)
 }
 
 // ProvideEcho はEchoインスタンスを提供します

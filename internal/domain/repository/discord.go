@@ -4,7 +4,8 @@ import (
 	"context"
 )
 
-type AuthRepository interface {
+type DiscordRepository interface {
 	GetDiscordClientID(ctx context.Context) (string, error)
 	GetHostURL(ctx context.Context) (string, error)
+	GetDiscordAuthURL(ctx context.Context) (string, error)
 }

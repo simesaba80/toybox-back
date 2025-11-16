@@ -8,13 +8,13 @@ import (
 	"github.com/simesaba80/toybox-back/internal/usecase"
 )
 
-type AuthController struct {
-	authUsecase *usecase.AuthUsecase
+type DiscordController struct {
+	discordUsecase *usecase.DiscordUsecase
 }
 
-func NewAuthController(authUsecase *usecase.AuthUsecase) *AuthController {
-	return &AuthController{
-		authUsecase: authUsecase,
+func NewDiscordController(discordUsecase *usecase.DiscordUsecase) *DiscordController {
+	return &DiscordController{
+		discordUsecase: discordUsecase,
 	}
 }
 
@@ -26,8 +26,8 @@ func NewAuthController(authUsecase *usecase.AuthUsecase) *AuthController {
 // @Success 200 {object} schema.GetDiscordAuthURLResponse
 // @Failure 500 {object} echo.HTTPError
 // @Router /auth/discord/ [get]
-func (ac *AuthController) GetDiscordAuthURL(c echo.Context) error {
-	authURL, err := ac.authUsecase.GetDiscordAuthURL(c.Request().Context())
+func (dc *DiscordController) GetDiscordAuthURL(c echo.Context) error {
+	authURL, err := dc.discordUsecase.GetDiscordAuthURL(c.Request().Context())
 	if err != nil {
 		return err
 	}
