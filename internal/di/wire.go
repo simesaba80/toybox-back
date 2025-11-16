@@ -12,6 +12,7 @@ import (
 	"github.com/uptrace/bun"
 
 	"github.com/simesaba80/toybox-back/internal/domain/repository"
+	"github.com/simesaba80/toybox-back/internal/infrastructure/config/auth"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/comment"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/user"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/work"
@@ -28,18 +29,22 @@ var RepositorySet = wire.NewSet(
 	wire.Bind(new(repository.WorkRepository), new(*work.WorkRepository)),
 	comment.NewCommentRepository,
 	wire.Bind(new(repository.CommentRepository), new(*comment.CommentRepository)),
+	auth.NewAuthRepository,
+	wire.Bind(new(repository.AuthRepository), new(*auth.AuthRepository)),
 )
 
 var UseCaseSet = wire.NewSet(
 	ProvideUserUseCase,
 	ProvideWorkUseCase,
 	ProvideCommentUseCase,
+	ProvideAuthUseCase,
 )
 
 var ControllerSet = wire.NewSet(
 	controller.NewUserController,
 	controller.NewWorkController,
 	controller.NewCommentController,
+	controller.NewAuthController,
 )
 
 var InfrastructureSet = wire.NewSet(
@@ -76,6 +81,11 @@ func ProvideWorkUseCase(repo repository.WorkRepository) *usecase.WorkUseCase {
 // ProvideCommentUseCase はCommentUseCaseを提供します
 func ProvideCommentUseCase(repo repository.CommentRepository) *usecase.CommentUsecase {
 	return usecase.NewCommentUsecase(repo, 30*time.Second)
+}
+
+// ProvideAuthUseCase はAuthUseCaseを提供します
+func ProvideAuthUseCase(repo repository.AuthRepository) *usecase.AuthUsecase {
+	return usecase.NewAuthUsecase(repo)
 }
 
 // ProvideEcho はEchoインスタンスを提供します

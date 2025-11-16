@@ -15,14 +15,16 @@ type Router struct {
 	UserController    *controller.UserController
 	WorkController    *controller.WorkController
 	CommentController *controller.CommentController
+	AuthController    *controller.AuthController
 }
 
-func NewRouter(e *echo.Echo, uc *controller.UserController, wc *controller.WorkController, cc *controller.CommentController) *Router {
+func NewRouter(e *echo.Echo, uc *controller.UserController, wc *controller.WorkController, cc *controller.CommentController, ac *controller.AuthController) *Router {
 	return &Router{
 		echo:              e,
 		UserController:    uc,
 		WorkController:    wc,
 		CommentController: cc,
+		AuthController:    ac,
 	}
 }
 
@@ -38,13 +40,11 @@ func (r *Router) Setup() *echo.Echo {
 		return c.JSON(200, map[string]string{"status": "ok"})
 	})
 
+	r.echo.GET("/auth/discord/", r.AuthController.GetDiscordAuthURL)
 	r.echo.POST("/users", r.UserController.CreateUser)
 	r.echo.GET("/users", r.UserController.GetAllUsers)
 	r.echo.GET("/users/auth", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello, World!")
-	})
-	r.echo.GET("/users/auth/callback", func(c echo.Context) error {
-		return c.String(http.StatusAccepted, "OAuth2 OK")
 	})
 
 	r.echo.POST("/works", r.WorkController.CreateWork)

@@ -92,6 +92,11 @@ definitions:
       visibility:
         type: string
     type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.GetDiscordAuthURLResponse:
+    properties:
+      url:
+        type: string
+    type: object
   github_com_simesaba80_toybox-back_internal_interface_schema.GetUserOutput:
     properties:
       avatar_url:
@@ -172,6 +177,23 @@ info:
   title: Toybox API
   version: "1.0"
 paths:
+  /auth/discord/:
+    get:
+      description: Get Discord authentication URL
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.GetDiscordAuthURLResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Get Discord authentication URL
+      tags:
+      - auth
   /users:
     get:
       description: Get all users
