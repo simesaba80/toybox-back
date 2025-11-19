@@ -13,6 +13,7 @@ import (
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/comment"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/user"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/work"
+	"github.com/simesaba80/toybox-back/internal/infrastructure/external/oauth"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/router"
 	"github.com/simesaba80/toybox-back/internal/interface/controller"
 	"github.com/simesaba80/toybox-back/internal/usecase"
@@ -36,7 +37,10 @@ func InitializeApp() (*App, func(), error) {
 	commentRepository := comment.NewCommentRepository(db)
 	commentUsecase := ProvideCommentUseCase(commentRepository)
 	commentController := controller.NewCommentController(commentUsecase)
-	routerRouter := router.NewRouter(echo, userController, workController, commentController)
+	discordRepository := oauth.NewDiscordRepository()
+	discordUsecase := ProvideDiscordUseCase(discordRepository)
+	discordController := controller.NewDiscordController(discordUsecase)
+	routerRouter := router.NewRouter(echo, userController, workController, commentController, discordController)
 	app := NewApp(routerRouter, db)
 	return app, func() {
 	}, nil
@@ -44,15 +48,16 @@ func InitializeApp() (*App, func(), error) {
 
 // wire.go:
 
-var RepositorySet = wire.NewSet(user.NewUserRepository, wire.Bind(new(repository.UserRepository), new(*user.UserRepository)), work.NewWorkRepository, wire.Bind(new(repository.WorkRepository), new(*work.WorkRepository)), comment.NewCommentRepository, wire.Bind(new(repository.CommentRepository), new(*comment.CommentRepository)))
+var RepositorySet = wire.NewSet(user.NewUserRepository, wire.Bind(new(repository.UserRepository), new(*user.UserRepository)), work.NewWorkRepository, wire.Bind(new(repository.WorkRepository), new(*work.WorkRepository)), comment.NewCommentRepository, wire.Bind(new(repository.CommentRepository), new(*comment.CommentRepository)), oauth.NewDiscordRepository, wire.Bind(new(repository.DiscordRepository), new(*oauth.DiscordRepository)))
 
 var UseCaseSet = wire.NewSet(
 	ProvideUserUseCase,
 	ProvideWorkUseCase,
 	ProvideCommentUseCase,
+	ProvideDiscordUseCase,
 )
 
-var ControllerSet = wire.NewSet(controller.NewUserController, controller.NewWorkController, controller.NewCommentController)
+var ControllerSet = wire.NewSet(controller.NewUserController, controller.NewWorkController, controller.NewCommentController, controller.NewDiscordController)
 
 var InfrastructureSet = wire.NewSet(
 	ProvideDatabase, router.NewRouter, ProvideEcho,
@@ -86,6 +91,11 @@ func ProvideWorkUseCase(repo repository.WorkRepository) *usecase.WorkUseCase {
 // ProvideCommentUseCase はCommentUseCaseを提供します
 func ProvideCommentUseCase(repo repository.CommentRepository) *usecase.CommentUsecase {
 	return usecase.NewCommentUsecase(repo, 30*time.Second)
+}
+
+// ProvideDiscordUseCase はDiscordUseCaseを提供します
+func ProvideDiscordUseCase(repo repository.DiscordRepository) *usecase.DiscordUsecase {
+	return usecase.NewDiscordUsecase(repo)
 }
 
 // ProvideEcho はEchoインスタンスを提供します
