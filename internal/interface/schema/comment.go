@@ -1,6 +1,8 @@
 package schema
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/simesaba80/toybox-back/internal/domain/entity"
 )
@@ -52,8 +54,8 @@ func ToCommentResponse(comment *entity.Comment) *CommentResponse {
 		Content:   comment.Content,
 		ReplyAt:   comment.ReplyAt,
 		User:      user,
-		CreatedAt: comment.CreatedAt.String(),
-		UpdatedAt: comment.UpdatedAt.String(),
+		CreatedAt: comment.CreatedAt.Format(time.RFC3339),
+		UpdatedAt: comment.UpdatedAt.Format(time.RFC3339),
 	}
 }
 

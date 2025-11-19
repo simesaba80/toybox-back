@@ -63,6 +63,7 @@ CREATE TABLE comment (
     work_id VARCHAR(255) NOT NULL,
     user_id VARCHAR(255),
     reply_at VARCHAR(255),
+    visibility visibility NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

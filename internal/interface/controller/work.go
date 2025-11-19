@@ -3,6 +3,7 @@ package controller
 import (
 	"database/sql"
 	"errors"
+	"net/http"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -32,7 +33,7 @@ func NewWorkController(workUsecase *usecase.WorkUseCase) *WorkController {
 func (wc *WorkController) GetAllWorks(c echo.Context) error {
 	var query schema.GetWorksQuery
 	if err := c.Bind(&query); err != nil {
-		return echo.NewHTTPError(400, "Invalid query parameters")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid query parameters")
 	}
 	if err := c.Validate(&query); err != nil {
 		return err
@@ -40,7 +41,7 @@ func (wc *WorkController) GetAllWorks(c echo.Context) error {
 
 	works, total, limit, page, err := wc.workUsecase.GetAll(c.Request().Context(), query.Limit, query.Page)
 	if err != nil {
-		return echo.NewHTTPError(500, "Failed to retrieve works")
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to retrieve works")
 	}
 
 	response := make([]schema.GetWorkOutput, len(works))
@@ -48,7 +49,7 @@ func (wc *WorkController) GetAllWorks(c echo.Context) error {
 		response[i] = schema.ToWorkResponse(work)
 	}
 
-	return c.JSON(200, schema.WorkListResponse{
+	return c.JSON(http.StatusOK, schema.WorkListResponse{
 		Works:      response,
 		TotalCount: total,
 		Page:       page,
@@ -71,18 +72,18 @@ func (wc *WorkController) GetWorkByID(c echo.Context) error {
 	idStr := c.Param("work_id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		return echo.NewHTTPError(400, "Invalid work ID format")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid work ID format")
 	}
 
 	work, err := wc.workUsecase.GetByID(c.Request().Context(), id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return echo.NewHTTPError(404, "Work not found")
+			return echo.NewHTTPError(http.StatusNotFound, "Work not found")
 		}
-		return echo.NewHTTPError(500, "Failed to retrieve work details")
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to retrieve work details")
 	}
 
-	return c.JSON(200, schema.ToWorkResponse(work))
+	return c.JSON(http.StatusOK, schema.ToWorkResponse(work))
 }
 
 // CreateWork godoc
@@ -100,7 +101,7 @@ func (wc *WorkController) CreateWork(c echo.Context) error {
 	var input schema.CreateWorkInput
 	if err := c.Bind(&input); err != nil {
 		c.Logger().Error("Bind error:", err)
-		return echo.NewHTTPError(400, "Invalid request body")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 	}
     if err := c.Validate(&input); err != nil {
       return err
@@ -109,7 +110,7 @@ func (wc *WorkController) CreateWork(c echo.Context) error {
 	userID, err := uuid.Parse(input.UserID)
 	if err != nil {
 		c.Logger().Error("Invalid UserID format:", err)
-		return echo.NewHTTPError(400, "Invalid UserID format")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid UserID format")
 	}
 
 	createdWork, err := wc.workUsecase.CreateWork(
@@ -121,8 +122,8 @@ func (wc *WorkController) CreateWork(c echo.Context) error {
 	)
 	if err != nil {
 		c.Logger().Error("WorkUseCase.CreateWork error:", err)
-		return echo.NewHTTPError(500, "Failed to create work")
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to create work")
 	}
 
-	return c.JSON(201, schema.ToCreateWorkOutput(createdWork))
+	return c.JSON(http.StatusCreated, schema.ToCreateWorkOutput(createdWork))
 }

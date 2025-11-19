@@ -1,6 +1,8 @@
 package router
 
 import (
+	"net/http"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/simesaba80/toybox-back/internal/interface/controller"
@@ -13,14 +15,16 @@ type Router struct {
 	UserController    *controller.UserController
 	WorkController    *controller.WorkController
 	CommentController *controller.CommentController
+	DiscordController *controller.DiscordController
 }
 
-func NewRouter(e *echo.Echo, uc *controller.UserController, wc *controller.WorkController, cc *controller.CommentController) *Router {
+func NewRouter(e *echo.Echo, uc *controller.UserController, wc *controller.WorkController, cc *controller.CommentController, dc *controller.DiscordController) *Router {
 	return &Router{
 		echo:              e,
 		UserController:    uc,
 		WorkController:    wc,
 		CommentController: cc,
+		DiscordController: dc,
 	}
 }
 
@@ -36,8 +40,13 @@ func (r *Router) Setup() *echo.Echo {
 		return c.JSON(200, map[string]string{"status": "ok"})
 	})
 
+	r.echo.GET("/auth/discord/", r.DiscordController.GetDiscordAuthURL)
+	r.echo.GET("/auth/discord/callback", r.DiscordController.GetDiscordToken)
 	r.echo.POST("/users", r.UserController.CreateUser)
 	r.echo.GET("/users", r.UserController.GetAllUsers)
+	r.echo.GET("/users/auth", func(c echo.Context) error {
+		return c.String(http.StatusOK, "Hello, World!")
+	})
 
 	r.echo.POST("/works", r.WorkController.CreateWork)
 	r.echo.GET("/works", r.WorkController.GetAllWorks)

@@ -1,6 +1,8 @@
 package schema
 
 import (
+	"time"
+
 	"github.com/simesaba80/toybox-back/internal/domain/entity"
 )
 
@@ -55,8 +57,8 @@ func ToWorkResponse(work *entity.Work) GetWorkOutput {
 		UserID:      work.UserID.String(),
 		Visibility:  work.Visibility,
 		Assets:      work.Assets,
-		CreatedAt:   work.CreatedAt.String(),
-		UpdatedAt:   work.UpdatedAt.String(),
+		CreatedAt:   work.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:   work.UpdatedAt.Format(time.RFC3339),
 	}
 }
 
@@ -70,7 +72,7 @@ func ToCreateWorkOutput(work *entity.Work) CreateWorkOutput {
 		Description: work.Description,
 		UserID:      work.UserID.String(),
 		Visibility:  work.Visibility,
-		CreatedAt:   work.CreatedAt.String(),
-		UpdatedAt:   work.UpdatedAt.String(),
+		CreatedAt:   work.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:   work.UpdatedAt.Format(time.RFC3339),
 	}
 }

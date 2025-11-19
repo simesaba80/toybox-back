@@ -2,6 +2,8 @@ package controller
 
 import (
 	"github.com/labstack/echo/v4"
+	"net/http"
+
 	"github.com/simesaba80/toybox-back/internal/interface/schema"
 	"github.com/simesaba80/toybox-back/internal/usecase"
 )
@@ -39,7 +41,7 @@ func (uc *UserController) CreateUser(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(201, schema.ToUserResponse(createdUser))
+	return c.JSON(http.StatusCreated, schema.ToUserResponse(createdUser))
 }
 
 // GetAllUsers godoc
@@ -60,5 +62,5 @@ func (uc *UserController) GetAllUsers(c echo.Context) error {
 		response[i] = schema.ToUserResponse(user)
 	}
 
-	return c.JSON(200, schema.UserListResponse{Users: response})
+	return c.JSON(http.StatusOK, schema.UserListResponse{Users: response})
 }

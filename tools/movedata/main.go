@@ -50,6 +50,7 @@ func main() {
 		{name: "Favorites", f: migration.MigrateFavorites},
 		{name: "Taggings", f: migration.MigrateTaggings},
 		{name: "Thumbnails", f: migration.MigrateThumbnails},
+		{name: "Tokens", f: migration.MigrateTokens},
 	}
 
 	for _, mig := range migrationFuncs {
