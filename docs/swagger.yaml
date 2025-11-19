@@ -97,6 +97,13 @@ definitions:
       url:
         type: string
     type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.GetDiscordTokenResponse:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
+        type: string
+    type: object
   github_com_simesaba80_toybox-back_internal_interface_schema.GetUserOutput:
     properties:
       avatar_url:
@@ -192,6 +199,29 @@ paths:
           schema:
             $ref: '#/definitions/echo.HTTPError'
       summary: Get Discord authentication URL
+      tags:
+      - auth
+  /auth/discord/callback:
+    get:
+      description: Get Discord token by code
+      parameters:
+      - description: Discord code
+        in: query
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.GetDiscordTokenResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Get Discord token by code
       tags:
       - auth
   /users:

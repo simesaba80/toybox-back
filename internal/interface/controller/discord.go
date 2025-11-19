@@ -34,6 +34,15 @@ func (dc *DiscordController) GetDiscordAuthURL(c echo.Context) error {
 	return c.JSON(http.StatusOK, schema.ToGetDiscordAuthURLResponse(authURL))
 }
 
+// GetDiscordToken godoc
+// @Summary Get Discord token by code
+// @Description Get Discord token by code
+// @Tags auth
+// @Produce json
+// @Success 200 {object} schema.GetDiscordTokenResponse
+// @Failure 500 {object} echo.HTTPError
+// @Router /auth/discord/callback [get]
+// @Param code query string true "Discord code"
 func (dc *DiscordController) GetDiscordToken(c echo.Context) error {
 	code := c.QueryParam("code")
 	accessToken, refreshToken, err := dc.discordUsecase.GetDiscordToken(c.Request().Context(), code)
