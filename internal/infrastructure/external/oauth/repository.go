@@ -44,3 +44,11 @@ func (r *DiscordRepository) GetHostURL(ctx context.Context) (string, error) {
 func (r *DiscordRepository) GetDiscordAuthURL(ctx context.Context) (string, error) {
 	return r.DiscordOAuthConfig.AuthCodeURL("", oauth2.AccessTypeOffline), nil
 }
+
+func (r *DiscordRepository) GetDiscordToken(ctx context.Context, code string) (AcsessToken, RefreshToken string, Err error) {
+	token, err := r.DiscordOAuthConfig.Exchange(ctx, code)
+	if err != nil {
+		return "", "", err
+	}
+	return token.AccessToken, token.RefreshToken, nil
+}

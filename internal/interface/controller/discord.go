@@ -33,3 +33,12 @@ func (dc *DiscordController) GetDiscordAuthURL(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, schema.ToGetDiscordAuthURLResponse(authURL))
 }
+
+func (dc *DiscordController) GetDiscordToken(c echo.Context) error {
+	code := c.QueryParam("code")
+	accessToken, refreshToken, err := dc.discordUsecase.GetDiscordToken(c.Request().Context(), code)
+	if err != nil {
+		return err
+	}
+	return c.JSON(http.StatusOK, schema.ToGetDiscordTokenResponse(accessToken, refreshToken))
+}

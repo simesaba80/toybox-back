@@ -23,3 +23,7 @@ func (uc *DiscordUsecase) GetDiscordAuthURL(ctx context.Context) (string, error)
 	}
 	return uc.authRepository.GetDiscordAuthURL(ctx)
 }
+
+func (uc *DiscordUsecase) GetDiscordToken(ctx context.Context, code string) (string, string, error) {
+	return uc.authRepository.GetDiscordToken(ctx, code)
+}
