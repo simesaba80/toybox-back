@@ -35,7 +35,7 @@ func InitializeApp() (*App, func(), error) {
 	workUseCase := ProvideWorkUseCase(workRepository)
 	workController := controller.NewWorkController(workUseCase)
 	commentRepository := comment.NewCommentRepository(db)
-	commentUsecase := ProvideCommentUseCase(commentRepository)
+	commentUsecase := ProvideCommentUseCase(commentRepository, workRepository)
 	commentController := controller.NewCommentController(commentUsecase)
 	discordRepository := oauth.NewDiscordRepository()
 	discordUsecase := ProvideDiscordUseCase(discordRepository)
@@ -89,8 +89,8 @@ func ProvideWorkUseCase(repo repository.WorkRepository) *usecase.WorkUseCase {
 }
 
 // ProvideCommentUseCase はCommentUseCaseを提供します
-func ProvideCommentUseCase(repo repository.CommentRepository) *usecase.CommentUsecase {
-	return usecase.NewCommentUsecase(repo, 30*time.Second)
+func ProvideCommentUseCase(commentRepo repository.CommentRepository, workRepo repository.WorkRepository) *usecase.CommentUsecase {
+	return usecase.NewCommentUsecase(commentRepo, workRepo, 30*time.Second)
 }
 
 // ProvideDiscordUseCase はDiscordUseCaseを提供します

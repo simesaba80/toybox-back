@@ -38,3 +38,15 @@ func (c *Comment) ToCommentEntity() *entity.Comment {
 		UpdatedAt:  c.UpdatedAt,
 	}
 }
+
+func ToCommentDTO(e *entity.Comment) *Comment {
+	return &Comment{
+		ID:        e.ID,
+		Content:   e.Content,
+		WorkID:    e.WorkID,
+		UserID:    e.UserID,
+		ReplyAt:   e.ReplyAt,
+		CreatedAt: e.CreatedAt,
+		UpdatedAt: e.UpdatedAt,
+	}
+}

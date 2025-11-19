@@ -57,6 +57,18 @@ func (r *WorkRepository) GetByID(ctx context.Context, id uuid.UUID) (*entity.Wor
 	return dtoWork.ToWorkEntity(), nil
 }
 
+func (r *WorkRepository) ExistsById(ctx context.Context, id uuid.UUID) (bool, error) {
+	var dtoWork dto.Work
+	exists, err := r.db.NewSelect().
+		Model(&dtoWork).
+		Where("id = ?", id).
+		Exists(ctx)
+	if err != nil {
+		return false, err
+	}
+	return exists, nil
+}
+
 func (r *WorkRepository) Create(ctx context.Context, work *entity.Work) (*entity.Work, error) {
 
 	tx, err := r.db.BeginTx(ctx, nil)
