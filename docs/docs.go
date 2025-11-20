@@ -356,13 +356,13 @@ const docTemplate = `{
                 "message": {}
             }
         },
-        "github_com_simesaba80_toybox-back_internal_domain_entity.Asset": {
+        "github_com_simesaba80_toybox-back_internal_interface_schema.AssetResponse": {
             "type": "object",
             "properties": {
-                "assetType": {
+                "asset_type": {
                     "type": "string"
                 },
-                "createdAt": {
+                "created_at": {
                     "type": "string"
                 },
                 "extension": {
@@ -371,16 +371,16 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
-                "updatedAt": {
+                "updated_at": {
                     "type": "string"
                 },
                 "url": {
                     "type": "string"
                 },
-                "userID": {
+                "user_id": {
                     "type": "string"
                 },
-                "workID": {
+                "work_id": {
                     "type": "string"
                 }
             }
@@ -581,7 +581,7 @@ const docTemplate = `{
                 "assets": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_simesaba80_toybox-back_internal_domain_entity.Asset"
+                        "$ref": "#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.AssetResponse"
                     }
                 },
                 "created_at": {
