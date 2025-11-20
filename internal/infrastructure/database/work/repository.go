@@ -50,7 +50,7 @@ func (r *WorkRepository) GetAll(ctx context.Context, limit, offset int) ([]*enti
 
 func (r *WorkRepository) GetByID(ctx context.Context, id uuid.UUID) (*entity.Work, error) {
 	var dtoWork dto.Work
-	err := r.db.NewSelect().Model(&dtoWork).Where("id = ?", id).Scan(ctx)
+	err := r.db.NewSelect().Model(&dtoWork).Relation("Assets").Where("id = ?", id).Scan(ctx)
 	if err != nil {
 		return nil, err
 	}
