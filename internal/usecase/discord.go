@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 
+	"github.com/simesaba80/toybox-back/internal/domain/entity"
 	"github.com/simesaba80/toybox-back/internal/domain/repository"
 )
 
@@ -24,6 +25,10 @@ func (uc *DiscordUsecase) GetDiscordAuthURL(ctx context.Context) (string, error)
 	return uc.authRepository.GetDiscordAuthURL(ctx)
 }
 
-func (uc *DiscordUsecase) GetDiscordToken(ctx context.Context, code string) (string, string, error) {
-	return uc.authRepository.GetDiscordToken(ctx, code)
+func (uc *DiscordUsecase) GetDiscordToken(ctx context.Context, code string) (entity.DiscordToken, error) {
+	token, err := uc.authRepository.GetDiscordToken(ctx, code)
+	if err != nil {
+		return entity.DiscordToken{}, err
+	}
+	return token, nil
 }
