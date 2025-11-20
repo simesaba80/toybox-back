@@ -45,9 +45,9 @@ func (dc *DiscordController) GetDiscordAuthURL(c echo.Context) error {
 // @Param code query string true "Discord code"
 func (dc *DiscordController) GetDiscordToken(c echo.Context) error {
 	code := c.QueryParam("code")
-	accessToken, refreshToken, err := dc.discordUsecase.GetDiscordToken(c.Request().Context(), code)
+	token, err := dc.discordUsecase.GetDiscordToken(c.Request().Context(), code)
 	if err != nil {
 		return err
 	}
-	return c.JSON(http.StatusOK, schema.ToGetDiscordTokenResponse(accessToken, refreshToken))
+	return c.JSON(http.StatusOK, schema.ToGetDiscordTokenResponse(token))
 }

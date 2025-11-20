@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/simesaba80/toybox-back/internal/domain/entity"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/config"
 	"golang.org/x/oauth2"
 )
@@ -45,10 +46,16 @@ func (r *DiscordRepository) GetDiscordAuthURL(ctx context.Context) (string, erro
 	return r.DiscordOAuthConfig.AuthCodeURL("", oauth2.AccessTypeOffline), nil
 }
 
-func (r *DiscordRepository) GetDiscordToken(ctx context.Context, code string) (AcsessToken, RefreshToken string, Err error) {
+func (r *DiscordRepository) GetDiscordToken(ctx context.Context, code string) (entity.DiscordToken, error) {
 	token, err := r.DiscordOAuthConfig.Exchange(ctx, code)
 	if err != nil {
-		return "", "", err
+		return entity.DiscordToken{}, err
 	}
-	return token.AccessToken, token.RefreshToken, nil
+	return entity.DiscordToken{
+		AccessToken:  token.AccessToken,
+		RefreshToken: token.RefreshToken,
+		Expiry:       token.Expiry,
+		ExpiresIn:    token.ExpiresIn,
+		TokenType:    token.TokenType,
+	}, nil
 }

@@ -1,5 +1,9 @@
 package schema
 
+import (
+	"github.com/simesaba80/toybox-back/internal/domain/entity"
+)
+
 type GetDiscordAuthURLResponse struct {
 	URL string `json:"url"`
 }
@@ -15,9 +19,9 @@ func ToGetDiscordAuthURLResponse(authURL string) GetDiscordAuthURLResponse {
 	}
 }
 
-func ToGetDiscordTokenResponse(accessToken, refreshToken string) GetDiscordTokenResponse {
+func ToGetDiscordTokenResponse(token entity.DiscordToken) GetDiscordTokenResponse {
 	return GetDiscordTokenResponse{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
+		AccessToken:  token.AccessToken,
+		RefreshToken: token.RefreshToken,
 	}
 }
