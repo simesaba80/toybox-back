@@ -521,6 +521,23 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_simesaba80_toybox-back_internal_interface_schema.DiscordUserResponse": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "github_com_simesaba80_toybox-back_internal_interface_schema.GetDiscordAuthURLResponse": {
             "type": "object",
             "properties": {
@@ -537,6 +554,9 @@ const docTemplate = `{
                 },
                 "refresh_token": {
                     "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.DiscordUserResponse"
                 }
             }
         },

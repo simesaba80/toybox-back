@@ -115,6 +115,17 @@ definitions:
       visibility:
         type: string
     type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.DiscordUserResponse:
+    properties:
+      avatar:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      username:
+        type: string
+    type: object
   github_com_simesaba80_toybox-back_internal_interface_schema.GetDiscordAuthURLResponse:
     properties:
       url:
@@ -126,6 +137,8 @@ definitions:
         type: string
       refresh_token:
         type: string
+      user:
+        $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.DiscordUserResponse'
     type: object
   github_com_simesaba80_toybox-back_internal_interface_schema.GetUserOutput:
     properties:
