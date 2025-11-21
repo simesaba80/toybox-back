@@ -14,13 +14,15 @@ type DiscordUsecase struct {
 	discordRepository repository.DiscordRepository
 	userRepository    repository.UserRepository
 	tokenProvider     TokenProvider
+	tokenRepository   repository.TokenRepository
 }
 
-func NewDiscordUsecase(discordRepository repository.DiscordRepository, userRepository repository.UserRepository, tokenProvider TokenProvider) *DiscordUsecase {
+func NewDiscordUsecase(discordRepository repository.DiscordRepository, userRepository repository.UserRepository, tokenProvider TokenProvider, tokenRepository repository.TokenRepository) *DiscordUsecase {
 	return &DiscordUsecase{
 		discordRepository: discordRepository,
 		userRepository:    userRepository,
 		tokenProvider:     tokenProvider,
+		tokenRepository:   tokenRepository,
 	}
 }
 
@@ -34,50 +36,57 @@ func (uc *DiscordUsecase) GetDiscordAuthURL(ctx context.Context) (string, error)
 	return uc.discordRepository.GetDiscordAuthURL(ctx)
 }
 
-func (uc *DiscordUsecase) AuthenticateUser(ctx context.Context, code string) (string, entity.DiscordUser, error) {
+func (uc *DiscordUsecase) AuthenticateUser(ctx context.Context, code string) (string, string, error) {
 	token, err := uc.discordRepository.GetDiscordToken(ctx, code)
 	if err != nil {
-		return "", entity.DiscordUser{}, err
+		return "", "", err
 	}
 
 	discordUser, err := uc.discordRepository.FetchDiscordUser(ctx, token)
 	if err != nil {
-		return "", entity.DiscordUser{}, err
+		return "", "", err
 	}
 	guildIDs, err := uc.discordRepository.GetDiscordGuilds(ctx, token)
 	if err != nil {
-		return "", entity.DiscordUser{}, err
+		return "", "", err
 	}
 	allowedGuildIDs, err := uc.discordRepository.GetAllowedDiscordGuilds(ctx)
 	if err != nil {
-		return "", entity.DiscordUser{}, err
+		return "", "", err
 	}
 	if !userBelongsToAllowedGuild(guildIDs, allowedGuildIDs) {
-		return "", entity.DiscordUser{}, errors.New("ユーザーは許可されたDiscordギルドに所属していません")
+		return "", "", errors.New("ユーザーは許可されたDiscordギルドに所属していません")
 	}
 
 	user, err := uc.userRepository.GetUserByDiscordUserID(ctx, discordUser.ID)
 	if err != nil {
-		if !errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, sql.ErrNoRows) {
 			user, err = uc.userRepository.Create(ctx, &entity.User{
 				DiscordUserID:       discordUser.ID,
 				DiscordToken:        token.AccessToken,
 				DiscordRefreshToken: token.RefreshToken,
 			})
 			if err != nil {
-				return "", entity.DiscordUser{}, err
+				return "", "", err
 			}
 		} else {
-			return "", entity.DiscordUser{}, err
+			return "", "", err
 		}
 	}
 
 	appToken, err := uc.tokenProvider.GenerateToken(user.ID.String())
 	if err != nil {
-		return "", entity.DiscordUser{}, err
+		return "", "", err
 	}
 
-	return appToken, discordUser, nil
+	refreshToken, err := uc.tokenRepository.Create(ctx, &entity.Token{
+		UserID: user.ID.String(),
+	})
+	if err != nil {
+		return "", "", err
+	}
+
+	return appToken, refreshToken.RefreshToken, nil
 }
 
 func userBelongsToAllowedGuild(guildIDs []string, allowedGuildIDs []string) bool {

@@ -9,9 +9,8 @@ type GetDiscordAuthURLResponse struct {
 }
 
 type GetDiscordTokenResponse struct {
-	AccessToken  string              `json:"access_token"`
-	RefreshToken string              `json:"refresh_token"`
-	User         DiscordUserResponse `json:"user"`
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
 }
 
 type DiscordUserResponse struct {
@@ -27,11 +26,10 @@ func ToGetDiscordAuthURLResponse(authURL string) GetDiscordAuthURLResponse {
 	}
 }
 
-func ToGetDiscordTokenResponse(appToken string, user entity.DiscordUser) GetDiscordTokenResponse {
+func ToGetDiscordTokenResponse(appToken string, refreshToken string) GetDiscordTokenResponse {
 	return GetDiscordTokenResponse{
 		AccessToken:  appToken,
-		RefreshToken: "",
-		User:         ToDiscordUserResponse(user),
+		RefreshToken: refreshToken,
 	}
 }
 

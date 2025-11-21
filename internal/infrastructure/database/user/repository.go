@@ -31,7 +31,7 @@ func (r *UserRepository) Create(ctx context.Context, user *entity.User) (*entity
 }
 
 func (r *UserRepository) GetAll(ctx context.Context) ([]*entity.User, error) {
-	var dtoUsers []*dto.User
+	dtoUsers := make([]*dto.User, 0)
 	err := r.db.NewSelect().Model(&dtoUsers).Scan(ctx)
 	if err != nil {
 		return nil, err
@@ -46,7 +46,7 @@ func (r *UserRepository) GetAll(ctx context.Context) ([]*entity.User, error) {
 }
 
 func (r *UserRepository) GetUserByDiscordUserID(ctx context.Context, discordUserID string) (*entity.User, error) {
-	var dtoUser *dto.User
+	dtoUser := new(dto.User)
 	err := r.db.NewSelect().Model(dtoUser).Where("discord_user_id = ?", discordUserID).Scan(ctx)
 	if err != nil {
 		return nil, err

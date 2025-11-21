@@ -11,6 +11,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/simesaba80/toybox-back/internal/domain/repository"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/comment"
+	"github.com/simesaba80/toybox-back/internal/infrastructure/database/token"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/user"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/work"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/external/custome-jwt"
@@ -40,7 +41,8 @@ func InitializeApp() (*App, func(), error) {
 	commentController := controller.NewCommentController(commentUsecase)
 	discordRepository := oauth.NewDiscordRepository()
 	tokenProvider := ProvideTokenProvider()
-	discordUsecase := ProvideDiscordUseCase(discordRepository, userRepository, tokenProvider)
+	tokenRepository := token.NewTokenRepository(db)
+	discordUsecase := ProvideDiscordUseCase(discordRepository, userRepository, tokenProvider, tokenRepository)
 	discordController := controller.NewDiscordController(discordUsecase)
 	routerRouter := router.NewRouter(echo, userController, workController, commentController, discordController)
 	app := NewApp(routerRouter, db)
@@ -50,7 +52,7 @@ func InitializeApp() (*App, func(), error) {
 
 // wire.go:
 
-var RepositorySet = wire.NewSet(user.NewUserRepository, wire.Bind(new(repository.UserRepository), new(*user.UserRepository)), work.NewWorkRepository, wire.Bind(new(repository.WorkRepository), new(*work.WorkRepository)), comment.NewCommentRepository, wire.Bind(new(repository.CommentRepository), new(*comment.CommentRepository)), oauth.NewDiscordRepository, wire.Bind(new(repository.DiscordRepository), new(*oauth.DiscordRepository)))
+var RepositorySet = wire.NewSet(user.NewUserRepository, wire.Bind(new(repository.UserRepository), new(*user.UserRepository)), work.NewWorkRepository, wire.Bind(new(repository.WorkRepository), new(*work.WorkRepository)), comment.NewCommentRepository, wire.Bind(new(repository.CommentRepository), new(*comment.CommentRepository)), oauth.NewDiscordRepository, wire.Bind(new(repository.DiscordRepository), new(*oauth.DiscordRepository)), token.NewTokenRepository, wire.Bind(new(repository.TokenRepository), new(*token.TokenRepository)))
 
 var UseCaseSet = wire.NewSet(
 	ProvideUserUseCase,
@@ -97,8 +99,8 @@ func ProvideCommentUseCase(commentRepo repository.CommentRepository, workRepo re
 }
 
 // ProvideDiscordUseCase はDiscordUseCaseを提供します
-func ProvideDiscordUseCase(authRepo repository.DiscordRepository, userRepo repository.UserRepository, tokenProvider usecase.TokenProvider) *usecase.DiscordUsecase {
-	return usecase.NewDiscordUsecase(authRepo, userRepo, tokenProvider)
+func ProvideDiscordUseCase(authRepo repository.DiscordRepository, userRepo repository.UserRepository, tokenProvider usecase.TokenProvider, tokenRepo repository.TokenRepository) *usecase.DiscordUsecase {
+	return usecase.NewDiscordUsecase(authRepo, userRepo, tokenProvider, tokenRepo)
 }
 
 // ProvideTokenProvider はTokenProviderを提供します

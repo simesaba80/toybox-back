@@ -13,6 +13,7 @@ import (
 
 	"github.com/simesaba80/toybox-back/internal/domain/repository"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/comment"
+	"github.com/simesaba80/toybox-back/internal/infrastructure/database/token"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/user"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/work"
 	customejwt "github.com/simesaba80/toybox-back/internal/infrastructure/external/custome-jwt"
@@ -32,6 +33,8 @@ var RepositorySet = wire.NewSet(
 	wire.Bind(new(repository.CommentRepository), new(*comment.CommentRepository)),
 	oauth.NewDiscordRepository,
 	wire.Bind(new(repository.DiscordRepository), new(*oauth.DiscordRepository)),
+	token.NewTokenRepository,
+	wire.Bind(new(repository.TokenRepository), new(*token.TokenRepository)),
 )
 
 var UseCaseSet = wire.NewSet(
@@ -86,8 +89,8 @@ func ProvideCommentUseCase(commentRepo repository.CommentRepository, workRepo re
 }
 
 // ProvideDiscordUseCase はDiscordUseCaseを提供します
-func ProvideDiscordUseCase(authRepo repository.DiscordRepository, userRepo repository.UserRepository, tokenProvider usecase.TokenProvider) *usecase.DiscordUsecase {
-	return usecase.NewDiscordUsecase(authRepo, userRepo, tokenProvider)
+func ProvideDiscordUseCase(authRepo repository.DiscordRepository, userRepo repository.UserRepository, tokenProvider usecase.TokenProvider, tokenRepo repository.TokenRepository) *usecase.DiscordUsecase {
+	return usecase.NewDiscordUsecase(authRepo, userRepo, tokenProvider, tokenRepo)
 }
 
 // ProvideTokenProvider はTokenProviderを提供します
