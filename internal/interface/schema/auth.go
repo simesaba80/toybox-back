@@ -20,6 +20,10 @@ type DiscordUserResponse struct {
 	Email    string `json:"email"`
 }
 
+type RegenerateTokenResponse struct {
+	AppToken string `json:"app_token"`
+}
+
 func ToGetDiscordAuthURLResponse(authURL string) GetDiscordAuthURLResponse {
 	return GetDiscordAuthURLResponse{
 		URL: authURL,
@@ -39,5 +43,11 @@ func ToDiscordUserResponse(user entity.DiscordUser) DiscordUserResponse {
 		Username: user.Username,
 		Avatar:   user.Avatar,
 		Email:    user.Email,
+	}
+}
+
+func ToRegenerateTokenResponse(appToken string) RegenerateTokenResponse {
+	return RegenerateTokenResponse{
+		AppToken: appToken,
 	}
 }

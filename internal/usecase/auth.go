@@ -10,15 +10,15 @@ import (
 	"github.com/simesaba80/toybox-back/internal/domain/repository"
 )
 
-type DiscordUsecase struct {
+type AuthUsecase struct {
 	discordRepository repository.DiscordRepository
 	userRepository    repository.UserRepository
 	tokenProvider     TokenProvider
 	tokenRepository   repository.TokenRepository
 }
 
-func NewDiscordUsecase(discordRepository repository.DiscordRepository, userRepository repository.UserRepository, tokenProvider TokenProvider, tokenRepository repository.TokenRepository) *DiscordUsecase {
-	return &DiscordUsecase{
+func NewAuthUsecase(discordRepository repository.DiscordRepository, userRepository repository.UserRepository, tokenProvider TokenProvider, tokenRepository repository.TokenRepository) *AuthUsecase {
+	return &AuthUsecase{
 		discordRepository: discordRepository,
 		userRepository:    userRepository,
 		tokenProvider:     tokenProvider,
@@ -26,7 +26,7 @@ func NewDiscordUsecase(discordRepository repository.DiscordRepository, userRepos
 	}
 }
 
-func (uc *DiscordUsecase) GetDiscordAuthURL(ctx context.Context) (string, error) {
+func (uc *AuthUsecase) GetDiscordAuthURL(ctx context.Context) (string, error) {
 	if _, err := uc.discordRepository.GetDiscordClientID(ctx); err != nil {
 		return "", err
 	}
@@ -36,7 +36,7 @@ func (uc *DiscordUsecase) GetDiscordAuthURL(ctx context.Context) (string, error)
 	return uc.discordRepository.GetDiscordAuthURL(ctx)
 }
 
-func (uc *DiscordUsecase) AuthenticateUser(ctx context.Context, code string) (string, string, error) {
+func (uc *AuthUsecase) AuthenticateUser(ctx context.Context, code string) (string, string, error) {
 	token, err := uc.discordRepository.GetDiscordToken(ctx, code)
 	if err != nil {
 		return "", "", err
@@ -96,4 +96,15 @@ func userBelongsToAllowedGuild(guildIDs []string, allowedGuildIDs []string) bool
 		}
 	}
 	return false
+}
+
+func (uc *AuthUsecase) RegenerateToken(ctx context.Context, refreshToken string) (string, error) {
+	if userID, err := uc.tokenRepository.CheckRefreshToken(ctx, refreshToken); err != nil {
+		return "", err
+	}
+	appToken, err := uc.tokenProvider.GenerateToken(userID)
+	if err != nil {
+		return "", err
+	}
+	return appToken, nil
 }

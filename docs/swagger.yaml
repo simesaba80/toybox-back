@@ -247,6 +247,29 @@ paths:
       summary: Get Discord token by code
       tags:
       - auth
+  /auth/refresh:
+    post:
+      description: Regenerate token
+      parameters:
+      - description: Refresh token
+        in: query
+        name: refresh_token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.GetDiscordTokenResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Regenerate token
+      tags:
+      - auth
   /users:
     get:
       description: Get all users

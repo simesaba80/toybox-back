@@ -41,7 +41,7 @@ var UseCaseSet = wire.NewSet(
 	ProvideUserUseCase,
 	ProvideWorkUseCase,
 	ProvideCommentUseCase,
-	ProvideDiscordUseCase,
+	ProvideAuthUseCase,
 	ProvideTokenProvider,
 )
 
@@ -49,7 +49,7 @@ var ControllerSet = wire.NewSet(
 	controller.NewUserController,
 	controller.NewWorkController,
 	controller.NewCommentController,
-	controller.NewDiscordController,
+	controller.NewAuthController,
 )
 
 var InfrastructureSet = wire.NewSet(
@@ -89,8 +89,8 @@ func ProvideCommentUseCase(commentRepo repository.CommentRepository, workRepo re
 }
 
 // ProvideDiscordUseCase はDiscordUseCaseを提供します
-func ProvideDiscordUseCase(authRepo repository.DiscordRepository, userRepo repository.UserRepository, tokenProvider usecase.TokenProvider, tokenRepo repository.TokenRepository) *usecase.DiscordUsecase {
-	return usecase.NewDiscordUsecase(authRepo, userRepo, tokenProvider, tokenRepo)
+func ProvideAuthUseCase(authRepo repository.DiscordRepository, userRepo repository.UserRepository, tokenProvider usecase.TokenProvider, tokenRepo repository.TokenRepository) *usecase.AuthUsecase {
+	return usecase.NewAuthUsecase(authRepo, userRepo, tokenProvider, tokenRepo)
 }
 
 // ProvideTokenProvider はTokenProviderを提供します

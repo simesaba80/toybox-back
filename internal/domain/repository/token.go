@@ -8,4 +8,5 @@ import (
 
 type TokenRepository interface {
 	Create(ctx context.Context, token *entity.Token) (*entity.Token, error)
+	CheckRefreshToken(ctx context.Context, refreshToken string) (string, error)
 }

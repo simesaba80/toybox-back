@@ -42,9 +42,9 @@ func InitializeApp() (*App, func(), error) {
 	discordRepository := oauth.NewDiscordRepository()
 	tokenProvider := ProvideTokenProvider()
 	tokenRepository := token.NewTokenRepository(db)
-	discordUsecase := ProvideDiscordUseCase(discordRepository, userRepository, tokenProvider, tokenRepository)
-	discordController := controller.NewDiscordController(discordUsecase)
-	routerRouter := router.NewRouter(echo, userController, workController, commentController, discordController)
+	authUsecase := ProvideAuthUseCase(discordRepository, userRepository, tokenProvider, tokenRepository)
+	authController := controller.NewAuthController(authUsecase)
+	routerRouter := router.NewRouter(echo, userController, workController, commentController, authController)
 	app := NewApp(routerRouter, db)
 	return app, func() {
 	}, nil
@@ -58,11 +58,11 @@ var UseCaseSet = wire.NewSet(
 	ProvideUserUseCase,
 	ProvideWorkUseCase,
 	ProvideCommentUseCase,
-	ProvideDiscordUseCase,
+	ProvideAuthUseCase,
 	ProvideTokenProvider,
 )
 
-var ControllerSet = wire.NewSet(controller.NewUserController, controller.NewWorkController, controller.NewCommentController, controller.NewDiscordController)
+var ControllerSet = wire.NewSet(controller.NewUserController, controller.NewWorkController, controller.NewCommentController, controller.NewAuthController)
 
 var InfrastructureSet = wire.NewSet(
 	ProvideDatabase, router.NewRouter, ProvideEcho,
@@ -99,8 +99,8 @@ func ProvideCommentUseCase(commentRepo repository.CommentRepository, workRepo re
 }
 
 // ProvideDiscordUseCase はDiscordUseCaseを提供します
-func ProvideDiscordUseCase(authRepo repository.DiscordRepository, userRepo repository.UserRepository, tokenProvider usecase.TokenProvider, tokenRepo repository.TokenRepository) *usecase.DiscordUsecase {
-	return usecase.NewDiscordUsecase(authRepo, userRepo, tokenProvider, tokenRepo)
+func ProvideAuthUseCase(authRepo repository.DiscordRepository, userRepo repository.UserRepository, tokenProvider usecase.TokenProvider, tokenRepo repository.TokenRepository) *usecase.AuthUsecase {
+	return usecase.NewAuthUsecase(authRepo, userRepo, tokenProvider, tokenRepo)
 }
 
 // ProvideTokenProvider はTokenProviderを提供します

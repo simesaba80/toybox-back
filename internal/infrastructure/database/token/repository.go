@@ -2,6 +2,7 @@ package token
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -35,4 +36,16 @@ func (r *TokenRepository) Create(ctx context.Context, token *entity.Token) (*ent
 		return nil, err
 	}
 	return dtoToken.ToTokenEntity(), nil
+}
+
+func (r *TokenRepository) CheckRefreshToken(ctx context.Context, refreshToken string) (string, error) {
+	token := new(entity.Token)
+	err := r.db.NewSelect().Model(token).Where("refresh_token = ?", refreshToken).Scan(ctx)
+	if err != nil {
+		return "", err
+	}
+	if token.ExpiredAt.Before(time.Now()) {
+		return "", errors.New("refresh token is expired")
+	}
+	return token.UserID, nil
 }
