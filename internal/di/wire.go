@@ -15,6 +15,7 @@ import (
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/comment"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/user"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/work"
+	customejwt "github.com/simesaba80/toybox-back/internal/infrastructure/external/custome-jwt"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/external/oauth"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/router"
 	"github.com/simesaba80/toybox-back/internal/interface/controller"
@@ -38,6 +39,7 @@ var UseCaseSet = wire.NewSet(
 	ProvideWorkUseCase,
 	ProvideCommentUseCase,
 	ProvideDiscordUseCase,
+	ProvideTokenProvider,
 )
 
 var ControllerSet = wire.NewSet(
@@ -84,8 +86,19 @@ func ProvideCommentUseCase(commentRepo repository.CommentRepository, workRepo re
 }
 
 // ProvideDiscordUseCase はDiscordUseCaseを提供します
-func ProvideDiscordUseCase(authRepo repository.DiscordRepository, userRepo repository.UserRepository) *usecase.DiscordUsecase {
-	return usecase.NewDiscordUsecase(authRepo, userRepo)
+func ProvideDiscordUseCase(authRepo repository.DiscordRepository, userRepo repository.UserRepository, tokenProvider usecase.TokenProvider) *usecase.DiscordUsecase {
+	return usecase.NewDiscordUsecase(authRepo, userRepo, tokenProvider)
+}
+
+// ProvideTokenProvider はTokenProviderを提供します
+func ProvideTokenProvider() usecase.TokenProvider {
+	return tokenProviderFunc(customejwt.GenerateToken)
+}
+
+type tokenProviderFunc func(userID string) (string, error)
+
+func (f tokenProviderFunc) GenerateToken(userID string) (string, error) {
+	return f(userID)
 }
 
 // ProvideEcho はEchoインスタンスを提供します

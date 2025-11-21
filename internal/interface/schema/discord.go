@@ -27,10 +27,10 @@ func ToGetDiscordAuthURLResponse(authURL string) GetDiscordAuthURLResponse {
 	}
 }
 
-func ToGetDiscordTokenResponse(token entity.DiscordToken, user entity.DiscordUser) GetDiscordTokenResponse {
+func ToGetDiscordTokenResponse(appToken string, user entity.DiscordUser) GetDiscordTokenResponse {
 	return GetDiscordTokenResponse{
-		AccessToken:  token.AccessToken,
-		RefreshToken: token.RefreshToken,
+		AccessToken:  appToken,
+		RefreshToken: "",
 		User:         ToDiscordUserResponse(user),
 	}
 }
