@@ -46,7 +46,7 @@ func (r *Router) Setup() *echo.Echo {
 
 	r.echo.GET("/auth/discord", r.AuthController.GetDiscordAuthURL)
 	r.echo.GET("/auth/discord/callback", r.AuthController.AuthenticateUser)
-	// r.echo.POST("/auth/refresh", r.AuthController.RefreshToken)
+	r.echo.POST("/auth/refresh", r.AuthController.RegenerateToken)
 	r.echo.POST("/users", r.UserController.CreateUser)
 	r.echo.GET("/users", r.UserController.GetAllUsers)
 	r.echo.GET("/users/auth", func(c echo.Context) error {

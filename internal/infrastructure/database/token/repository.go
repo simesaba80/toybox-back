@@ -39,13 +39,13 @@ func (r *TokenRepository) Create(ctx context.Context, token *entity.Token) (*ent
 }
 
 func (r *TokenRepository) CheckRefreshToken(ctx context.Context, refreshToken string) (string, error) {
-	token := new(entity.Token)
-	err := r.db.NewSelect().Model(token).Where("refresh_token = ?", refreshToken).Scan(ctx)
+	dtoToken := new(dto.Token)
+	err := r.db.NewSelect().Model(dtoToken).Where("refresh_token = ?", refreshToken).Scan(ctx)
 	if err != nil {
 		return "", err
 	}
-	if token.ExpiredAt.Before(time.Now()) {
+	if dtoToken.ExpiredAt.Before(time.Now()) {
 		return "", errors.New("refresh token is expired")
 	}
-	return token.UserID, nil
+	return dtoToken.UserID.String(), nil
 }

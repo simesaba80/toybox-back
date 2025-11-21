@@ -20,6 +20,10 @@ type DiscordUserResponse struct {
 	Email    string `json:"email"`
 }
 
+type RegenerateTokenInput struct {
+	RefreshToken string `json:"refresh_token" validate:"required"`
+}
+
 type RegenerateTokenResponse struct {
 	AppToken string `json:"app_token"`
 }

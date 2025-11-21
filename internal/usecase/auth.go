@@ -99,7 +99,8 @@ func userBelongsToAllowedGuild(guildIDs []string, allowedGuildIDs []string) bool
 }
 
 func (uc *AuthUsecase) RegenerateToken(ctx context.Context, refreshToken string) (string, error) {
-	if userID, err := uc.tokenRepository.CheckRefreshToken(ctx, refreshToken); err != nil {
+	userID, err := uc.tokenRepository.CheckRefreshToken(ctx, refreshToken)
+	if err != nil {
 		return "", err
 	}
 	appToken, err := uc.tokenProvider.GenerateToken(userID)

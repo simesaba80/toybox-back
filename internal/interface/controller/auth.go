@@ -62,8 +62,16 @@ func (ac *AuthController) AuthenticateUser(c echo.Context) error {
 // @Router /auth/refresh [post]
 // @Param refresh_token query string true "Refresh token"
 func (ac *AuthController) RegenerateToken(c echo.Context) error {
-	refreshToken := c.QueryParam("refresh_token")
-	appToken, err := ac.authUsecase.RegenerateToken(c.Request().Context(), refreshToken)
+	var input schema.RegenerateTokenInput
+	if err := c.Bind(&input); err != nil {
+		c.Logger().Error("Bind error:", err)
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+	}
+	if err := c.Validate(&input); err != nil {
+		return err
+	}
+
+	appToken, err := ac.authUsecase.RegenerateToken(c.Request().Context(), input.RefreshToken)
 	if err != nil {
 		return err
 	}
