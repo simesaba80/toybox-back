@@ -9,3 +9,10 @@ type DiscordToken struct {
 	ExpiresIn    int64
 	TokenType    string
 }
+
+type DiscordUser struct {
+	ID       string
+	Username string
+	Avatar   string
+	Email    string
+}

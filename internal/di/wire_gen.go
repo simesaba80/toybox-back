@@ -11,8 +11,10 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/simesaba80/toybox-back/internal/domain/repository"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/comment"
+	"github.com/simesaba80/toybox-back/internal/infrastructure/database/token"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/user"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/work"
+	"github.com/simesaba80/toybox-back/internal/infrastructure/external/custome-jwt"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/external/oauth"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/router"
 	"github.com/simesaba80/toybox-back/internal/interface/controller"
@@ -38,9 +40,11 @@ func InitializeApp() (*App, func(), error) {
 	commentUsecase := ProvideCommentUseCase(commentRepository, workRepository)
 	commentController := controller.NewCommentController(commentUsecase)
 	discordRepository := oauth.NewDiscordRepository()
-	discordUsecase := ProvideDiscordUseCase(discordRepository)
-	discordController := controller.NewDiscordController(discordUsecase)
-	routerRouter := router.NewRouter(echo, userController, workController, commentController, discordController)
+	tokenProvider := ProvideTokenProvider()
+	tokenRepository := token.NewTokenRepository(db)
+	authUsecase := ProvideAuthUseCase(discordRepository, userRepository, tokenProvider, tokenRepository)
+	authController := controller.NewAuthController(authUsecase)
+	routerRouter := router.NewRouter(echo, userController, workController, commentController, authController)
 	app := NewApp(routerRouter, db)
 	return app, func() {
 	}, nil
@@ -48,16 +52,17 @@ func InitializeApp() (*App, func(), error) {
 
 // wire.go:
 
-var RepositorySet = wire.NewSet(user.NewUserRepository, wire.Bind(new(repository.UserRepository), new(*user.UserRepository)), work.NewWorkRepository, wire.Bind(new(repository.WorkRepository), new(*work.WorkRepository)), comment.NewCommentRepository, wire.Bind(new(repository.CommentRepository), new(*comment.CommentRepository)), oauth.NewDiscordRepository, wire.Bind(new(repository.DiscordRepository), new(*oauth.DiscordRepository)))
+var RepositorySet = wire.NewSet(user.NewUserRepository, wire.Bind(new(repository.UserRepository), new(*user.UserRepository)), work.NewWorkRepository, wire.Bind(new(repository.WorkRepository), new(*work.WorkRepository)), comment.NewCommentRepository, wire.Bind(new(repository.CommentRepository), new(*comment.CommentRepository)), oauth.NewDiscordRepository, wire.Bind(new(repository.DiscordRepository), new(*oauth.DiscordRepository)), token.NewTokenRepository, wire.Bind(new(repository.TokenRepository), new(*token.TokenRepository)))
 
 var UseCaseSet = wire.NewSet(
 	ProvideUserUseCase,
 	ProvideWorkUseCase,
 	ProvideCommentUseCase,
-	ProvideDiscordUseCase,
+	ProvideAuthUseCase,
+	ProvideTokenProvider,
 )
 
-var ControllerSet = wire.NewSet(controller.NewUserController, controller.NewWorkController, controller.NewCommentController, controller.NewDiscordController)
+var ControllerSet = wire.NewSet(controller.NewUserController, controller.NewWorkController, controller.NewCommentController, controller.NewAuthController)
 
 var InfrastructureSet = wire.NewSet(
 	ProvideDatabase, router.NewRouter, ProvideEcho,
@@ -94,8 +99,19 @@ func ProvideCommentUseCase(commentRepo repository.CommentRepository, workRepo re
 }
 
 // ProvideDiscordUseCase はDiscordUseCaseを提供します
-func ProvideDiscordUseCase(repo repository.DiscordRepository) *usecase.DiscordUsecase {
-	return usecase.NewDiscordUsecase(repo)
+func ProvideAuthUseCase(authRepo repository.DiscordRepository, userRepo repository.UserRepository, tokenProvider usecase.TokenProvider, tokenRepo repository.TokenRepository) *usecase.AuthUsecase {
+	return usecase.NewAuthUsecase(authRepo, userRepo, tokenProvider, tokenRepo)
+}
+
+// ProvideTokenProvider はTokenProviderを提供します
+func ProvideTokenProvider() usecase.TokenProvider {
+	return tokenProviderFunc(customejwt.GenerateToken)
+}
+
+type tokenProviderFunc func(userID string) (string, error)
+
+func (f tokenProviderFunc) GenerateToken(userID string) (string, error) {
+	return f(userID)
 }
 
 // ProvideEcho はEchoインスタンスを提供します

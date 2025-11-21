@@ -12,7 +12,7 @@ import (
 type User struct {
 	bun.BaseModel `bun:"table:user"`
 
-	ID                  uuid.UUID `bun:"id,pk"`
+	ID                  uuid.UUID `bun:"id,pk,default:gen_random_uuid()"`
 	Name                string    `bun:"name,notnull"`
 	Email               string    `bun:"email,notnull,unique"`
 	PasswordHash        string    `bun:"password_hash"`
