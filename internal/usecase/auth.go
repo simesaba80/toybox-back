@@ -62,6 +62,10 @@ func (uc *AuthUsecase) AuthenticateUser(ctx context.Context, code string) (strin
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			user, err = uc.userRepository.Create(ctx, &entity.User{
+				Name:                discordUser.Username,
+				Email:               discordUser.Email,
+				DisplayName:         discordUser.Username,
+				AvatarURL:           discordUser.Avatar,
 				DiscordUserID:       discordUser.ID,
 				DiscordToken:        token.AccessToken,
 				DiscordRefreshToken: token.RefreshToken,
