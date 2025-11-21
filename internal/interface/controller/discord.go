@@ -43,9 +43,9 @@ func (dc *DiscordController) GetDiscordAuthURL(c echo.Context) error {
 // @Failure 500 {object} echo.HTTPError
 // @Router /auth/discord/callback [get]
 // @Param code query string true "Discord code"
-func (dc *DiscordController) GetDiscordToken(c echo.Context) error {
+func (dc *DiscordController) AuthenticateUser(c echo.Context) error {
 	code := c.QueryParam("code")
-	token, err := dc.discordUsecase.GetDiscordToken(c.Request().Context(), code)
+	token, err := dc.discordUsecase.AuthenticateUser(c.Request().Context(), code)
 	if err != nil {
 		return err
 	}

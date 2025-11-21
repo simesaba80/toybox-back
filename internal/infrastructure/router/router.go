@@ -3,8 +3,12 @@ package router
 import (
 	"net/http"
 
+	"github.com/golang-jwt/jwt/v5"
+	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/simesaba80/toybox-back/internal/infrastructure/config"
+	customejwt "github.com/simesaba80/toybox-back/internal/infrastructure/external/custome-jwt"
 	"github.com/simesaba80/toybox-back/internal/interface/controller"
 	"github.com/simesaba80/toybox-back/pkg/echovalidator"
 	echoSwagger "github.com/swaggo/echo-swagger"
@@ -41,7 +45,7 @@ func (r *Router) Setup() *echo.Echo {
 	})
 
 	r.echo.GET("/auth/discord", r.DiscordController.GetDiscordAuthURL)
-	r.echo.GET("/auth/discord/callback", r.DiscordController.GetDiscordToken)
+	r.echo.GET("/auth/discord/callback", r.DiscordController.AuthenticateUser)
 	r.echo.POST("/users", r.UserController.CreateUser)
 	r.echo.GET("/users", r.UserController.GetAllUsers)
 	r.echo.GET("/users/auth", func(c echo.Context) error {
@@ -55,5 +59,14 @@ func (r *Router) Setup() *echo.Echo {
 	r.echo.GET("/works/:work_id/comments", r.CommentController.GetCommentsByWorkID)
 	r.echo.POST("/works/:work_id/comments", r.CommentController.CreateComment)
 
+	config := echojwt.Config{
+		NewClaimsFunc: func(c echo.Context) jwt.Claims {
+			return new(customejwt.JWTCustomClaims)
+		},
+		SigningKey: []byte(config.TOKEN_SECRET),
+	}
+	e := r.echo.Group("/works", echojwt.WithConfig(config))
+	e.Use(echojwt.WithConfig(config))
+	e.GET("/", r.WorkController.GetAllWorks)
 	return r.echo
 }

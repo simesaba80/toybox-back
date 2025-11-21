@@ -9,4 +9,5 @@ import (
 type UserRepository interface {
 	Create(ctx context.Context, user *entity.User) (*entity.User, error)
 	GetAll(ctx context.Context) ([]*entity.User, error)
+	GetUserByDiscordUserID(ctx context.Context, discordUserID string) (*entity.User, error)
 }

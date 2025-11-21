@@ -9,10 +9,11 @@ import (
 
 type DiscordUsecase struct {
 	authRepository repository.DiscordRepository
+	userRepository repository.UserRepository
 }
 
-func NewDiscordUsecase(authRepository repository.DiscordRepository) *DiscordUsecase {
-	return &DiscordUsecase{authRepository: authRepository}
+func NewDiscordUsecase(authRepository repository.DiscordRepository, userRepository repository.UserRepository) *DiscordUsecase {
+	return &DiscordUsecase{authRepository: authRepository, userRepository: userRepository}
 }
 
 func (uc *DiscordUsecase) GetDiscordAuthURL(ctx context.Context) (string, error) {
@@ -25,10 +26,11 @@ func (uc *DiscordUsecase) GetDiscordAuthURL(ctx context.Context) (string, error)
 	return uc.authRepository.GetDiscordAuthURL(ctx)
 }
 
-func (uc *DiscordUsecase) GetDiscordToken(ctx context.Context, code string) (entity.DiscordToken, error) {
+func (uc *DiscordUsecase) AuthenticateUser(ctx context.Context, code string) (entity.DiscordToken, error) {
 	token, err := uc.authRepository.GetDiscordToken(ctx, code)
 	if err != nil {
 		return entity.DiscordToken{}, err
 	}
+
 	return token, nil
 }

@@ -38,7 +38,7 @@ func InitializeApp() (*App, func(), error) {
 	commentUsecase := ProvideCommentUseCase(commentRepository, workRepository)
 	commentController := controller.NewCommentController(commentUsecase)
 	discordRepository := oauth.NewDiscordRepository()
-	discordUsecase := ProvideDiscordUseCase(discordRepository)
+	discordUsecase := ProvideDiscordUseCase(discordRepository, userRepository)
 	discordController := controller.NewDiscordController(discordUsecase)
 	routerRouter := router.NewRouter(echo, userController, workController, commentController, discordController)
 	app := NewApp(routerRouter, db)
@@ -94,8 +94,8 @@ func ProvideCommentUseCase(commentRepo repository.CommentRepository, workRepo re
 }
 
 // ProvideDiscordUseCase はDiscordUseCaseを提供します
-func ProvideDiscordUseCase(repo repository.DiscordRepository) *usecase.DiscordUsecase {
-	return usecase.NewDiscordUsecase(repo)
+func ProvideDiscordUseCase(authRepo repository.DiscordRepository, userRepo repository.UserRepository) *usecase.DiscordUsecase {
+	return usecase.NewDiscordUsecase(authRepo, userRepo)
 }
 
 // ProvideEcho はEchoインスタンスを提供します

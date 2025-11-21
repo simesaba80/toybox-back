@@ -44,3 +44,12 @@ func (r *UserRepository) GetAll(ctx context.Context) ([]*entity.User, error) {
 
 	return entityUsers, nil
 }
+
+func (r *UserRepository) GetUserByDiscordUserID(ctx context.Context, discordUserID string) (*entity.User, error) {
+	var dtoUser *dto.User
+	err := r.db.NewSelect().Model(dtoUser).Where("discord_user_id = ?", discordUserID).Scan(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return dtoUser.ToUserEntity(), nil
+}
