@@ -40,7 +40,7 @@ func (r *Router) Setup() *echo.Echo {
 		return c.JSON(200, map[string]string{"status": "ok"})
 	})
 
-	r.echo.GET("/auth/discord/", r.DiscordController.GetDiscordAuthURL)
+	r.echo.GET("/auth/discord", r.DiscordController.GetDiscordAuthURL)
 	r.echo.GET("/auth/discord/callback", r.DiscordController.GetDiscordToken)
 	r.echo.POST("/users", r.UserController.CreateUser)
 	r.echo.GET("/users", r.UserController.GetAllUsers)
