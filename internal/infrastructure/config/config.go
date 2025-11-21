@@ -3,6 +3,7 @@ package config
 import (
 	"log"
 	"os"
+	"strings"
 
 	"github.com/joho/godotenv"
 )
@@ -16,7 +17,7 @@ var (
 	DISCORD_CLIENT_ID     string
 	DISCORD_CLIENT_SECRET string
 	TOKEN_SECRET          string
-	DISCORD_GUILD_ID      string
+	DISCORD_GUILD_IDS     []string
 	HOST_URL              string
 )
 
@@ -36,6 +37,6 @@ func LoadEnv() {
 	DISCORD_CLIENT_ID = os.Getenv("DISCORD_CLIENT_ID")
 	DISCORD_CLIENT_SECRET = os.Getenv("DISCORD_CLIENT_SECRET")
 	TOKEN_SECRET = os.Getenv("TOKEN_SECRET")
-	DISCORD_GUILD_ID = os.Getenv("DISCORD_GUILD_ID")
+	DISCORD_GUILD_IDS = strings.Split(os.Getenv("DISCORD_GUILD_IDS"), ",")
 	HOST_URL = os.Getenv("HOST_URL")
 }
