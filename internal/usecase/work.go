@@ -60,15 +60,11 @@ func (uc *WorkUseCase) CreateWork(ctx context.Context, title, description, visib
 	defer cancel()
 
 	work := &entity.Work{
-		ID:              uuid.New(),
-		Title:           title,
-		Description:     description,
-		UserID:          userID,
-		Visibility:      visibility,
-	}
-
-	if err := work.Validate(); err != nil {
-		return nil, fmt.Errorf("validation failed: %w", err)
+		ID:          uuid.New(),
+		Title:       title,
+		Description: description,
+		UserID:      userID,
+		Visibility:  visibility,
 	}
 
 	createdWork, err := uc.repo.Create(ctx, work)
