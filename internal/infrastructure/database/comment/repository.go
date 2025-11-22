@@ -2,12 +2,14 @@ package comment
 
 import (
 	"context"
-	"fmt"
+	"database/sql"
+	"errors"
 
 	"github.com/google/uuid"
 	"github.com/uptrace/bun"
 
 	"github.com/simesaba80/toybox-back/internal/domain/entity"
+	domainerrors "github.com/simesaba80/toybox-back/internal/domain/errors"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/dto"
 )
 
@@ -30,7 +32,10 @@ func (r *CommentRepository) FindByWorkID(ctx context.Context, workID uuid.UUID) 
 		Order("created_at ASC").
 		Scan(ctx)
 	if err != nil {
-		return nil, err
+		if errors.Is(err, sql.ErrNoRows) {
+			return make([]*entity.Comment, 0), nil
+		}
+		return nil, domainerrors.ErrFailedToGetCommentsByWorkID
 	}
 
 	entityComments := make([]*entity.Comment, len(dtoComments))
@@ -49,7 +54,10 @@ func (r *CommentRepository) FindByID(ctx context.Context, id uuid.UUID) (*entity
 		Relation("User").
 		Scan(ctx)
 	if err != nil {
-		return nil, err
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domainerrors.ErrCommentNotFound
+		}
+		return nil, domainerrors.ErrFailedToGetCommentById
 	}
 
 	return dtoComment.ToCommentEntity(), nil
@@ -58,7 +66,7 @@ func (r *CommentRepository) FindByID(ctx context.Context, id uuid.UUID) (*entity
 func (r *CommentRepository) Create(ctx context.Context, comment *entity.Comment) (*entity.Comment, error) {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to begin transaction: %w", err)
+		return nil, domainerrors.ErrFailedToBeginTransaction
 	}
 	defer func() {
 		if r := recover(); r != nil {
@@ -73,11 +81,11 @@ func (r *CommentRepository) Create(ctx context.Context, comment *entity.Comment)
 
 	_, err = tx.NewInsert().Model(dtoComment).Exec(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create comment in transaction: %w", err)
+		return nil, domainerrors.ErrFailedToCreateComment
 	}
 
 	if err := tx.Commit(); err != nil {
-		return nil, fmt.Errorf("failed to commit transaction: %w", err)
+		return nil, domainerrors.ErrFailedToCommitTransaction
 	}
 
 	return dtoComment.ToCommentEntity(), nil

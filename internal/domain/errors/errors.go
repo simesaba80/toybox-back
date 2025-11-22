@@ -37,3 +37,11 @@ var (
 	ErrFailedToGetAllWorksByLimitAndOffset = errors.New("failed to get all works by limit and offset")
 	ErrFailedToGetWorkById                 = errors.New("failed to get work by id")
 )
+
+// コメント関連のエラー定義
+var (
+	ErrFailedToGetCommentsByWorkID = errors.New("failed to get comments by work id")
+	ErrFailedToGetCommentById      = errors.New("failed to get comment by id")
+	ErrCommentNotFound             = errors.New("comment not found")
+	ErrFailedToCreateComment       = errors.New("failed to create comment")
+)
