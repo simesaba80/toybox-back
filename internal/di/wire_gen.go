@@ -7,8 +7,6 @@
 package di
 
 import (
-	"time"
-
 	"github.com/google/wire"
 	"github.com/labstack/echo/v4"
 	"github.com/simesaba80/toybox-back/internal/domain/repository"
@@ -16,13 +14,14 @@ import (
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/token"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/user"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/work"
-	customejwt "github.com/simesaba80/toybox-back/internal/infrastructure/external/custome-jwt"
+	"github.com/simesaba80/toybox-back/internal/infrastructure/external/custome-jwt"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/external/oauth"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/router"
 	"github.com/simesaba80/toybox-back/internal/interface/controller"
 	"github.com/simesaba80/toybox-back/internal/usecase"
 	"github.com/simesaba80/toybox-back/pkg/db"
 	"github.com/uptrace/bun"
+	"time"
 )
 
 // Injectors from wire.go:
@@ -38,8 +37,8 @@ func InitializeApp() (*App, func(), error) {
 	iWorkUseCase := ProvideWorkUseCase(workRepository)
 	workController := controller.NewWorkController(iWorkUseCase)
 	commentRepository := comment.NewCommentRepository(db)
-	commentUsecase := ProvideCommentUseCase(commentRepository, workRepository)
-	commentController := controller.NewCommentController(commentUsecase)
+	iCommentUsecase := ProvideCommentUseCase(commentRepository, workRepository)
+	commentController := controller.NewCommentController(iCommentUsecase)
 	discordRepository := oauth.NewDiscordRepository()
 	tokenProvider := ProvideTokenProvider()
 	tokenRepository := token.NewTokenRepository(db)
@@ -95,7 +94,7 @@ func ProvideWorkUseCase(repo repository.WorkRepository) usecase.IWorkUseCase {
 }
 
 // ProvideCommentUseCase はCommentUseCaseを提供します
-func ProvideCommentUseCase(commentRepo repository.CommentRepository, workRepo repository.WorkRepository) *usecase.CommentUsecase {
+func ProvideCommentUseCase(commentRepo repository.CommentRepository, workRepo repository.WorkRepository) usecase.ICommentUsecase {
 	return usecase.NewCommentUsecase(commentRepo, workRepo, 30*time.Second)
 }
 

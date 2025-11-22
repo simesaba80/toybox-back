@@ -12,6 +12,7 @@ import (
 
 type ICommentUsecase interface {
 	GetCommentsByWorkID(ctx context.Context, workID uuid.UUID) ([]*entity.Comment, error)
+	CreateComment(ctx context.Context, content string, workID, userID uuid.UUID, replyAt string) (*entity.Comment, error)
 }
 
 type commentUsecase struct {
@@ -40,7 +41,7 @@ func (uc *commentUsecase) GetCommentsByWorkID(ctx context.Context, workID uuid.U
 	return comments, nil
 }
 
-func (uc *CommentUsecase) CreateComment(ctx context.Context, content string, workID, userID uuid.UUID, replyAt string) (*entity.Comment, error) {
+func (uc *commentUsecase) CreateComment(ctx context.Context, content string, workID, userID uuid.UUID, replyAt string) (*entity.Comment, error) {
 	ctx, cancel := context.WithTimeout(ctx, uc.timeout)
 	defer cancel()
 

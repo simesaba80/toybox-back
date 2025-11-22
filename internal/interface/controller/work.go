@@ -30,6 +30,8 @@ func NewWorkController(workUsecase usecase.IWorkUseCase) *WorkController {
 // @Param limit query int false "Limit per page (default: 20, max: 100)"
 // @Param page query int false "Page number (default: 1)"
 // @Success 200 {object} schema.WorkListResponse
+// @Failure 400 {object} echo.HTTPError
+// @Failure 500 {object} echo.HTTPError
 // @Router /works [get]
 func (wc *WorkController) GetAllWorks(c echo.Context) error {
 	var query schema.GetWorksQuery

@@ -84,7 +84,7 @@ func ProvideWorkUseCase(repo repository.WorkRepository) usecase.IWorkUseCase {
 }
 
 // ProvideCommentUseCase はCommentUseCaseを提供します
-func ProvideCommentUseCase(commentRepo repository.CommentRepository, workRepo repository.WorkRepository) *usecase.CommentUsecase {
+func ProvideCommentUseCase(commentRepo repository.CommentRepository, workRepo repository.WorkRepository) usecase.ICommentUsecase {
 	return usecase.NewCommentUsecase(commentRepo, workRepo, 30*time.Second)
 }
 
