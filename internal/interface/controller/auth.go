@@ -1,9 +1,11 @@
 package controller
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	domainerrors "github.com/simesaba80/toybox-back/internal/domain/errors"
 	"github.com/simesaba80/toybox-back/internal/interface/schema"
 	"github.com/simesaba80/toybox-back/internal/usecase"
 )
@@ -29,7 +31,7 @@ func NewAuthController(authUsecase *usecase.AuthUsecase) *AuthController {
 func (ac *AuthController) GetDiscordAuthURL(c echo.Context) error {
 	authURL, err := ac.authUsecase.GetDiscordAuthURL(c.Request().Context())
 	if err != nil {
-		return err
+		return handleAuthError(c, err)
 	}
 	return c.JSON(http.StatusOK, schema.ToGetDiscordAuthURLResponse(authURL))
 }
@@ -40,14 +42,18 @@ func (ac *AuthController) GetDiscordAuthURL(c echo.Context) error {
 // @Tags auth
 // @Produce json
 // @Success 200 {object} schema.GetDiscordTokenResponse
+// @Failure 403 {object} echo.HTTPError
 // @Failure 500 {object} echo.HTTPError
 // @Router /auth/discord/callback [get]
 // @Param code query string true "Discord code"
 func (ac *AuthController) AuthenticateUser(c echo.Context) error {
 	code := c.QueryParam("code")
+	if code == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "code is required")
+	}
 	appToken, refreshToken, err := ac.authUsecase.AuthenticateUser(c.Request().Context(), code)
 	if err != nil {
-		return err
+		return handleAuthError(c, err)
 	}
 	return c.JSON(http.StatusOK, schema.ToGetDiscordTokenResponse(appToken, refreshToken))
 }
@@ -58,6 +64,7 @@ func (ac *AuthController) AuthenticateUser(c echo.Context) error {
 // @Tags auth
 // @Produce json
 // @Success 200 {object} schema.GetDiscordTokenResponse
+// @Failure 400 {object} echo.HTTPError
 // @Failure 500 {object} echo.HTTPError
 // @Router /auth/refresh [post]
 // @Param refresh_token query string true "Refresh token"
@@ -73,7 +80,32 @@ func (ac *AuthController) RegenerateToken(c echo.Context) error {
 
 	appToken, err := ac.authUsecase.RegenerateToken(c.Request().Context(), input.RefreshToken)
 	if err != nil {
-		return err
+		return handleAuthError(c, err)
 	}
 	return c.JSON(http.StatusOK, schema.ToRegenerateTokenResponse(appToken))
+}
+
+func handleAuthError(c echo.Context, err error) error {
+	var httpErr *echo.HTTPError
+	if errors.As(err, &httpErr) {
+		return httpErr
+	}
+
+	switch {
+	case errors.Is(err, domainerrors.ErrUserNotAllowedGuild):
+		return echo.NewHTTPError(http.StatusForbidden, "ユーザーは許可されたDiscordギルドに所属していません")
+	case errors.Is(err, domainerrors.ErrRefreshTokenExpired):
+		return echo.NewHTTPError(http.StatusBadRequest, "リフレッシュトークンが期限切れです")
+	case errors.Is(err, domainerrors.ErrRefreshTokenInvalid):
+		return echo.NewHTTPError(http.StatusBadRequest, "リフレッシュトークンが無効です")
+	case errors.Is(err, domainerrors.ErrFaileRequestToDiscord):
+		return echo.NewHTTPError(http.StatusInternalServerError, "Discordへのリクエストに失敗しました")
+	case errors.Is(err, domainerrors.ErrClientIDNotSet):
+		return echo.NewHTTPError(http.StatusInternalServerError, "DiscordクライアントIDが設定されていません")
+	case errors.Is(err, domainerrors.ErrRedirectURLNotSet):
+		return echo.NewHTTPError(http.StatusInternalServerError, "リダイレクトURLが設定されていません")
+	default:
+		c.Logger().Error("Auth error:", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
 }

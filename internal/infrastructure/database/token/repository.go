@@ -2,11 +2,13 @@ package token
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/simesaba80/toybox-back/internal/domain/entity"
+	domainerrors "github.com/simesaba80/toybox-back/internal/domain/errors"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/dto"
 	"github.com/uptrace/bun"
 )
@@ -42,10 +44,13 @@ func (r *TokenRepository) CheckRefreshToken(ctx context.Context, refreshToken st
 	dtoToken := new(dto.Token)
 	err := r.db.NewSelect().Model(dtoToken).Where("refresh_token = ?", refreshToken).Scan(ctx)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", domainerrors.ErrRefreshTokenInvalid
+		}
 		return "", err
 	}
 	if dtoToken.ExpiredAt.Before(time.Now()) {
-		return "", errors.New("refresh token is expired")
+		return "", domainerrors.ErrRefreshTokenExpired
 	}
 	return dtoToken.UserID.String(), nil
 }
