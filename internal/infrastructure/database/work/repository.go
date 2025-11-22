@@ -2,12 +2,12 @@ package work
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/uptrace/bun"
 
 	"github.com/simesaba80/toybox-back/internal/domain/entity"
+	domainerrors "github.com/simesaba80/toybox-back/internal/domain/errors"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/dto"
 )
 
@@ -26,7 +26,7 @@ func (r *WorkRepository) GetAll(ctx context.Context, limit, offset int) ([]*enti
 
 	total, err := r.db.NewSelect().Model(&dtoWorks).Count(ctx)
 	if err != nil {
-		return nil, 0, err
+		return nil, 0, domainerrors.ErrFailedToGetAllWorksByLimitAndOffset
 	}
 
 	err = r.db.NewSelect().
@@ -37,7 +37,7 @@ func (r *WorkRepository) GetAll(ctx context.Context, limit, offset int) ([]*enti
 		Offset(offset).
 		Scan(ctx)
 	if err != nil {
-		return nil, 0, err
+		return nil, 0, domainerrors.ErrFailedToGetAllWorksByLimitAndOffset
 	}
 
 	entityWorks := make([]*entity.Work, len(dtoWorks))
@@ -52,7 +52,7 @@ func (r *WorkRepository) GetByID(ctx context.Context, id uuid.UUID) (*entity.Wor
 	var dtoWork dto.Work
 	err := r.db.NewSelect().Model(&dtoWork).Relation("Assets").Where("id = ?", id).Scan(ctx)
 	if err != nil {
-		return nil, err
+		return nil, domainerrors.ErrFailedToGetWorkById
 	}
 	return dtoWork.ToWorkEntity(), nil
 }
@@ -73,7 +73,7 @@ func (r *WorkRepository) Create(ctx context.Context, work *entity.Work) (*entity
 
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to begin transaction: %w", err)
+		return nil, domainerrors.ErrFailedToBeginTransaction
 	}
 
 	defer func() {
@@ -89,12 +89,12 @@ func (r *WorkRepository) Create(ctx context.Context, work *entity.Work) (*entity
 
 	_, err = tx.NewInsert().Model(dtoWork).Exec(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create work in transaction: %w", err)
+		return nil, domainerrors.ErrFailedToCreateWork
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		return nil, fmt.Errorf("failed to commit transaction: %w", err)
+		return nil, domainerrors.ErrFailedToCommitTransaction
 	}
 
 	return dtoWork.ToWorkEntity(), nil

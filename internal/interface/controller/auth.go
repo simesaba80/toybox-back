@@ -104,6 +104,8 @@ func handleAuthError(c echo.Context, err error) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "DiscordクライアントIDが設定されていません")
 	case errors.Is(err, domainerrors.ErrRedirectURLNotSet):
 		return echo.NewHTTPError(http.StatusInternalServerError, "リダイレクトURLが設定されていません")
+	case errors.Is(err, domainerrors.ErrFailedToCreateUser):
+		return echo.NewHTTPError(http.StatusInternalServerError, "ユーザーの作成に失敗しました")
 	default:
 		c.Logger().Error("Auth error:", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")

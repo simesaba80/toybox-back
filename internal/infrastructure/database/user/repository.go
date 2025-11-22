@@ -29,7 +29,7 @@ func (r *UserRepository) Create(ctx context.Context, user *entity.User) (*entity
 
 	_, err := r.db.NewInsert().Model(dtoUser).Exec(ctx)
 	if err != nil {
-		return nil, err
+		return nil, domainerrors.ErrFailedToCreateUser
 	}
 
 	return dtoUser.ToUserEntity(), nil

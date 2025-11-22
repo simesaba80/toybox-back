@@ -2,6 +2,11 @@ package errors
 
 import "errors"
 
+// 共通のエラー定義
+var (
+	ErrInvalidRequestBody = errors.New("invalid request body")
+)
+
 // 認証関連のエラー定義
 var (
 	ErrUserNotAllowedGuild   = errors.New("user is not in an allowed discord guild")
@@ -12,8 +17,23 @@ var (
 	ErrRedirectURLNotSet     = errors.New("redirect URL is not set")
 )
 
+// DB関連のエラー定義
+var (
+	ErrFailedToBeginTransaction    = errors.New("failed to begin transaction")
+	ErrFailedToCommitTransaction   = errors.New("failed to commit transaction")
+	ErrFailedToRollbackTransaction = errors.New("failed to rollback transaction")
+)
+
 // ユーザー関連のエラー定義
 var (
-	ErrUserNotFound      = errors.New("user not found")
-	ErrUserAlreadyExists = errors.New("user already exists")
+	ErrUserNotFound       = errors.New("user not found")
+	ErrUserAlreadyExists  = errors.New("user already exists")
+	ErrFailedToCreateUser = errors.New("failed to create user")
+)
+
+// 作品関連のエラー定義
+var (
+	ErrFailedToCreateWork                  = errors.New("failed to create work")
+	ErrFailedToGetAllWorksByLimitAndOffset = errors.New("failed to get all works by limit and offset")
+	ErrFailedToGetWorkById                 = errors.New("failed to get work by id")
 )
