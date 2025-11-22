@@ -4,23 +4,23 @@ definitions:
     properties:
       message: {}
     type: object
-  github_com_simesaba80_toybox-back_internal_domain_entity.Asset:
+  github_com_simesaba80_toybox-back_internal_interface_schema.AssetResponse:
     properties:
-      assetType:
+      asset_type:
         type: string
-      createdAt:
+      created_at:
         type: string
       extension:
         type: string
       id:
         type: string
-      updatedAt:
+      updated_at:
         type: string
       url:
         type: string
-      userID:
+      user_id:
         type: string
-      workID:
+      work_id:
         type: string
     type: object
   github_com_simesaba80_toybox-back_internal_interface_schema.CommentResponse:
@@ -37,6 +37,29 @@ definitions:
         type: string
       user:
         $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.UserInCommentResponse'
+    type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.CreateCommentRequest:
+    properties:
+      content:
+        maxLength: 255
+        type: string
+      reply_at:
+        type: string
+      user_id:
+        type: string
+    required:
+    - content
+    type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.CreateCommentResponse:
+    properties:
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      reply_at:
+        type: string
     type: object
   github_com_simesaba80_toybox-back_internal_interface_schema.CreateUserInput:
     properties:
@@ -92,6 +115,18 @@ definitions:
       visibility:
         type: string
     type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.GetDiscordAuthURLResponse:
+    properties:
+      url:
+        type: string
+    type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.GetDiscordTokenResponse:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
+        type: string
+    type: object
   github_com_simesaba80_toybox-back_internal_interface_schema.GetUserOutput:
     properties:
       avatar_url:
@@ -119,7 +154,7 @@ definitions:
     properties:
       assets:
         items:
-          $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_domain_entity.Asset'
+          $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.AssetResponse'
         type: array
       created_at:
         type: string
@@ -172,6 +207,77 @@ info:
   title: Toybox API
   version: "1.0"
 paths:
+  /auth/discord/:
+    get:
+      description: Get Discord authentication URL
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.GetDiscordAuthURLResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Get Discord authentication URL
+      tags:
+      - auth
+  /auth/discord/callback:
+    get:
+      description: Get Discord token by code
+      parameters:
+      - description: Discord code
+        in: query
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.GetDiscordTokenResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Get Discord token by code
+      tags:
+      - auth
+  /auth/refresh:
+    post:
+      description: Regenerate token
+      parameters:
+      - description: Refresh token
+        in: query
+        name: refresh_token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.GetDiscordTokenResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Regenerate token
+      tags:
+      - auth
   /users:
     get:
       description: Get all users
@@ -315,6 +421,41 @@ paths:
           schema:
             $ref: '#/definitions/echo.HTTPError'
       summary: Get comments for a work
+      tags:
+      - comments
+    post:
+      consumes:
+      - application/json
+      description: Create a new comment for a specific work. Can be anonymous or by
+        a logged-in user.
+      parameters:
+      - description: Work ID
+        in: path
+        name: work_id
+        required: true
+        type: string
+      - description: Comment to create
+        in: body
+        name: comment
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.CreateCommentRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.CreateCommentResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Create a comment for a work
       tags:
       - comments
 swagger: "2.0"

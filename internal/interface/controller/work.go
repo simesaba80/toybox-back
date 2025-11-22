@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
+	domainerrors "github.com/simesaba80/toybox-back/internal/domain/errors"
 	"github.com/simesaba80/toybox-back/internal/interface/schema"
 	"github.com/simesaba80/toybox-back/internal/usecase"
 )
@@ -33,7 +34,7 @@ func NewWorkController(workUsecase usecase.IWorkUseCase) *WorkController {
 func (wc *WorkController) GetAllWorks(c echo.Context) error {
 	var query schema.GetWorksQuery
 	if err := c.Bind(&query); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid query parameters")
+		return handleWorkError(c, err)
 	}
 	if err := c.Validate(&query); err != nil {
 		return err
@@ -41,7 +42,7 @@ func (wc *WorkController) GetAllWorks(c echo.Context) error {
 
 	works, total, limit, page, err := wc.workUsecase.GetAll(c.Request().Context(), query.Limit, query.Page)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to retrieve works")
+		return handleWorkError(c, err)
 	}
 
 	response := make([]schema.GetWorkOutput, len(works))
@@ -72,7 +73,7 @@ func (wc *WorkController) GetWorkByID(c echo.Context) error {
 	idStr := c.Param("work_id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid work ID format")
+		return handleWorkError(c, err)
 	}
 
 	work, err := wc.workUsecase.GetByID(c.Request().Context(), id)
@@ -80,7 +81,7 @@ func (wc *WorkController) GetWorkByID(c echo.Context) error {
 		if errors.Is(err, sql.ErrNoRows) {
 			return echo.NewHTTPError(http.StatusNotFound, "Work not found")
 		}
-		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to retrieve work details")
+		return handleWorkError(c, err)
 	}
 
 	return c.JSON(http.StatusOK, schema.ToWorkResponse(work))
@@ -101,16 +102,16 @@ func (wc *WorkController) CreateWork(c echo.Context) error {
 	var input schema.CreateWorkInput
 	if err := c.Bind(&input); err != nil {
 		c.Logger().Error("Bind error:", err)
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+		return handleWorkError(c, err)
 	}
-    if err := c.Validate(&input); err != nil {
-      return err
-    }
+	if err := c.Validate(&input); err != nil {
+		return err
+	}
 	// リクエストボディからuser_idを取得し、UUIDにパース
 	userID, err := uuid.Parse(input.UserID)
 	if err != nil {
 		c.Logger().Error("Invalid UserID format:", err)
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid UserID format")
+		return handleWorkError(c, err)
 	}
 
 	createdWork, err := wc.workUsecase.CreateWork(
@@ -122,8 +123,35 @@ func (wc *WorkController) CreateWork(c echo.Context) error {
 	)
 	if err != nil {
 		c.Logger().Error("WorkUseCase.CreateWork error:", err)
-		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to create work")
+		return handleWorkError(c, err)
 	}
 
 	return c.JSON(http.StatusCreated, schema.ToCreateWorkOutput(createdWork))
+}
+
+func handleWorkError(c echo.Context, err error) error {
+	var httpErr *echo.HTTPError
+	if errors.As(err, &httpErr) {
+		return httpErr
+	}
+
+	switch {
+	case errors.Is(err, domainerrors.ErrInvalidRequestBody):
+		return echo.NewHTTPError(http.StatusBadRequest, "無効なリクエストボディです")
+	case errors.Is(err, domainerrors.ErrFailedToGetWorkById):
+		return echo.NewHTTPError(http.StatusNotFound, "作品が見つかりませんでした")
+	case errors.Is(err, domainerrors.ErrFailedToGetAllWorksByLimitAndOffset):
+		return echo.NewHTTPError(http.StatusInternalServerError, "作品の取得に失敗しました")
+	case errors.Is(err, domainerrors.ErrFailedToBeginTransaction):
+		return echo.NewHTTPError(http.StatusInternalServerError, "トランザクションの開始に失敗しました")
+	case errors.Is(err, domainerrors.ErrFailedToCommitTransaction):
+		return echo.NewHTTPError(http.StatusInternalServerError, "トランザクションのコミットに失敗しました")
+	case errors.Is(err, domainerrors.ErrFailedToRollbackTransaction):
+		return echo.NewHTTPError(http.StatusInternalServerError, "トランザクションのロールバックに失敗しました")
+	case errors.Is(err, domainerrors.ErrFailedToCreateWork):
+		return echo.NewHTTPError(http.StatusBadRequest, "作品の作成に失敗しました")
+	default:
+		c.Logger().Error("Work error:", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
 }

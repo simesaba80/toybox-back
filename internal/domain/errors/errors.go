@@ -1,0 +1,47 @@
+package errors
+
+import "errors"
+
+// 共通のエラー定義
+var (
+	ErrInvalidRequestBody = errors.New("invalid request body")
+)
+
+// 認証関連のエラー定義
+var (
+	ErrUserNotAllowedGuild   = errors.New("user is not in an allowed discord guild")
+	ErrRefreshTokenExpired   = errors.New("refresh token is expired")
+	ErrRefreshTokenInvalid   = errors.New("refresh token is invalid")
+	ErrFaileRequestToDiscord = errors.New("failed to request to discord")
+	ErrClientIDNotSet        = errors.New("client ID is not set")
+	ErrRedirectURLNotSet     = errors.New("redirect URL is not set")
+)
+
+// DB関連のエラー定義
+var (
+	ErrFailedToBeginTransaction    = errors.New("failed to begin transaction")
+	ErrFailedToCommitTransaction   = errors.New("failed to commit transaction")
+	ErrFailedToRollbackTransaction = errors.New("failed to rollback transaction")
+)
+
+// ユーザー関連のエラー定義
+var (
+	ErrUserNotFound       = errors.New("user not found")
+	ErrUserAlreadyExists  = errors.New("user already exists")
+	ErrFailedToCreateUser = errors.New("failed to create user")
+)
+
+// 作品関連のエラー定義
+var (
+	ErrFailedToCreateWork                  = errors.New("failed to create work")
+	ErrFailedToGetAllWorksByLimitAndOffset = errors.New("failed to get all works by limit and offset")
+	ErrFailedToGetWorkById                 = errors.New("failed to get work by id")
+)
+
+// コメント関連のエラー定義
+var (
+	ErrFailedToGetCommentsByWorkID = errors.New("failed to get comments by work id")
+	ErrFailedToGetCommentById      = errors.New("failed to get comment by id")
+	ErrCommentNotFound             = errors.New("comment not found")
+	ErrFailedToCreateComment       = errors.New("failed to create comment")
+)

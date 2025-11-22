@@ -35,9 +35,6 @@ func (u *userUseCase) CreateUser(ctx context.Context, name, email, passwordHash,
 		PasswordHash: passwordHash,
 		DisplayName:  displayName,
 	}
-	if err := user.Validate(); err != nil {
-		return nil, err
-	}
 	user, err := u.repo.Create(ctx, user)
 	if err != nil {
 		return nil, err

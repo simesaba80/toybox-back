@@ -22,6 +22,19 @@ type CommentResponse struct {
 	UpdatedAt string                 `json:"updated_at"`
 }
 
+type CreateCommentRequest struct {
+	Content string `json:"content" validate:"required,max=255"`
+	ReplyAt string `json:"reply_at" validate:"omitempty,uuid"`
+	UserID  string `json:"user_id" validate:"omitempty,uuid"`
+}
+
+type CreateCommentResponse struct {
+	ID        string `json:"id"`
+	Content   string `json:"content"`
+	ReplyAt   string `json:"reply_at"`
+	CreatedAt string `json:"created_at"`
+}
+
 func ToCommentResponse(comment *entity.Comment) *CommentResponse {
 	if comment == nil {
 		return nil
@@ -52,4 +65,16 @@ func ToCommentListResponse(comments []*entity.Comment) []*CommentResponse {
 		res[i] = ToCommentResponse(comment)
 	}
 	return res
+}
+
+func ToCreateCommentResponse(comment *entity.Comment) *CreateCommentResponse {
+	if comment == nil {
+		return nil
+	}
+	return &CreateCommentResponse{
+		ID:        comment.ID.String(),
+		Content:   comment.Content,
+		ReplyAt:   comment.ReplyAt,
+		CreatedAt: comment.CreatedAt.String(),
+	}
 }

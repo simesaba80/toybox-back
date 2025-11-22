@@ -12,7 +12,7 @@ type GetWorkOutput struct {
 	Description string          `json:"description"`
 	UserID      string          `json:"user_id"`
 	Visibility  string          `json:"visibility"`
-	Assets      []*entity.Asset `json:"assets"`
+	Assets      []AssetResponse `json:"assets"`
 	CreatedAt   string          `json:"created_at"`
 	UpdatedAt   string          `json:"updated_at"`
 }
@@ -46,6 +46,17 @@ type WorkListResponse struct {
 	Limit      int             `json:"limit"`
 }
 
+type AssetResponse struct {
+	ID        string `json:"id"`
+	WorkID    string `json:"work_id"`
+	AssetType string `json:"asset_type"`
+	UserID    string `json:"user_id"`
+	Extension string `json:"extension"`
+	URL       string `json:"url"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
+}
+
 func ToWorkResponse(work *entity.Work) GetWorkOutput {
 	if work == nil {
 		return GetWorkOutput{}
@@ -56,7 +67,7 @@ func ToWorkResponse(work *entity.Work) GetWorkOutput {
 		Description: work.Description,
 		UserID:      work.UserID.String(),
 		Visibility:  work.Visibility,
-		Assets:      work.Assets,
+		Assets:      ToAssetResponses(work.Assets),
 		CreatedAt:   work.CreatedAt.Format(time.RFC3339),
 		UpdatedAt:   work.UpdatedAt.Format(time.RFC3339),
 	}
@@ -75,4 +86,33 @@ func ToCreateWorkOutput(work *entity.Work) CreateWorkOutput {
 		CreatedAt:   work.CreatedAt.Format(time.RFC3339),
 		UpdatedAt:   work.UpdatedAt.Format(time.RFC3339),
 	}
+}
+
+func ToAssetResponse(asset *entity.Asset) AssetResponse {
+	if asset == nil {
+		return AssetResponse{}
+	}
+
+	return AssetResponse{
+		ID:        asset.ID.String(),
+		WorkID:    asset.WorkID.String(),
+		AssetType: asset.AssetType,
+		UserID:    asset.UserID.String(),
+		Extension: asset.Extension,
+		URL:       asset.URL,
+		CreatedAt: asset.CreatedAt.Format(time.RFC3339),
+		UpdatedAt: asset.UpdatedAt.Format(time.RFC3339),
+	}
+}
+
+func ToAssetResponses(assets []*entity.Asset) []AssetResponse {
+	if len(assets) == 0 {
+		return []AssetResponse{}
+	}
+
+	res := make([]AssetResponse, 0, len(assets))
+	for _, asset := range assets {
+		res = append(res, ToAssetResponse(asset))
+	}
+	return res
 }
