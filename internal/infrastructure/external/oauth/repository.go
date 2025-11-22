@@ -4,11 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
-	"io"
 	"net/http"
 
 	"github.com/simesaba80/toybox-back/internal/domain/entity"
+	domainerrors "github.com/simesaba80/toybox-back/internal/domain/errors"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/config"
 	"golang.org/x/oauth2"
 )
@@ -84,23 +83,22 @@ func (r *DiscordRepository) FetchDiscordUser(ctx context.Context, token entity.D
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, discordUserEndpoint, nil)
 	if err != nil {
-		return entity.DiscordUser{}, fmt.Errorf("discord user request作成に失敗しました: %w", err)
+		return entity.DiscordUser{}, domainerrors.ErrFaileRequestToDiscord
 	}
 
 	response, err := client.Do(req)
 	if err != nil {
-		return entity.DiscordUser{}, fmt.Errorf("discord user取得リクエストに失敗しました: %w", err)
+		return entity.DiscordUser{}, domainerrors.ErrFaileRequestToDiscord
 	}
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(io.LimitReader(response.Body, 1024))
-		return entity.DiscordUser{}, fmt.Errorf("discord user取得でステータスコード%d: %s", response.StatusCode, string(body))
+		return entity.DiscordUser{}, domainerrors.ErrFaileRequestToDiscord
 	}
 
 	var payload discordUserResponse
 	if err := json.NewDecoder(response.Body).Decode(&payload); err != nil {
-		return entity.DiscordUser{}, fmt.Errorf("discord userレスポンスのデコードに失敗しました: %w", err)
+		return entity.DiscordUser{}, domainerrors.ErrFaileRequestToDiscord
 	}
 
 	return entity.DiscordUser{
@@ -117,22 +115,21 @@ func (r *DiscordRepository) GetDiscordGuilds(ctx context.Context, token entity.D
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, discordGuildsEndpoint, nil)
 	if err != nil {
-		return nil, fmt.Errorf("discord guilds request作成に失敗しました: %w", err)
+		return nil, domainerrors.ErrFaileRequestToDiscord
 	}
 	response, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("discord guilds取得リクエストに失敗しました: %w", err)
+		return nil, domainerrors.ErrFaileRequestToDiscord
 	}
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(io.LimitReader(response.Body, 1024))
-		return nil, fmt.Errorf("discord guilds取得でステータスコード%d: %s", response.StatusCode, string(body))
+		return nil, domainerrors.ErrFaileRequestToDiscord
 	}
 
 	var payload []discordGuildResponse
 	if err := json.NewDecoder(response.Body).Decode(&payload); err != nil {
-		return nil, fmt.Errorf("discord guildsレスポンスのデコードに失敗しました: %w", err)
+		return nil, domainerrors.ErrFaileRequestToDiscord
 	}
 
 	guildIDs := make([]string, len(payload))

@@ -2,11 +2,11 @@ package usecase
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"slices"
 
 	"github.com/simesaba80/toybox-back/internal/domain/entity"
+	domainerrors "github.com/simesaba80/toybox-back/internal/domain/errors"
 	"github.com/simesaba80/toybox-back/internal/domain/repository"
 )
 
@@ -55,12 +55,12 @@ func (uc *AuthUsecase) AuthenticateUser(ctx context.Context, code string) (strin
 		return "", "", err
 	}
 	if !userBelongsToAllowedGuild(guildIDs, allowedGuildIDs) {
-		return "", "", errors.New("ユーザーは許可されたDiscordギルドに所属していません")
+		return "", "", domainerrors.ErrUserNotAllowedGuild
 	}
 
 	user, err := uc.userRepository.GetUserByDiscordUserID(ctx, discordUser.ID)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, domainerrors.ErrUserNotFound) {
 			user, err = uc.userRepository.Create(ctx, &entity.User{
 				Name:                discordUser.Username,
 				Email:               discordUser.Email,
@@ -107,6 +107,7 @@ func (uc *AuthUsecase) RegenerateToken(ctx context.Context, refreshToken string)
 	if err != nil {
 		return "", err
 	}
+
 	appToken, err := uc.tokenProvider.GenerateToken(userID)
 	if err != nil {
 		return "", err
