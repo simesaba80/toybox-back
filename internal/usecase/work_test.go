@@ -334,6 +334,19 @@ func TestWorkUseCase_CreateWork(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name:        "異常系: バリデーションエラー(可視性空)",
+			title:       "Title",
+			description: "Description",
+			visibility:  "",
+			userID:      uuid.New(),
+			setupMock: func(m *mock.MockWorkRepository) {
+				m.EXPECT().
+					Create(gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			wantErr: true,
+		},
+		{
 			name:        "異常系: リポジトリエラー",
 			title:       "New Work",
 			description: "New Description",

@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/simesaba80/toybox-back/internal/domain/entity"
+	domainerrors "github.com/simesaba80/toybox-back/internal/domain/errors"
 	"github.com/simesaba80/toybox-back/internal/domain/repository"
 )
 
@@ -64,6 +65,15 @@ func (uc *workUseCase) GetByID(ctx context.Context, id uuid.UUID) (*entity.Work,
 func (uc *workUseCase) CreateWork(ctx context.Context, title, description, visibility string, userID uuid.UUID) (*entity.Work, error) {
 	ctx, cancel := context.WithTimeout(ctx, uc.timeout)
 	defer cancel()
+	if title == "" {
+		return nil, domainerrors.ErrInvalidTitle
+	}
+	if description == "" {
+		return nil, domainerrors.ErrInvalidDescription
+	}
+	if visibility == "" {
+		return nil, domainerrors.ErrInvalidVisibility
+	}
 
 	work := &entity.Work{
 		ID:          uuid.New(),

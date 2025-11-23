@@ -33,6 +33,10 @@ var (
 
 // 作品関連のエラー定義
 var (
+	ErrInvalidTitle                        = errors.New("invalid title")
+	ErrInvalidDescription                  = errors.New("invalid description")
+	ErrInvalidVisibility                   = errors.New("invalid visibility")
+	ErrInvalidUserID                       = errors.New("invalid user id")
 	ErrFailedToCreateWork                  = errors.New("failed to create work")
 	ErrFailedToGetAllWorksByLimitAndOffset = errors.New("failed to get all works by limit and offset")
 	ErrFailedToGetWorkById                 = errors.New("failed to get work by id")
