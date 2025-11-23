@@ -9,7 +9,6 @@ import (
 )
 
 type IUserUseCase interface {
-	CreateUser(ctx context.Context, name, email, passwordHash, displayName, avatar_url string) (*entity.User, error)
 	GetAllUser(ctx context.Context) ([]*entity.User, error)
 }
 
@@ -23,23 +22,6 @@ func NewUserUseCase(repo repository.UserRepository, timeout time.Duration) IUser
 		repo:    repo,
 		timeout: time.Second * 30,
 	}
-}
-
-func (u *userUseCase) CreateUser(ctx context.Context, name, email, passwordHash, displayName, avatar_url string) (*entity.User, error) {
-	ctx, cancel := context.WithTimeout(ctx, u.timeout)
-	defer cancel()
-
-	user := &entity.User{
-		Name:         name,
-		Email:        email,
-		PasswordHash: passwordHash,
-		DisplayName:  displayName,
-	}
-	user, err := u.repo.Create(ctx, user)
-	if err != nil {
-		return nil, err
-	}
-	return user, nil
 }
 
 func (u *userUseCase) GetAllUser(ctx context.Context) ([]*entity.User, error) {
