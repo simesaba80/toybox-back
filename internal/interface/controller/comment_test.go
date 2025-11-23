@@ -12,6 +12,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/simesaba80/toybox-back/internal/domain/entity"
 	"github.com/simesaba80/toybox-back/internal/interface/controller"
+	"github.com/simesaba80/toybox-back/internal/interface/controller/mock"
 	"github.com/simesaba80/toybox-back/internal/interface/schema"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -37,15 +38,15 @@ func TestCommentController_GetCommentsByWorkID(t *testing.T) {
 	tests := []struct {
 		name       string
 		workID     string
-		setupMock  func(m *controller.MockCommentUsecase)
+		setupMock  func(mockCommentUsecase *mock.MockICommentUsecase, mockWorkUsecase *mock.MockIWorkUseCase)
 		wantStatus int
 		wantBody   []byte
 	}{
 		{
 			name:   "正常系: コメント取得成功",
 			workID: workID.String(),
-			setupMock: func(m *controller.MockCommentUsecase) {
-				m.EXPECT().
+			setupMock: func(mockCommentUsecase *mock.MockICommentUsecase, mockWorkUsecase *mock.MockIWorkUseCase) {
+				mockCommentUsecase.EXPECT().
 					GetCommentsByWorkID(gomock.Any(), workID).
 					Return(mockComments, nil)
 			},
@@ -55,7 +56,10 @@ func TestCommentController_GetCommentsByWorkID(t *testing.T) {
 		{
 			name:   "異常系: work_idが不正",
 			workID: "invalid-uuid",
-			setupMock: func(m *controller.MockCommentUsecase) {
+			setupMock: func(mockCommentUsecase *mock.MockICommentUsecase, mockWorkUsecase *mock.MockIWorkUseCase) {
+				mockCommentUsecase.EXPECT().
+					GetCommentsByWorkID(gomock.Any(), workID).
+					Return(nil, errors.New("some db error"))
 			},
 			wantStatus: http.StatusBadRequest,
 			wantBody:   badRequestResponseBytes,
@@ -63,10 +67,10 @@ func TestCommentController_GetCommentsByWorkID(t *testing.T) {
 		{
 			name:   "異常系: Usecaseエラー",
 			workID: workID.String(),
-			setupMock: func(m *controller.MockCommentUsecase) {
-				m.EXPECT().
+			setupMock: func(mockCommentUsecase *mock.MockICommentUsecase, mockWorkUsecase *mock.MockIWorkUseCase) {
+				mockCommentUsecase.EXPECT().
 					GetCommentsByWorkID(gomock.Any(), workID).
-					Return(nil, errors.New("some db error"))
+					Return(nil, errors.New("some error"))
 			},
 			wantStatus: http.StatusInternalServerError,
 			wantBody:   internalErrorResponseBytes,
@@ -79,10 +83,11 @@ func TestCommentController_GetCommentsByWorkID(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockUsecase := controller.NewMockCommentUsecase(ctrl)
-			tt.setupMock(mockUsecase)
+			mockCommentUsecase := mock.NewMockICommentUsecase(ctrl)
+			mockWorkUsecase := mock.NewMockIWorkUseCase(ctrl)
+			tt.setupMock(mockCommentUsecase, mockWorkUsecase)
 
-			commentController := controller.NewCommentController(mockUsecase)
+			commentController := controller.NewCommentController(mockCommentUsecase)
 			e.GET("/works/:work_id/comments", commentController.GetCommentsByWorkID)
 
 			req := httptest.NewRequest(http.MethodGet, "/works/"+tt.workID+"/comments", nil)

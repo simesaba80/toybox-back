@@ -12,6 +12,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/simesaba80/toybox-back/internal/domain/entity"
 	"github.com/simesaba80/toybox-back/internal/interface/controller"
+	"github.com/simesaba80/toybox-back/internal/interface/controller/mock"
 	"github.com/simesaba80/toybox-back/internal/interface/schema"
 	"github.com/simesaba80/toybox-back/pkg/echovalidator"
 	"github.com/stretchr/testify/assert"
@@ -35,15 +36,15 @@ func TestUserController_CreateUser(t *testing.T) {
 	tests := []struct {
 		name       string
 		body       []byte
-		setupMock  func(m *controller.MockUserUseCase)
+		setupMock  func(mockUserUsecase *mock.MockIUserUseCase)
 		wantStatus int
 		wantBody   []byte
 	}{
 		{
 			name: "正常系",
 			body: inputJSON,
-			setupMock: func(m *controller.MockUserUseCase) {
-				m.EXPECT().
+			setupMock: func(mockUserUsecase *mock.MockIUserUseCase) {
+				mockUserUsecase.EXPECT().
 					CreateUser(gomock.Any(), input.Name, input.Email, input.PasswordHash, input.DisplayName, input.AvatarURL).
 					Return(createdUser, nil)
 			},
@@ -53,8 +54,8 @@ func TestUserController_CreateUser(t *testing.T) {
 		{
 			name: "異常系: Usecaseエラー",
 			body: inputJSON,
-			setupMock: func(m *controller.MockUserUseCase) {
-				m.EXPECT().
+			setupMock: func(mockUserUsecase *mock.MockIUserUseCase) {
+				mockUserUsecase.EXPECT().
 					CreateUser(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(nil, errors.New("some error"))
 			},
@@ -70,7 +71,7 @@ func TestUserController_CreateUser(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockUsecase := controller.NewMockUserUseCase(ctrl)
+			mockUsecase := mock.NewMockIUserUseCase(ctrl)
 			tt.setupMock(mockUsecase)
 
 			userController := controller.NewUserController(mockUsecase)
@@ -97,14 +98,14 @@ func TestUserController_GetAllUsers(t *testing.T) {
 
 	tests := []struct {
 		name       string
-		setupMock  func(m *controller.MockUserUseCase)
+		setupMock  func(mockUserUsecase *mock.MockIUserUseCase)
 		wantStatus int
 		wantBody   []byte
 	}{
 		{
 			name: "正常系",
-			setupMock: func(m *controller.MockUserUseCase) {
-				m.EXPECT().
+			setupMock: func(mockUserUsecase *mock.MockIUserUseCase) {
+				mockUserUsecase.EXPECT().
 					GetAllUser(gomock.Any()).
 					Return([]*entity.User{mockUser}, nil)
 			},
@@ -113,8 +114,8 @@ func TestUserController_GetAllUsers(t *testing.T) {
 		},
 		{
 			name: "異常系: Usecaseエラー",
-			setupMock: func(m *controller.MockUserUseCase) {
-				m.EXPECT().
+			setupMock: func(mockUserUsecase *mock.MockIUserUseCase) {
+				mockUserUsecase.EXPECT().
 					GetAllUser(gomock.Any()).
 					Return(nil, errors.New("some error"))
 			},
@@ -129,7 +130,7 @@ func TestUserController_GetAllUsers(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockUsecase := controller.NewMockUserUseCase(ctrl)
+			mockUsecase := mock.NewMockIUserUseCase(ctrl)
 			tt.setupMock(mockUsecase)
 
 			userController := controller.NewUserController(mockUsecase)

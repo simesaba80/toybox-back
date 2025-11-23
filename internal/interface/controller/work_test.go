@@ -13,6 +13,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/simesaba80/toybox-back/internal/domain/entity"
 	"github.com/simesaba80/toybox-back/internal/interface/controller"
+	"github.com/simesaba80/toybox-back/internal/interface/controller/mock"
 	"github.com/simesaba80/toybox-back/internal/interface/schema"
 	"github.com/simesaba80/toybox-back/internal/util"
 	"github.com/simesaba80/toybox-back/pkg/echovalidator"
@@ -33,26 +34,26 @@ func TestWorkController_GetAllWorks(t *testing.T) {
 	tests := []struct {
 		name        string
 		queryParams string
-		setupMock   func(m *controller.MockWorkUseCase)
+		setupMock   func(mockWorkUsecase *mock.MockIWorkUseCase)
 		wantStatus  int
 		wantBody    []byte
 	}{
 		{
 			name:        "正常系",
 			queryParams: "?limit=20&page=1",
-			setupMock: func(m *controller.MockWorkUseCase) {
-				m.EXPECT().
+			setupMock: func(mockWorkUsecase *mock.MockIWorkUseCase) {
+				mockWorkUsecase.EXPECT().
 					GetAll(gomock.Any(), util.IntPtr(20), util.IntPtr(1)).
 					Return([]*entity.Work{mockWork}, 1, 20, 1, nil)
 			},
-			wantStatus:  http.StatusOK,
-			wantBody:    successResponseBytes,
+			wantStatus: http.StatusOK,
+			wantBody:   successResponseBytes,
 		},
 		{
 			name:        "異常系: Usecaseエラー",
 			queryParams: "",
-			setupMock: func(m *controller.MockWorkUseCase) {
-				m.EXPECT().
+			setupMock: func(mockWorkUsecase *mock.MockIWorkUseCase) {
+				mockWorkUsecase.EXPECT().
 					GetAll(gomock.Any(), nil, nil).
 					Return(nil, 0, 0, 0, errors.New("some error"))
 			},
@@ -68,10 +69,10 @@ func TestWorkController_GetAllWorks(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockUsecase := controller.NewMockWorkUseCase(ctrl)
-			tt.setupMock(mockUsecase)
+			mockWorkUsecase := mock.NewMockIWorkUseCase(ctrl)
+			tt.setupMock(mockWorkUsecase)
 
-			workController := controller.NewWorkController(mockUsecase)
+			workController := controller.NewWorkController(mockWorkUsecase)
 			e.GET("/works", workController.GetAllWorks)
 
 			req := httptest.NewRequest(http.MethodGet, "/works"+tt.queryParams, nil)
@@ -95,15 +96,15 @@ func TestWorkController_GetWorkByID(t *testing.T) {
 	tests := []struct {
 		name       string
 		workID     string
-		setupMock  func(m *controller.MockWorkUseCase)
+		setupMock  func(mockWorkUsecase *mock.MockIWorkUseCase)
 		wantStatus int
 		wantBody   []byte
 	}{
 		{
 			name:   "正常系",
 			workID: workID.String(),
-			setupMock: func(m *controller.MockWorkUseCase) {
-				m.EXPECT().
+			setupMock: func(mockWorkUsecase *mock.MockIWorkUseCase) {
+				mockWorkUsecase.EXPECT().
 					GetByID(gomock.Any(), workID).
 					Return(mockWork, nil)
 			},
@@ -111,17 +112,17 @@ func TestWorkController_GetWorkByID(t *testing.T) {
 			wantBody:   successResponseBytes,
 		},
 		{
-			name:      "異常系: work_idが不正",
-			workID:    "invalid-uuid",
-			setupMock: func(m *controller.MockWorkUseCase) {},
+			name:       "異常系: work_idが不正",
+			workID:     "invalid-uuid",
+			setupMock:  func(mockWorkUsecase *mock.MockIWorkUseCase) {},
 			wantStatus: http.StatusBadRequest,
 			wantBody:   invalidIDResponseBytes,
 		},
 		{
 			name:   "異常系: Not Found",
 			workID: workID.String(),
-			setupMock: func(m *controller.MockWorkUseCase) {
-				m.EXPECT().
+			setupMock: func(mockWorkUsecase *mock.MockIWorkUseCase) {
+				mockWorkUsecase.EXPECT().
 					GetByID(gomock.Any(), workID).
 					Return(nil, sql.ErrNoRows)
 			},
@@ -136,10 +137,10 @@ func TestWorkController_GetWorkByID(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockUsecase := controller.NewMockWorkUseCase(ctrl)
-			tt.setupMock(mockUsecase)
+			mockWorkUsecase := mock.NewMockIWorkUseCase(ctrl)
+			tt.setupMock(mockWorkUsecase)
 
-			workController := controller.NewWorkController(mockUsecase)
+			workController := controller.NewWorkController(mockWorkUsecase)
 			e.GET("/works/:work_id", workController.GetWorkByID)
 
 			req := httptest.NewRequest(http.MethodGet, "/works/"+tt.workID, nil)
@@ -171,15 +172,15 @@ func TestWorkController_CreateWork(t *testing.T) {
 	tests := []struct {
 		name       string
 		body       []byte
-		setupMock  func(m *controller.MockWorkUseCase)
+		setupMock  func(mockWorkUsecase *mock.MockIWorkUseCase)
 		wantStatus int
 		wantBody   []byte
 	}{
 		{
 			name: "正常系",
 			body: inputJSON,
-			setupMock: func(m *controller.MockWorkUseCase) {
-				m.EXPECT().
+			setupMock: func(mockWorkUsecase *mock.MockIWorkUseCase) {
+				mockWorkUsecase.EXPECT().
 					CreateWork(gomock.Any(), input.Title, input.Description, input.Visibility, userID).
 					Return(createdWork, nil)
 			},
@@ -187,17 +188,17 @@ func TestWorkController_CreateWork(t *testing.T) {
 			wantBody:   successResponseBytes,
 		},
 		{
-			name:      "異常系: 不正なリクエストボディ",
-			body:      []byte("invalid json"),
-			setupMock: func(m *controller.MockWorkUseCase) {},
+			name:       "異常系: 不正なリクエストボディ",
+			body:       []byte("invalid json"),
+			setupMock:  func(mockWorkUsecase *mock.MockIWorkUseCase) {},
 			wantStatus: http.StatusBadRequest,
 			wantBody:   badRequestResponseBytes,
 		},
 		{
 			name: "異常系: Usecaseエラー",
 			body: inputJSON,
-			setupMock: func(m *controller.MockWorkUseCase) {
-				m.EXPECT().
+			setupMock: func(mockWorkUsecase *mock.MockIWorkUseCase) {
+				mockWorkUsecase.EXPECT().
 					CreateWork(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(nil, errors.New("some error"))
 			},
@@ -213,10 +214,10 @@ func TestWorkController_CreateWork(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockUsecase := controller.NewMockWorkUseCase(ctrl)
-			tt.setupMock(mockUsecase)
+			mockWorkUsecase := mock.NewMockIWorkUseCase(ctrl)
+			tt.setupMock(mockWorkUsecase)
 
-			workController := controller.NewWorkController(mockUsecase)
+			workController := controller.NewWorkController(mockWorkUsecase)
 			e.POST("/works", workController.CreateWork)
 
 			req := httptest.NewRequest(http.MethodPost, "/works", bytes.NewReader(tt.body))

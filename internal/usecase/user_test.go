@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/simesaba80/toybox-back/internal/domain/entity"
 	"github.com/simesaba80/toybox-back/internal/usecase"
+	"github.com/simesaba80/toybox-back/internal/usecase/mock"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )
@@ -21,7 +22,7 @@ func TestUserUseCase_CreateUser(t *testing.T) {
 		passwordHash string
 		displayName  string
 		avatarURL    string
-		setupMock    func(*usecase.MockUserRepository)
+		setupMock    func(*mock.MockUserRepository)
 		wantErr      bool
 	}{
 		{
@@ -31,7 +32,7 @@ func TestUserUseCase_CreateUser(t *testing.T) {
 			passwordHash: "hashedpassword123",
 			displayName:  "Test User",
 			avatarURL:    "https://example.com/avatar.png",
-			setupMock: func(m *usecase.MockUserRepository) {
+			setupMock: func(m *mock.MockUserRepository) {
 				m.EXPECT().
 					Create(gomock.Any(), gomock.Any()).
 					DoAndReturn(func(ctx context.Context, user *entity.User) (*entity.User, error) {
@@ -51,7 +52,7 @@ func TestUserUseCase_CreateUser(t *testing.T) {
 			passwordHash: "hashedpassword123",
 			displayName:  "Test User",
 			avatarURL:    "https://example.com/avatar.png",
-			setupMock: func(m *usecase.MockUserRepository) {
+			setupMock: func(m *mock.MockUserRepository) {
 				m.EXPECT().
 					Create(gomock.Any(), gomock.Any()).
 					Times(0)
@@ -65,7 +66,7 @@ func TestUserUseCase_CreateUser(t *testing.T) {
 			passwordHash: "hashedpassword123",
 			displayName:  "Test User",
 			avatarURL:    "https://example.com/avatar.png",
-			setupMock: func(m *usecase.MockUserRepository) {
+			setupMock: func(m *mock.MockUserRepository) {
 				m.EXPECT().
 					Create(gomock.Any(), gomock.Any()).
 					Times(0)
@@ -79,7 +80,7 @@ func TestUserUseCase_CreateUser(t *testing.T) {
 			passwordHash: "",
 			displayName:  "Test User",
 			avatarURL:    "https://example.com/avatar.png",
-			setupMock: func(m *usecase.MockUserRepository) {
+			setupMock: func(m *mock.MockUserRepository) {
 				m.EXPECT().
 					Create(gomock.Any(), gomock.Any()).
 					Times(0)
@@ -93,7 +94,7 @@ func TestUserUseCase_CreateUser(t *testing.T) {
 			passwordHash: "hashedpassword123",
 			displayName:  "",
 			avatarURL:    "https://example.com/avatar.png",
-			setupMock: func(m *usecase.MockUserRepository) {
+			setupMock: func(m *mock.MockUserRepository) {
 				m.EXPECT().
 					Create(gomock.Any(), gomock.Any()).
 					Times(0)
@@ -107,7 +108,7 @@ func TestUserUseCase_CreateUser(t *testing.T) {
 			passwordHash: "hashedpassword123",
 			displayName:  "Test User",
 			avatarURL:    "https://example.com/avatar.png",
-			setupMock: func(m *usecase.MockUserRepository) {
+			setupMock: func(m *mock.MockUserRepository) {
 				m.EXPECT().
 					Create(gomock.Any(), gomock.Any()).
 					Return(nil, errors.New("database error")).
@@ -122,7 +123,7 @@ func TestUserUseCase_CreateUser(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockRepo := usecase.NewMockUserRepository(ctrl)
+			mockRepo := mock.NewMockUserRepository(ctrl)
 			tt.setupMock(mockRepo)
 
 			uc := usecase.NewUserUseCase(mockRepo, 30*time.Second)
@@ -148,13 +149,13 @@ func TestUserUseCase_CreateUser(t *testing.T) {
 func TestUserUseCase_GetAllUser(t *testing.T) {
 	tests := []struct {
 		name      string
-		setupMock func(*usecase.MockUserRepository)
+		setupMock func(*mock.MockUserRepository)
 		wantCount int
 		wantErr   bool
 	}{
 		{
 			name: "正常系: ユーザー取得成功",
-			setupMock: func(m *usecase.MockUserRepository) {
+			setupMock: func(m *mock.MockUserRepository) {
 				expectedUsers := []*entity.User{
 					{
 						ID:          uuid.New(),
@@ -183,7 +184,7 @@ func TestUserUseCase_GetAllUser(t *testing.T) {
 		},
 		{
 			name: "正常系: ユーザーが0件",
-			setupMock: func(m *usecase.MockUserRepository) {
+			setupMock: func(m *mock.MockUserRepository) {
 				m.EXPECT().
 					GetAll(gomock.Any()).
 					Return([]*entity.User{}, nil).
@@ -194,7 +195,7 @@ func TestUserUseCase_GetAllUser(t *testing.T) {
 		},
 		{
 			name: "異常系: リポジトリエラー",
-			setupMock: func(m *usecase.MockUserRepository) {
+			setupMock: func(m *mock.MockUserRepository) {
 				m.EXPECT().
 					GetAll(gomock.Any()).
 					Return(nil, errors.New("database error")).
@@ -210,7 +211,7 @@ func TestUserUseCase_GetAllUser(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockRepo := usecase.NewMockUserRepository(ctrl)
+			mockRepo := mock.NewMockUserRepository(ctrl)
 			tt.setupMock(mockRepo)
 
 			uc := usecase.NewUserUseCase(mockRepo, 30*time.Second)
