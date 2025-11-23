@@ -33,7 +33,7 @@ func TestCommentController_GetCommentsByWorkID(t *testing.T) {
 	}
 	successResponseBytes, _ := json.Marshal(schema.ToCommentListResponse(mockComments))
 	badRequestResponseBytes, _ := json.Marshal(map[string]string{"message": "Invalid work ID format"})
-	internalErrorResponseBytes, _ := json.Marshal(map[string]string{"message": "Failed to retrieve comments"})
+	internalErrorResponseBytes, _ := json.Marshal(map[string]string{"message": "サーバーエラーが発生しました"})
 
 	tests := []struct {
 		name       string
@@ -59,8 +59,10 @@ func TestCommentController_GetCommentsByWorkID(t *testing.T) {
 			setupMock: func(mockCommentUsecase *mock.MockICommentUsecase, mockWorkUsecase *mock.MockIWorkUseCase) {
 				mockCommentUsecase.EXPECT().
 					GetCommentsByWorkID(gomock.Any(), workID).
-					Return(nil, errors.New("some db error"))
+					Return(nil, errors.New("some db error")).
+					Times(0)
 			},
+
 			wantStatus: http.StatusBadRequest,
 			wantBody:   badRequestResponseBytes,
 		},

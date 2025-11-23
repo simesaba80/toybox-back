@@ -36,6 +36,7 @@ var (
 	ErrFailedToCreateWork                  = errors.New("failed to create work")
 	ErrFailedToGetAllWorksByLimitAndOffset = errors.New("failed to get all works by limit and offset")
 	ErrFailedToGetWorkById                 = errors.New("failed to get work by id")
+	ErrWorkNotFound                        = errors.New("work not found")
 )
 
 // コメント関連のエラー定義

@@ -75,7 +75,7 @@ func (wc *WorkController) GetWorkByID(c echo.Context) error {
 	idStr := c.Param("work_id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		return handleWorkError(c, err)
+		return echo.NewHTTPError(http.StatusBadRequest, "無効なリクエストです")
 	}
 
 	work, err := wc.workUsecase.GetByID(c.Request().Context(), id)
@@ -104,16 +104,16 @@ func (wc *WorkController) CreateWork(c echo.Context) error {
 	var input schema.CreateWorkInput
 	if err := c.Bind(&input); err != nil {
 		c.Logger().Error("Bind error:", err)
-		return handleWorkError(c, err)
+		return handleWorkError(c, domainerrors.ErrInvalidRequestBody)
 	}
 	if err := c.Validate(&input); err != nil {
-		return err
+		return handleWorkError(c, domainerrors.ErrInvalidRequestBody)
 	}
 	// リクエストボディからuser_idを取得し、UUIDにパース
 	userID, err := uuid.Parse(input.UserID)
 	if err != nil {
 		c.Logger().Error("Invalid UserID format:", err)
-		return handleWorkError(c, err)
+		return handleWorkError(c, domainerrors.ErrInvalidRequestBody)
 	}
 
 	createdWork, err := wc.workUsecase.CreateWork(
@@ -144,6 +144,10 @@ func handleWorkError(c echo.Context, err error) error {
 		return echo.NewHTTPError(http.StatusNotFound, "作品が見つかりませんでした")
 	case errors.Is(err, domainerrors.ErrFailedToGetAllWorksByLimitAndOffset):
 		return echo.NewHTTPError(http.StatusInternalServerError, "作品の取得に失敗しました")
+	case errors.Is(err, domainerrors.ErrFailedToGetWorkById):
+		return echo.NewHTTPError(http.StatusInternalServerError, "作品の取得に失敗しました")
+	case errors.Is(err, domainerrors.ErrWorkNotFound):
+		return echo.NewHTTPError(http.StatusNotFound, "作品が見つかりませんでした")
 	case errors.Is(err, domainerrors.ErrFailedToBeginTransaction):
 		return echo.NewHTTPError(http.StatusInternalServerError, "トランザクションの開始に失敗しました")
 	case errors.Is(err, domainerrors.ErrFailedToCommitTransaction):
@@ -154,6 +158,6 @@ func handleWorkError(c echo.Context, err error) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "作品の作成に失敗しました")
 	default:
 		c.Logger().Error("Work error:", err)
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError, "サーバーエラーが発生しました")
 	}
 }

@@ -2,6 +2,8 @@ package work
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 
 	"github.com/google/uuid"
 	"github.com/uptrace/bun"
@@ -37,6 +39,9 @@ func (r *WorkRepository) GetAll(ctx context.Context, limit, offset int) ([]*enti
 		Offset(offset).
 		Scan(ctx)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, 0, domainerrors.ErrWorkNotFound
+		}
 		return nil, 0, domainerrors.ErrFailedToGetAllWorksByLimitAndOffset
 	}
 
@@ -52,6 +57,9 @@ func (r *WorkRepository) GetByID(ctx context.Context, id uuid.UUID) (*entity.Wor
 	var dtoWork dto.Work
 	err := r.db.NewSelect().Model(&dtoWork).Relation("Assets").Where("id = ?", id).Scan(ctx)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domainerrors.ErrWorkNotFound
+		}
 		return nil, domainerrors.ErrFailedToGetWorkById
 	}
 	return dtoWork.ToWorkEntity(), nil

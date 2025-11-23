@@ -2,7 +2,6 @@ package controller_test
 
 import (
 	"bytes"
-	"database/sql"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -12,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/simesaba80/toybox-back/internal/domain/entity"
+	domainerrors "github.com/simesaba80/toybox-back/internal/domain/errors"
 	"github.com/simesaba80/toybox-back/internal/interface/controller"
 	"github.com/simesaba80/toybox-back/internal/interface/controller/mock"
 	"github.com/simesaba80/toybox-back/internal/interface/schema"
@@ -29,7 +29,7 @@ func TestWorkController_GetAllWorks(t *testing.T) {
 		Page:       1,
 		Limit:      20,
 	})
-	internalErrorResponseBytes, _ := json.Marshal(map[string]string{"message": "Failed to retrieve works"})
+	internalErrorResponseBytes, _ := json.Marshal(map[string]string{"message": "サーバーエラーが発生しました"})
 
 	tests := []struct {
 		name        string
@@ -90,8 +90,8 @@ func TestWorkController_GetWorkByID(t *testing.T) {
 	workID := uuid.New()
 	mockWork := &entity.Work{ID: workID, Title: "Test Work"}
 	successResponseBytes, _ := json.Marshal(schema.ToWorkResponse(mockWork))
-	invalidIDResponseBytes, _ := json.Marshal(map[string]string{"message": "Invalid work ID format"})
-	notFoundResponseBytes, _ := json.Marshal(map[string]string{"message": "Work not found"})
+	invalidIDResponseBytes, _ := json.Marshal(map[string]string{"message": "無効なリクエストです"})
+	notFoundResponseBytes, _ := json.Marshal(map[string]string{"message": "作品が見つかりませんでした"})
 
 	tests := []struct {
 		name       string
@@ -124,7 +124,7 @@ func TestWorkController_GetWorkByID(t *testing.T) {
 			setupMock: func(mockWorkUsecase *mock.MockIWorkUseCase) {
 				mockWorkUsecase.EXPECT().
 					GetByID(gomock.Any(), workID).
-					Return(nil, sql.ErrNoRows)
+					Return(nil, domainerrors.ErrWorkNotFound)
 			},
 			wantStatus: http.StatusNotFound,
 			wantBody:   notFoundResponseBytes,
@@ -166,8 +166,8 @@ func TestWorkController_CreateWork(t *testing.T) {
 
 	createdWork := &entity.Work{ID: uuid.New(), Title: input.Title}
 	successResponseBytes, _ := json.Marshal(schema.ToCreateWorkOutput(createdWork))
-	badRequestResponseBytes, _ := json.Marshal(map[string]string{"message": "Invalid request body"})
-	internalErrorResponseBytes, _ := json.Marshal(map[string]string{"message": "Failed to create work"})
+	badRequestResponseBytes, _ := json.Marshal(map[string]string{"message": "無効なリクエストボディです"})
+	internalErrorResponseBytes, _ := json.Marshal(map[string]string{"message": "サーバーエラーが発生しました"})
 
 	tests := []struct {
 		name       string

@@ -109,7 +109,7 @@ func handleCommentError(c echo.Context, err error) error {
 
 	switch {
 	case errors.Is(err, domainerrors.ErrInvalidRequestBody):
-		return echo.NewHTTPError(http.StatusBadRequest, "無効なリクエストボディです")
+		return echo.NewHTTPError(http.StatusBadRequest, "無効なリクエストです")
 	case errors.Is(err, domainerrors.ErrFailedToGetCommentsByWorkID):
 		return echo.NewHTTPError(http.StatusInternalServerError, "コメントの取得に失敗しました")
 	case errors.Is(err, domainerrors.ErrFailedToGetCommentById):
@@ -121,5 +121,5 @@ func handleCommentError(c echo.Context, err error) error {
 	}
 
 	c.Logger().Error("Comment error:", err)
-	return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	return echo.NewHTTPError(http.StatusInternalServerError, "サーバーエラーが発生しました")
 }
