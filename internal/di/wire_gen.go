@@ -42,8 +42,8 @@ func InitializeApp() (*App, func(), error) {
 	discordRepository := oauth.NewDiscordRepository()
 	tokenProvider := ProvideTokenProvider()
 	tokenRepository := token.NewTokenRepository(db)
-	authUsecase := ProvideAuthUseCase(discordRepository, userRepository, tokenProvider, tokenRepository)
-	authController := controller.NewAuthController(authUsecase)
+	iAuthUsecase := ProvideAuthUseCase(discordRepository, userRepository, tokenProvider, tokenRepository)
+	authController := controller.NewAuthController(iAuthUsecase)
 	routerRouter := router.NewRouter(echo, userController, workController, commentController, authController)
 	app := NewApp(routerRouter, db)
 	return app, func() {
@@ -99,7 +99,7 @@ func ProvideCommentUseCase(commentRepo repository.CommentRepository, workRepo re
 }
 
 // ProvideDiscordUseCase はDiscordUseCaseを提供します
-func ProvideAuthUseCase(authRepo repository.DiscordRepository, userRepo repository.UserRepository, tokenProvider usecase.TokenProvider, tokenRepo repository.TokenRepository) *usecase.AuthUsecase {
+func ProvideAuthUseCase(authRepo repository.DiscordRepository, userRepo repository.UserRepository, tokenProvider usecase.TokenProvider, tokenRepo repository.TokenRepository) usecase.IAuthUsecase {
 	return usecase.NewAuthUsecase(authRepo, userRepo, tokenProvider, tokenRepo)
 }
 

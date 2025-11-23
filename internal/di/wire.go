@@ -89,7 +89,7 @@ func ProvideCommentUseCase(commentRepo repository.CommentRepository, workRepo re
 }
 
 // ProvideDiscordUseCase はDiscordUseCaseを提供します
-func ProvideAuthUseCase(authRepo repository.DiscordRepository, userRepo repository.UserRepository, tokenProvider usecase.TokenProvider, tokenRepo repository.TokenRepository) *usecase.AuthUsecase {
+func ProvideAuthUseCase(authRepo repository.DiscordRepository, userRepo repository.UserRepository, tokenProvider usecase.TokenProvider, tokenRepo repository.TokenRepository) usecase.IAuthUsecase {
 	return usecase.NewAuthUsecase(authRepo, userRepo, tokenProvider, tokenRepo)
 }
 
