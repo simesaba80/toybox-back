@@ -54,6 +54,11 @@ func SetupTestDB(tb testing.TB) *bun.DB {
 			return
 		}
 
+		if err := runMigrations(dsn); err != nil {
+			initErr = err
+			return
+		}
+
 		sqlInstance = sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))
 		if err := sqlInstance.PingContext(ctx); err != nil {
 			initErr = err
@@ -61,14 +66,13 @@ func SetupTestDB(tb testing.TB) *bun.DB {
 		}
 
 		dbInstance = bun.NewDB(sqlInstance, pgdialect.New())
-		initErr = runMigrations()
 	})
 
 	if initErr != nil {
 		tb.Fatalf("テストDB初期化に失敗しました: %v", initErr)
 	}
 
-	// ResetTables(tb)
+	ResetTables(tb)
 
 	return dbInstance
 }
@@ -110,13 +114,16 @@ func startPostgresContainer(ctx context.Context) (testcontainers.Container, stri
 	return c, dsn, nil
 }
 
-func runMigrations() error {
+func runMigrations(dsn string) error {
 	source, err := iofs.New(migrations.EmbedFiles, ".")
 	if err != nil {
 		return fmt.Errorf("migrations source: %w", err)
 	}
 
-	driver, err := postgres.WithInstance(sqlInstance, &postgres.Config{})
+	migrationDB := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))
+	defer migrationDB.Close()
+
+	driver, err := postgres.WithInstance(migrationDB, &postgres.Config{})
 	if err != nil {
 		return fmt.Errorf("postgres driver: %w", err)
 	}

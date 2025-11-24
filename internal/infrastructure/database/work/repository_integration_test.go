@@ -92,11 +92,11 @@ func insertTestUser(t *testing.T, db *bun.DB) *entity.User {
 	now := time.Now().UTC().Truncate(time.Second)
 	user := &entity.User{
 		ID:            uuid.New(),
-		Name:          "name-" + uuid.NewString(),
-		Email:         uuid.NewString() + "@example.com",
+		Name:          "testuser",
+		Email:         "testuser@example.com",
 		PasswordHash:  "hash",
-		DisplayName:   "display",
-		DiscordUserID: "discord-" + uuid.NewString(),
+		DisplayName:   "testuser",
+		DiscordUserID: "testuser",
 		CreatedAt:     now,
 		UpdatedAt:     now,
 	}
