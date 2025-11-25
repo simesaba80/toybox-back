@@ -4,6 +4,7 @@ package work_test
 
 import (
 	"context"
+	"os"
 	"testing"
 	"time"
 
@@ -17,6 +18,12 @@ import (
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/testutil"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/work"
 )
+
+func TestMain(m *testing.M) {
+	code := m.Run()
+	testutil.Teardown()
+	os.Exit(code)
+}
 
 func TestWorkRepository_Create(t *testing.T) {
 	db := testutil.SetupTestDB(t)
