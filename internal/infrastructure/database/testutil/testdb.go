@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	pgImage    = "postgres:16-alpine"
+	pgImage    = "postgres:17.6"
 	pgUser     = "toybox"
 	pgPassword = "toybox"
 	pgDatabase = "toybox_test"
