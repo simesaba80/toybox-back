@@ -10,15 +10,21 @@ import (
 	"github.com/simesaba80/toybox-back/internal/domain/repository"
 )
 
-type AuthUsecase struct {
+type IAuthUsecase interface {
+	GetDiscordAuthURL(ctx context.Context) (string, error)
+	AuthenticateUser(ctx context.Context, code string) (string, string, error)
+	RegenerateToken(ctx context.Context, refreshToken string) (string, error)
+}
+
+type authUsecase struct {
 	discordRepository repository.DiscordRepository
 	userRepository    repository.UserRepository
 	tokenProvider     TokenProvider
 	tokenRepository   repository.TokenRepository
 }
 
-func NewAuthUsecase(discordRepository repository.DiscordRepository, userRepository repository.UserRepository, tokenProvider TokenProvider, tokenRepository repository.TokenRepository) *AuthUsecase {
-	return &AuthUsecase{
+func NewAuthUsecase(discordRepository repository.DiscordRepository, userRepository repository.UserRepository, tokenProvider TokenProvider, tokenRepository repository.TokenRepository) IAuthUsecase {
+	return &authUsecase{
 		discordRepository: discordRepository,
 		userRepository:    userRepository,
 		tokenProvider:     tokenProvider,
@@ -26,7 +32,7 @@ func NewAuthUsecase(discordRepository repository.DiscordRepository, userReposito
 	}
 }
 
-func (uc *AuthUsecase) GetDiscordAuthURL(ctx context.Context) (string, error) {
+func (uc *authUsecase) GetDiscordAuthURL(ctx context.Context) (string, error) {
 	if _, err := uc.discordRepository.GetDiscordClientID(ctx); err != nil {
 		return "", err
 	}
@@ -36,7 +42,7 @@ func (uc *AuthUsecase) GetDiscordAuthURL(ctx context.Context) (string, error) {
 	return uc.discordRepository.GetDiscordAuthURL(ctx)
 }
 
-func (uc *AuthUsecase) AuthenticateUser(ctx context.Context, code string) (string, string, error) {
+func (uc *authUsecase) AuthenticateUser(ctx context.Context, code string) (string, string, error) {
 	token, err := uc.discordRepository.GetDiscordToken(ctx, code)
 	if err != nil {
 		return "", "", err
@@ -102,7 +108,7 @@ func userBelongsToAllowedGuild(guildIDs []string, allowedGuildIDs []string) bool
 	return false
 }
 
-func (uc *AuthUsecase) RegenerateToken(ctx context.Context, refreshToken string) (string, error) {
+func (uc *authUsecase) RegenerateToken(ctx context.Context, refreshToken string) (string, error) {
 	userID, err := uc.tokenRepository.CheckRefreshToken(ctx, refreshToken)
 	if err != nil {
 		return "", err

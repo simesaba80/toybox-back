@@ -61,27 +61,6 @@ definitions:
       reply_at:
         type: string
     type: object
-  github_com_simesaba80_toybox-back_internal_interface_schema.CreateUserInput:
-    properties:
-      avatar_url:
-        type: string
-      display_name:
-        maxLength: 32
-        type: string
-      email:
-        maxLength: 256
-        type: string
-      name:
-        maxLength: 32
-        type: string
-      password_hash:
-        type: string
-    required:
-    - display_name
-    - email
-    - name
-    - password_hash
-    type: object
   github_com_simesaba80_toybox-back_internal_interface_schema.CreateWorkInput:
     properties:
       description:
@@ -291,27 +270,6 @@ paths:
       summary: Get all users
       tags:
       - users
-    post:
-      consumes:
-      - application/json
-      description: Create a new user with the input payload
-      parameters:
-      - description: User to create
-        in: body
-        name: user
-        required: true
-        schema:
-          $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.CreateUserInput'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.GetUserOutput'
-      summary: Create a new user
-      tags:
-      - users
   /works:
     get:
       description: Get all works with pagination
@@ -331,6 +289,14 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.WorkListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
       summary: Get all works
       tags:
       - works
@@ -416,6 +382,10 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/echo.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
         "500":
           description: Internal Server Error
           schema:
@@ -449,6 +419,10 @@ paths:
             $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.CreateCommentResponse'
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "404":
+          description: Not Found
           schema:
             $ref: '#/definitions/echo.HTTPError'
         "500":

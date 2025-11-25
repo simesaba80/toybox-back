@@ -74,22 +74,22 @@ func ProvideDatabase() *bun.DB {
 }
 
 // ProvideUserUseCase はUserUseCaseを提供します
-func ProvideUserUseCase(repo repository.UserRepository) *usecase.UserUseCase {
+func ProvideUserUseCase(repo repository.UserRepository) usecase.IUserUseCase {
 	return usecase.NewUserUseCase(repo, 30*time.Second)
 }
 
 // ProvideWorkUseCase はWorkUseCaseを提供します
-func ProvideWorkUseCase(repo repository.WorkRepository) *usecase.WorkUseCase {
+func ProvideWorkUseCase(repo repository.WorkRepository) usecase.IWorkUseCase {
 	return usecase.NewWorkUseCase(repo, 30*time.Second)
 }
 
 // ProvideCommentUseCase はCommentUseCaseを提供します
-func ProvideCommentUseCase(commentRepo repository.CommentRepository, workRepo repository.WorkRepository) *usecase.CommentUsecase {
+func ProvideCommentUseCase(commentRepo repository.CommentRepository, workRepo repository.WorkRepository) usecase.ICommentUsecase {
 	return usecase.NewCommentUsecase(commentRepo, workRepo, 30*time.Second)
 }
 
 // ProvideDiscordUseCase はDiscordUseCaseを提供します
-func ProvideAuthUseCase(authRepo repository.DiscordRepository, userRepo repository.UserRepository, tokenProvider usecase.TokenProvider, tokenRepo repository.TokenRepository) *usecase.AuthUsecase {
+func ProvideAuthUseCase(authRepo repository.DiscordRepository, userRepo repository.UserRepository, tokenProvider usecase.TokenProvider, tokenRepo repository.TokenRepository) usecase.IAuthUsecase {
 	return usecase.NewAuthUsecase(authRepo, userRepo, tokenProvider, tokenRepo)
 }
 

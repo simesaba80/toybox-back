@@ -7,22 +7,29 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/simesaba80/toybox-back/internal/domain/entity"
+	domainerrors "github.com/simesaba80/toybox-back/internal/domain/errors"
 	"github.com/simesaba80/toybox-back/internal/domain/repository"
 )
 
-type WorkUseCase struct {
+type IWorkUseCase interface {
+	GetAll(ctx context.Context, limit, page *int) ([]*entity.Work, int, int, int, error)
+	GetByID(ctx context.Context, id uuid.UUID) (*entity.Work, error)
+	CreateWork(ctx context.Context, title, description, visibility string, userID uuid.UUID) (*entity.Work, error)
+}
+
+type workUseCase struct {
 	repo    repository.WorkRepository
 	timeout time.Duration
 }
 
-func NewWorkUseCase(repo repository.WorkRepository, timeout time.Duration) *WorkUseCase {
-	return &WorkUseCase{
+func NewWorkUseCase(repo repository.WorkRepository, timeout time.Duration) IWorkUseCase {
+	return &workUseCase{
 		repo:    repo,
 		timeout: time.Second * 30,
 	}
 }
 
-func (uc *WorkUseCase) GetAll(ctx context.Context, limit, page *int) ([]*entity.Work, int, int, int, error) {
+func (uc *workUseCase) GetAll(ctx context.Context, limit, page *int) ([]*entity.Work, int, int, int, error) {
 	ctx, cancel := context.WithTimeout(ctx, uc.timeout)
 	defer cancel()
 
@@ -44,7 +51,7 @@ func (uc *WorkUseCase) GetAll(ctx context.Context, limit, page *int) ([]*entity.
 	return works, total, actualLimit, actualPage, nil
 }
 
-func (uc *WorkUseCase) GetByID(ctx context.Context, id uuid.UUID) (*entity.Work, error) {
+func (uc *workUseCase) GetByID(ctx context.Context, id uuid.UUID) (*entity.Work, error) {
 	ctx, cancel := context.WithTimeout(ctx, uc.timeout)
 	defer cancel()
 
@@ -55,9 +62,18 @@ func (uc *WorkUseCase) GetByID(ctx context.Context, id uuid.UUID) (*entity.Work,
 	return work, nil
 }
 
-func (uc *WorkUseCase) CreateWork(ctx context.Context, title, description, visibility string, userID uuid.UUID) (*entity.Work, error) {
+func (uc *workUseCase) CreateWork(ctx context.Context, title, description, visibility string, userID uuid.UUID) (*entity.Work, error) {
 	ctx, cancel := context.WithTimeout(ctx, uc.timeout)
 	defer cancel()
+	if title == "" {
+		return nil, domainerrors.ErrInvalidTitle
+	}
+	if description == "" {
+		return nil, domainerrors.ErrInvalidDescription
+	}
+	if visibility == "" {
+		return nil, domainerrors.ErrInvalidVisibility
+	}
 
 	work := &entity.Work{
 		ID:          uuid.New(),

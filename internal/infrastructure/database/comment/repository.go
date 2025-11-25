@@ -46,23 +46,6 @@ func (r *CommentRepository) FindByWorkID(ctx context.Context, workID uuid.UUID) 
 	return entityComments, nil
 }
 
-func (r *CommentRepository) FindByID(ctx context.Context, id uuid.UUID) (*entity.Comment, error) {
-	var dtoComment dto.Comment
-	err := r.db.NewSelect().
-		Model(&dtoComment).
-		Where("comment.id = ?", id).
-		Relation("User").
-		Scan(ctx)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, domainerrors.ErrCommentNotFound
-		}
-		return nil, domainerrors.ErrFailedToGetCommentById
-	}
-
-	return dtoComment.ToCommentEntity(), nil
-}
-
 func (r *CommentRepository) Create(ctx context.Context, comment *entity.Comment) (*entity.Comment, error) {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -86,6 +69,23 @@ func (r *CommentRepository) Create(ctx context.Context, comment *entity.Comment)
 
 	if err := tx.Commit(); err != nil {
 		return nil, domainerrors.ErrFailedToCommitTransaction
+	}
+
+	return dtoComment.ToCommentEntity(), nil
+}
+
+func (r *CommentRepository) FindByID(ctx context.Context, id uuid.UUID) (*entity.Comment, error) {
+	var dtoComment dto.Comment
+	err := r.db.NewSelect().
+		Model(&dtoComment).
+		Where("comment.id = ?", id).
+		Relation("User").
+		Scan(ctx)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domainerrors.ErrCommentNotFound
+		}
+		return nil, domainerrors.ErrFailedToGetCommentById
 	}
 
 	return dtoComment.ToCommentEntity(), nil

@@ -31,19 +31,19 @@ func InitializeApp() (*App, func(), error) {
 	echo := ProvideEcho()
 	db := ProvideDatabase()
 	userRepository := user.NewUserRepository(db)
-	userUseCase := ProvideUserUseCase(userRepository)
-	userController := controller.NewUserController(userUseCase)
+	iUserUseCase := ProvideUserUseCase(userRepository)
+	userController := controller.NewUserController(iUserUseCase)
 	workRepository := work.NewWorkRepository(db)
-	workUseCase := ProvideWorkUseCase(workRepository)
-	workController := controller.NewWorkController(workUseCase)
+	iWorkUseCase := ProvideWorkUseCase(workRepository)
+	workController := controller.NewWorkController(iWorkUseCase)
 	commentRepository := comment.NewCommentRepository(db)
-	commentUsecase := ProvideCommentUseCase(commentRepository, workRepository)
-	commentController := controller.NewCommentController(commentUsecase)
+	iCommentUsecase := ProvideCommentUseCase(commentRepository, workRepository)
+	commentController := controller.NewCommentController(iCommentUsecase)
 	discordRepository := oauth.NewDiscordRepository()
 	tokenProvider := ProvideTokenProvider()
 	tokenRepository := token.NewTokenRepository(db)
-	authUsecase := ProvideAuthUseCase(discordRepository, userRepository, tokenProvider, tokenRepository)
-	authController := controller.NewAuthController(authUsecase)
+	iAuthUsecase := ProvideAuthUseCase(discordRepository, userRepository, tokenProvider, tokenRepository)
+	authController := controller.NewAuthController(iAuthUsecase)
 	routerRouter := router.NewRouter(echo, userController, workController, commentController, authController)
 	app := NewApp(routerRouter, db)
 	return app, func() {
@@ -84,22 +84,22 @@ func ProvideDatabase() *bun.DB {
 }
 
 // ProvideUserUseCase はUserUseCaseを提供します
-func ProvideUserUseCase(repo repository.UserRepository) *usecase.UserUseCase {
+func ProvideUserUseCase(repo repository.UserRepository) usecase.IUserUseCase {
 	return usecase.NewUserUseCase(repo, 30*time.Second)
 }
 
 // ProvideWorkUseCase はWorkUseCaseを提供します
-func ProvideWorkUseCase(repo repository.WorkRepository) *usecase.WorkUseCase {
+func ProvideWorkUseCase(repo repository.WorkRepository) usecase.IWorkUseCase {
 	return usecase.NewWorkUseCase(repo, 30*time.Second)
 }
 
 // ProvideCommentUseCase はCommentUseCaseを提供します
-func ProvideCommentUseCase(commentRepo repository.CommentRepository, workRepo repository.WorkRepository) *usecase.CommentUsecase {
+func ProvideCommentUseCase(commentRepo repository.CommentRepository, workRepo repository.WorkRepository) usecase.ICommentUsecase {
 	return usecase.NewCommentUsecase(commentRepo, workRepo, 30*time.Second)
 }
 
 // ProvideDiscordUseCase はDiscordUseCaseを提供します
-func ProvideAuthUseCase(authRepo repository.DiscordRepository, userRepo repository.UserRepository, tokenProvider usecase.TokenProvider, tokenRepo repository.TokenRepository) *usecase.AuthUsecase {
+func ProvideAuthUseCase(authRepo repository.DiscordRepository, userRepo repository.UserRepository, tokenProvider usecase.TokenProvider, tokenRepo repository.TokenRepository) usecase.IAuthUsecase {
 	return usecase.NewAuthUsecase(authRepo, userRepo, tokenProvider, tokenRepo)
 }
 
