@@ -7,6 +7,7 @@
 package di
 
 import (
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/google/wire"
 	"github.com/labstack/echo/v4"
 	"github.com/simesaba80/toybox-back/internal/domain/repository"
@@ -21,6 +22,7 @@ import (
 	"github.com/simesaba80/toybox-back/internal/interface/controller"
 	"github.com/simesaba80/toybox-back/internal/usecase"
 	"github.com/simesaba80/toybox-back/pkg/db"
+	"github.com/simesaba80/toybox-back/pkg/s3_client"
 	"github.com/uptrace/bun"
 	"time"
 )
@@ -45,11 +47,12 @@ func InitializeApp() (*App, func(), error) {
 	tokenRepository := token.NewTokenRepository(db)
 	iAuthUsecase := ProvideAuthUseCase(discordRepository, userRepository, tokenProvider, tokenRepository)
 	authController := controller.NewAuthController(iAuthUsecase)
-	assetRepository := asset.NewAssetRepository(db)
+	client := ProvideS3Client()
+	assetRepository := asset.NewAssetRepository(db, client)
 	iAssetUseCase := ProvideAssetUseCase(assetRepository)
 	assetController := controller.NewAssetController(iAssetUseCase)
 	routerRouter := router.NewRouter(echo, userController, workController, commentController, authController, assetController)
-	app := NewApp(routerRouter, db)
+	app := NewApp(routerRouter, db, client)
 	return app, func() {
 	}, nil
 }
@@ -70,7 +73,8 @@ var UseCaseSet = wire.NewSet(
 var ControllerSet = wire.NewSet(controller.NewUserController, controller.NewWorkController, controller.NewCommentController, controller.NewAuthController, controller.NewAssetController)
 
 var InfrastructureSet = wire.NewSet(
-	ProvideDatabase, router.NewRouter, ProvideEcho,
+	ProvideDatabase,
+	ProvideS3Client, router.NewRouter, ProvideEcho,
 )
 
 // ProviderSet は依存関係を定義します
@@ -86,6 +90,11 @@ var ProviderSet = wire.NewSet(
 func ProvideDatabase() *bun.DB {
 	db.Init()
 	return db.DB
+}
+
+func ProvideS3Client() *s3.Client {
+	s3_client.Init()
+	return s3_client.Client
 }
 
 // ProvideUserUseCase はUserUseCaseを提供します
@@ -130,16 +139,18 @@ func ProvideEcho() *echo.Echo {
 }
 
 // NewApp はAppインスタンスを作成します
-func NewApp(router2 *router.Router, database *bun.DB) *App {
+func NewApp(router2 *router.Router, database *bun.DB, s3Client *s3.Client) *App {
 	return &App{
 		Router:   router2,
 		Database: database,
+		S3Client: s3Client,
 	}
 }
 
 type App struct {
 	Router   *router.Router
 	Database *bun.DB
+	S3Client *s3.Client
 }
 
 // Start アプリケーションの開始

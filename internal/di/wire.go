@@ -7,6 +7,7 @@ package di
 import (
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/google/wire"
 	"github.com/labstack/echo/v4"
 	"github.com/uptrace/bun"
@@ -23,6 +24,7 @@ import (
 	"github.com/simesaba80/toybox-back/internal/interface/controller"
 	"github.com/simesaba80/toybox-back/internal/usecase"
 	"github.com/simesaba80/toybox-back/pkg/db"
+	"github.com/simesaba80/toybox-back/pkg/s3_client"
 )
 
 var RepositorySet = wire.NewSet(
@@ -59,6 +61,7 @@ var ControllerSet = wire.NewSet(
 
 var InfrastructureSet = wire.NewSet(
 	ProvideDatabase,
+	ProvideS3Client,
 	router.NewRouter,
 	ProvideEcho,
 )
@@ -76,6 +79,11 @@ var ProviderSet = wire.NewSet(
 func ProvideDatabase() *bun.DB {
 	db.Init()
 	return db.DB
+}
+
+func ProvideS3Client() *s3.Client {
+	s3_client.Init()
+	return s3_client.Client
 }
 
 // ProvideUserUseCase はUserUseCaseを提供します
@@ -120,10 +128,11 @@ func ProvideEcho() *echo.Echo {
 }
 
 // NewApp はAppインスタンスを作成します
-func NewApp(router *router.Router, database *bun.DB) *App {
+func NewApp(router *router.Router, database *bun.DB, s3Client *s3.Client) *App {
 	return &App{
 		Router:   router,
 		Database: database,
+		S3Client: s3Client,
 	}
 }
 
@@ -136,6 +145,7 @@ func InitializeApp() (*App, func(), error) {
 type App struct {
 	Router   *router.Router
 	Database *bun.DB
+	S3Client *s3.Client
 }
 
 // Start アプリケーションの開始
