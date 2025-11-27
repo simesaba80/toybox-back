@@ -5,15 +5,11 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/config"
+	"github.com/simesaba80/toybox-back/internal/interface/schema"
 )
 
-type JWTCustomClaims struct {
-	UserID string `json:"user_id"`
-	jwt.RegisteredClaims
-}
-
 func GenerateToken(userID string) (string, error) {
-	claims := &JWTCustomClaims{
+	claims := &schema.JWTCustomClaims{
 		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),

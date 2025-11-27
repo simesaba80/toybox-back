@@ -12,6 +12,7 @@ import (
 	"github.com/uptrace/bun"
 
 	"github.com/simesaba80/toybox-back/internal/domain/repository"
+	"github.com/simesaba80/toybox-back/internal/infrastructure/database/asset"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/comment"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/token"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/user"
@@ -35,6 +36,8 @@ var RepositorySet = wire.NewSet(
 	wire.Bind(new(repository.DiscordRepository), new(*oauth.DiscordRepository)),
 	token.NewTokenRepository,
 	wire.Bind(new(repository.TokenRepository), new(*token.TokenRepository)),
+	asset.NewAssetRepository,
+	wire.Bind(new(repository.AssetRepository), new(*asset.AssetRepository)),
 )
 
 var UseCaseSet = wire.NewSet(
@@ -43,6 +46,7 @@ var UseCaseSet = wire.NewSet(
 	ProvideCommentUseCase,
 	ProvideAuthUseCase,
 	ProvideTokenProvider,
+	ProvideAssetUseCase,
 )
 
 var ControllerSet = wire.NewSet(
@@ -50,6 +54,7 @@ var ControllerSet = wire.NewSet(
 	controller.NewWorkController,
 	controller.NewCommentController,
 	controller.NewAuthController,
+	controller.NewAssetController,
 )
 
 var InfrastructureSet = wire.NewSet(
@@ -102,6 +107,11 @@ type tokenProviderFunc func(userID string) (string, error)
 
 func (f tokenProviderFunc) GenerateToken(userID string) (string, error) {
 	return f(userID)
+}
+
+// ProvideAssetUseCase はAssetUseCaseを提供します
+func ProvideAssetUseCase(assetRepo repository.AssetRepository) usecase.IAssetUseCase {
+	return usecase.NewAssetUseCase(assetRepo)
 }
 
 // ProvideEcho はEchoインスタンスを提供します
