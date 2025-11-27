@@ -8,8 +8,8 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/config"
-	customejwt "github.com/simesaba80/toybox-back/internal/infrastructure/external/custome-jwt"
 	"github.com/simesaba80/toybox-back/internal/interface/controller"
+	"github.com/simesaba80/toybox-back/internal/interface/schema"
 	"github.com/simesaba80/toybox-back/pkg/echovalidator"
 	echoSwagger "github.com/swaggo/echo-swagger"
 )
@@ -20,15 +20,17 @@ type Router struct {
 	WorkController    *controller.WorkController
 	CommentController *controller.CommentController
 	AuthController    *controller.AuthController
+	AssetController   *controller.AssetController
 }
 
-func NewRouter(e *echo.Echo, uc *controller.UserController, wc *controller.WorkController, cc *controller.CommentController, ac *controller.AuthController) *Router {
+func NewRouter(e *echo.Echo, uc *controller.UserController, wc *controller.WorkController, cc *controller.CommentController, authc *controller.AuthController, assetc *controller.AssetController) *Router {
 	return &Router{
 		echo:              e,
 		UserController:    uc,
 		WorkController:    wc,
 		CommentController: cc,
-		AuthController:    ac,
+		AuthController:    authc,
+		AssetController:   assetc,
 	}
 }
 
@@ -61,12 +63,13 @@ func (r *Router) Setup() *echo.Echo {
 
 	config := echojwt.Config{
 		NewClaimsFunc: func(c echo.Context) jwt.Claims {
-			return new(customejwt.JWTCustomClaims)
+			return new(schema.JWTCustomClaims)
 		},
 		SigningKey: []byte(config.TOKEN_SECRET),
 	}
 	e := r.echo.Group("/works", echojwt.WithConfig(config))
 	e.Use(echojwt.WithConfig(config))
 	e.GET("/", r.WorkController.GetAllWorks)
+	e.POST("/asset", r.AssetController.UploadAsset)
 	return r.echo
 }

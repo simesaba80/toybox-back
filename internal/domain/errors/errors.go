@@ -50,3 +50,8 @@ var (
 	ErrCommentNotFound             = errors.New("comment not found")
 	ErrFailedToCreateComment       = errors.New("failed to create comment")
 )
+
+// アセット関連のエラー定義
+var (
+	ErrFailedToCreateAsset = errors.New("failed to create asset")
+)
