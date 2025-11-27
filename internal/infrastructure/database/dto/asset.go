@@ -23,8 +23,8 @@ type Asset struct {
 
 func (a *Asset) ToAssetEntity() *entity.Asset {
 	return &entity.Asset{
-		WorkID:    a.WorkID,
-		UserID:    a.UserID,
+		WorkID:    a.WorkID.String(),
+		UserID:    a.UserID.String(),
 		AssetType: string(a.AssetType),
 		Extension: a.Extension,
 		URL:       a.URL,
@@ -37,8 +37,8 @@ func ToAssetDTO(entity *entity.Asset) *Asset {
 
 	return &Asset{
 		ID:        uuid.Nil,
-		WorkID:    entity.WorkID,
-		UserID:    entity.UserID,
+		WorkID:    uuid.MustParse(entity.WorkID),
+		UserID:    uuid.MustParse(entity.UserID),
 		AssetType: types.AssetType(entity.AssetType),
 		Extension: entity.Extension,
 		URL:       entity.URL,

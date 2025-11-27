@@ -94,10 +94,10 @@ func ToAssetResponse(asset *entity.Asset) AssetResponse {
 	}
 
 	return AssetResponse{
-		ID:        asset.ID.String(),
-		WorkID:    asset.WorkID.String(),
+		ID:        asset.ID,
+		WorkID:    asset.WorkID,
 		AssetType: asset.AssetType,
-		UserID:    asset.UserID.String(),
+		UserID:    asset.UserID,
 		Extension: asset.Extension,
 		URL:       asset.URL,
 		CreatedAt: asset.CreatedAt.Format(time.RFC3339),
