@@ -17,7 +17,7 @@ func Init() {
 	creds := credentials.NewStaticCredentialsProvider(os.Getenv("ACCESS_KEY"), os.Getenv("SECRET_ACCESS_KEY"), "")
 	sdkConfig, err := config.LoadDefaultConfig(ctx,
 		config.WithCredentialsProvider(creds),
-		config.WithRegion("ap-northeast-2"),
+		config.WithRegion(os.Getenv("REGION_NAME")),
 		config.WithBaseEndpoint(os.Getenv("S3_BASE_URL")),
 	)
 	if err != nil {
