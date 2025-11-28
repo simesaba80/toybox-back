@@ -35,25 +35,27 @@ services:
     networks:
       - app-network
 
-  minio:
-    image: quay.io/minio/minio:latest
+  localstack-s3:
+    container_name: localstack-s3
+    image: localstack/localstack:latest
     env_file:
       - .env
     environment:
-      MINIO_ROOT_USER: ${ACCESS_KEY}
-      MINIO_ROOT_PASSWORD: ${SECRET_ACCESS_KEY}
-    command: server --console-address ":9001" /data
+      - SERVICES=s3
+      - REGION_NAME=ap-northeast-2
+      - DEBUG=1
+      - DATA_DIR=/tmp/localstack/data
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "4566:4566"
     networks:
       - app-network
     volumes:
-      - s3-data:/data
+      - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - ./scripts/aws-init.sh:/etc/localstack/init/ready.d/aws-init.sh
 
 volumes:
   dbdata:
-  s3-data:
 networks:
   app-network:
     name: app-network
