@@ -29,6 +29,7 @@ func (ac *AssetController) UploadAsset(c echo.Context) error {
 	}
 	assetURL, err := ac.assetUsecase.UploadFile(c.Request().Context(), file, userID)
 	if err != nil {
+		c.Logger().Error("Failed to upload asset: %w", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to upload asset")
 	}
 	return c.JSON(http.StatusOK, map[string]string{"url": *assetURL})

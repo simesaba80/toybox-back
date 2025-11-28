@@ -48,9 +48,12 @@ services:
       - "9001:9001"
     networks:
       - app-network
+    volumes:
+      - s3-data:/data
 
 volumes:
   dbdata:
+  s3-data:
 networks:
   app-network:
     name: app-network

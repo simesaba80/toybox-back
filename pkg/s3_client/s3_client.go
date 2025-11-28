@@ -18,7 +18,7 @@ func Init() {
 	sdkConfig, err := config.LoadDefaultConfig(ctx,
 		config.WithCredentialsProvider(creds),
 		config.WithRegion("ap-northeast-2"),
-		config.WithBaseEndpoint("http://localhost:9000"),
+		config.WithBaseEndpoint(os.Getenv("S3_BASE_URL")),
 	)
 	if err != nil {
 		fmt.Println("Couldn't load default configuration. Have you set up your AWS account?")
