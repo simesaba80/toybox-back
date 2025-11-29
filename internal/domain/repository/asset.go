@@ -9,5 +9,5 @@ import (
 
 type AssetRepository interface {
 	Create(ctx context.Context, asset *entity.Asset) (*entity.Asset, error)
-	UploadFile(ctx context.Context, file *multipart.FileHeader) (*string, error)
+	UploadFile(ctx context.Context, file *multipart.FileHeader, extension string) (assetURL, assetUUID *string, err error)
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"mime/multipart"
-	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -13,6 +12,7 @@ import (
 	domainerrors "github.com/simesaba80/toybox-back/internal/domain/errors"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/config"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/dto"
+	"github.com/simesaba80/toybox-back/internal/infrastructure/database/types"
 	"github.com/uptrace/bun"
 )
 
@@ -70,6 +70,8 @@ func NewAssetRepository(db *bun.DB, s3 *s3.Client) *AssetRepository {
 
 func (r *AssetRepository) Create(ctx context.Context, asset *entity.Asset) (*entity.Asset, error) {
 	dtoAsset := dto.ToAssetDTO(asset)
+
+	dtoAsset.AssetType = types.AssetType(ExtensionToDirName[asset.Extension])
 	_, err := r.db.NewInsert().Model(dtoAsset).Exec(ctx)
 	if err != nil {
 		return nil, domainerrors.ErrFailedToCreateAsset
@@ -77,31 +79,39 @@ func (r *AssetRepository) Create(ctx context.Context, asset *entity.Asset) (*ent
 	return dtoAsset.ToAssetEntity(), nil
 }
 
-func (r *AssetRepository) UploadFile(ctx context.Context, file *multipart.FileHeader) (*string, error) {
+func (r *AssetRepository) UploadFile(ctx context.Context, file *multipart.FileHeader, extension string) (assetURL, assetUUID *string, err error) {
 	openFile, err := file.Open()
 	if err != nil {
-		return nil, fmt.Errorf("failed to open file: %w", err)
+		return nil, nil, fmt.Errorf("failed to open file: %w", err)
 	}
 	defer openFile.Close()
-	extension := strings.Split(file.Filename, ".")[1]
-	mimeType := mimeType(extension)
-	if mimeType == "" {
-		mimeType = defaultMimeType
-	}
+
+	//ファイルのmimeTypeと保存場所を指定
+	mimeType := defineMimeType(extension)
 	dirName := ExtensionToDirName[extension]
 	if dirName == "" {
 		dirName = "other"
 	}
-	assetUUID := uuid.New().String()
+	newAssetUUID := uuid.NewString()
+
 	_, err = r.s3.PutObject(ctx, &s3.PutObjectInput{
 		Bucket:      aws.String(config.S3_BUCKET),
-		Key:         aws.String(config.S3_DIR + "/" + dirName + "/" + assetUUID + "/origin." + extension),
+		Key:         aws.String(config.S3_DIR + "/" + dirName + "/" + newAssetUUID + "/origin." + extension),
 		Body:        openFile,
 		ContentType: aws.String(string(mimeType)),
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to upload file: %w", err)
+		return nil, nil, fmt.Errorf("failed to upload file: %w", err)
 	}
-	assetURL := config.S3_BASE_URL + "/" + config.S3_BUCKET + "/" + config.S3_DIR + "/" + dirName + "/" + assetUUID + "/origin." + extension
-	return &assetURL, nil
+	newAssetURL := config.S3_BASE_URL + "/" + config.S3_BUCKET + "/" + config.S3_DIR + "/" + dirName + "/" + newAssetUUID + "/origin." + extension
+
+	return &newAssetURL, &newAssetUUID, nil
+}
+
+func defineMimeType(extension string) mimeType {
+	mimeType := mimeType(extension)
+	if mimeType == "" {
+		mimeType = defaultMimeType
+	}
+	return mimeType
 }

@@ -35,10 +35,22 @@ func (a *Asset) ToAssetEntity() *entity.Asset {
 
 func ToAssetDTO(entity *entity.Asset) *Asset {
 
+	id := uuid.Nil
+	if entity.ID != "" {
+		id = uuid.MustParse(entity.ID)
+	}
+	workID := uuid.Nil
+	if entity.WorkID != "" {
+		workID = uuid.MustParse(entity.WorkID)
+	}
+	userID := uuid.Nil
+	if entity.UserID != "" {
+		userID = uuid.MustParse(entity.UserID)
+	}
 	return &Asset{
-		ID:        uuid.Nil,
-		WorkID:    uuid.MustParse(entity.WorkID),
-		UserID:    uuid.MustParse(entity.UserID),
+		ID:        id,
+		WorkID:    workID,
+		UserID:    userID,
 		AssetType: types.AssetType(entity.AssetType),
 		Extension: entity.Extension,
 		URL:       entity.URL,

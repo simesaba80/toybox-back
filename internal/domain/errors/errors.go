@@ -53,5 +53,7 @@ var (
 
 // アセット関連のエラー定義
 var (
+	ErrFailedToOpenFile    = errors.New("failed to open file")
+	ErrFailedToUploadFile  = errors.New("failed to upload file")
 	ErrFailedToCreateAsset = errors.New("failed to create asset")
 )
