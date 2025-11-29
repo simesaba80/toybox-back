@@ -21,6 +21,18 @@ func NewAssetController(assetUsecase usecase.IAssetUseCase) *AssetController {
 	}
 }
 
+// UploadAsset godoc
+// @Summary Upload an asset
+// @Description Upload an asset
+// @Tags assets
+// @Accept multipart/form-data
+// @Produce json
+// @Param file formData file true "File to upload"
+// @Success 200 {object} schema.UploadAssetResponse
+// @Failure 400 {object} echo.HTTPError
+// @Failure 500 {object} echo.HTTPError
+// @Security BearerAuth
+// @Router /works/asset [post]
 func (ac *AssetController) UploadAsset(c echo.Context) error {
 	user := c.Get("user").(*jwt.Token)
 	claims := user.Claims.(*schema.JWTCustomClaims)
