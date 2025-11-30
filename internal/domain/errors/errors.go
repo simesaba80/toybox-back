@@ -41,6 +41,7 @@ var (
 	ErrFailedToGetAllWorksByLimitAndOffset = errors.New("failed to get all works by limit and offset")
 	ErrFailedToGetWorkById                 = errors.New("failed to get work by id")
 	ErrWorkNotFound                        = errors.New("work not found")
+	ErrFailedToCreateThumbnail             = errors.New("failed to create thumbnail")
 )
 
 // コメント関連のエラー定義

@@ -74,13 +74,23 @@ func (uc *workUseCase) CreateWork(ctx context.Context, title, description, visib
 	if visibility == "" {
 		return nil, domainerrors.ErrInvalidVisibility
 	}
+	assets := make([]*entity.Asset, len(assetIDs))
+	for i, assetID := range assetIDs {
+		assets[i] = &entity.Asset{
+			ID: assetID,
+		}
+	}
 
 	work := &entity.Work{
-		ID:          "",
-		Title:       title,
-		Description: description,
-		UserID:      userID,
-		Visibility:  visibility,
+		ID:               "",
+		Title:            title,
+		Description:      description,
+		UserID:           userID,
+		Visibility:       visibility,
+		ThumbnailAssetID: thumbnailAssetID,
+		Assets:           assets,
+		CreatedAt:        time.Now(),
+		UpdatedAt:        time.Now(),
 	}
 
 	createdWork, err := uc.repo.Create(ctx, work)

@@ -99,6 +99,22 @@ func (r *WorkRepository) Create(ctx context.Context, work *entity.Work) (*entity
 	if err != nil {
 		return nil, domainerrors.ErrFailedToCreateWork
 	}
+	thumbnail := &dto.Thumbnail{
+		WorkID:  dtoWork.ID,
+		AssetID: dtoWork.ThumbnailAssetID,
+	}
+
+	_, err = tx.NewInsert().Model(thumbnail).Exec(ctx)
+	if err != nil {
+		return nil, domainerrors.ErrFailedToCreateThumbnail
+	}
+
+	for _, asset := range dtoWork.Assets {
+		_, err = tx.Update().Model(asset).Exec(ctx)
+		if err != nil {
+			return nil, domainerrors.ErrFailedToCreateAsset
+		}
+	}
 
 	err = tx.Commit()
 	if err != nil {
