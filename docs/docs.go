@@ -67,6 +67,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.GetDiscordTokenResponse"
                         }
                     },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/echo.HTTPError"
+                        }
+                    },
                     "403": {
                         "description": "Forbidden",
                         "schema": {

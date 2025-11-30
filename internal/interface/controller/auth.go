@@ -42,6 +42,7 @@ func (ac *AuthController) GetDiscordAuthURL(c echo.Context) error {
 // @Tags auth
 // @Produce json
 // @Success 200 {object} schema.GetDiscordTokenResponse
+// @Failure 400 {object} echo.HTTPError
 // @Failure 403 {object} echo.HTTPError
 // @Failure 500 {object} echo.HTTPError
 // @Router /auth/discord/callback [get]
