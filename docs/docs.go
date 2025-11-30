@@ -540,12 +540,23 @@ const docTemplate = `{
         "github_com_simesaba80_toybox-back_internal_interface_schema.CreateWorkInput": {
             "type": "object",
             "required": [
+                "asset_ids",
                 "description",
+                "thumbnail_asset_id",
                 "title",
                 "user_id"
             ],
             "properties": {
+                "asset_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "description": {
+                    "type": "string"
+                },
+                "thumbnail_asset_id": {
                     "type": "string"
                 },
                 "title": {

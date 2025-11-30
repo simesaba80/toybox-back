@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	domainerrors "github.com/simesaba80/toybox-back/internal/domain/errors"
@@ -102,6 +103,9 @@ func (wc *WorkController) GetWorkByID(c echo.Context) error {
 // @Router /works [post]
 func (wc *WorkController) CreateWork(c echo.Context) error {
 	var input schema.CreateWorkInput
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*schema.JWTCustomClaims)
+	userID := claims.UserID
 	if err := c.Bind(&input); err != nil {
 		c.Logger().Error("Bind error:", err)
 		return handleWorkError(c, domainerrors.ErrInvalidRequestBody)
@@ -110,17 +114,14 @@ func (wc *WorkController) CreateWork(c echo.Context) error {
 		return handleWorkError(c, domainerrors.ErrInvalidRequestBody)
 	}
 	// リクエストボディからuser_idを取得し、UUIDにパース
-	userID, err := uuid.Parse(input.UserID)
-	if err != nil {
-		c.Logger().Error("Invalid UserID format:", err)
-		return handleWorkError(c, domainerrors.ErrInvalidRequestBody)
-	}
 
 	createdWork, err := wc.workUsecase.CreateWork(
 		c.Request().Context(),
 		input.Title,
 		input.Description,
 		input.Visibility,
+		input.ThumbnailAssetID,
+		input.AssetIDs,
 		userID,
 	)
 	if err != nil {

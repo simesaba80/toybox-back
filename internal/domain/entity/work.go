@@ -2,16 +2,14 @@ package entity
 
 import (
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type Work struct {
-	ID              uuid.UUID
+	ID              string
 	Title           string
 	Description     string
 	DescriptionHTML string
-	UserID          uuid.UUID
+	UserID          string
 	Visibility      string
 	Assets          []*Asset
 	CreatedAt       time.Time

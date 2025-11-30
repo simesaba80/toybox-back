@@ -63,7 +63,13 @@ definitions:
     type: object
   github_com_simesaba80_toybox-back_internal_interface_schema.CreateWorkInput:
     properties:
+      asset_ids:
+        items:
+          type: string
+        type: array
       description:
+        type: string
+      thumbnail_asset_id:
         type: string
       title:
         maxLength: 100
@@ -73,7 +79,9 @@ definitions:
       visibility:
         type: string
     required:
+    - asset_ids
     - description
+    - thumbnail_asset_id
     - title
     - user_id
     type: object

@@ -70,6 +70,7 @@ func (r *Router) Setup() *echo.Echo {
 	e := r.echo.Group("/works", echojwt.WithConfig(config))
 	e.Use(echojwt.WithConfig(config))
 	e.GET("/", r.WorkController.GetAllWorks)
+	e.POST("", r.WorkController.CreateWork)
 	e.POST("/asset", r.AssetController.UploadAsset)
 	return r.echo
 }

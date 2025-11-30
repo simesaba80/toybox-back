@@ -30,10 +30,10 @@ func (w *Work) ToWorkEntity() *entity.Work {
 	}
 
 	return &entity.Work{
-		ID:          w.ID,
+		ID:          w.ID.String(),
 		Title:       w.Title,
 		Description: w.Description,
-		UserID:      w.UserID,
+		UserID:      w.UserID.String(),
 		Visibility:  string(w.Visibility),
 		Assets:      assets,
 		CreatedAt:   w.CreatedAt,
@@ -48,10 +48,10 @@ func ToWorkDTO(entity *entity.Work) *Work {
 	}
 
 	return &Work{
-		ID:          entity.ID,
+		ID:          uuid.MustParse(entity.ID),
 		Title:       entity.Title,
 		Description: entity.Description,
-		UserID:      entity.UserID,
+		UserID:      uuid.MustParse(entity.UserID),
 		Visibility:  types.Visibility(entity.Visibility),
 		Assets:      assets,
 		CreatedAt:   entity.CreatedAt,
