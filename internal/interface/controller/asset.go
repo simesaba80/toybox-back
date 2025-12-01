@@ -41,12 +41,12 @@ func (ac *AssetController) UploadAsset(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "File is required")
 	}
-	assetURL, err := ac.assetUsecase.UploadFile(c.Request().Context(), file, userID)
+	asset, err := ac.assetUsecase.UploadFile(c.Request().Context(), file, userID)
 	if err != nil {
 		c.Logger().Error("Failed to upload asset: %w", err)
 		return handleAssetError(c, err)
 	}
-	return c.JSON(http.StatusOK, schema.ToUploadAssetResponse(*assetURL))
+	return c.JSON(http.StatusOK, schema.ToUploadAssetResponse(asset))
 }
 
 func handleAssetError(c echo.Context, err error) error {

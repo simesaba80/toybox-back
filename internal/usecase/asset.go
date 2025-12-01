@@ -12,7 +12,7 @@ import (
 )
 
 type IAssetUseCase interface {
-	UploadFile(ctx context.Context, file *multipart.FileHeader, userID string) (*string, error)
+	UploadFile(ctx context.Context, file *multipart.FileHeader, userID string) (*entity.Asset, error)
 }
 
 type assetUseCase struct {
@@ -25,7 +25,7 @@ func NewAssetUseCase(assetRepo repository.AssetRepository) IAssetUseCase {
 	}
 }
 
-func (uc *assetUseCase) UploadFile(ctx context.Context, file *multipart.FileHeader, userID string) (*string, error) {
+func (uc *assetUseCase) UploadFile(ctx context.Context, file *multipart.FileHeader, userID string) (*entity.Asset, error) {
 	extension := strings.Split(file.Filename, ".")[1]
 
 	assetURL, assetUUID, err := uc.assetRepo.UploadFile(ctx, file, extension)
@@ -46,5 +46,5 @@ func (uc *assetUseCase) UploadFile(ctx context.Context, file *multipart.FileHead
 	if err != nil {
 		return nil, fmt.Errorf("failed to create asset: %w", err)
 	}
-	return &createdAsset.URL, nil
+	return createdAsset, nil
 }

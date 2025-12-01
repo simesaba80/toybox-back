@@ -23,6 +23,7 @@ type Asset struct {
 
 func (a *Asset) ToAssetEntity() *entity.Asset {
 	return &entity.Asset{
+		ID:        a.ID.String(),
 		WorkID:    a.WorkID.String(),
 		UserID:    a.UserID.String(),
 		AssetType: string(a.AssetType),
