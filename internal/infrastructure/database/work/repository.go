@@ -117,7 +117,7 @@ func (r *WorkRepository) Create(ctx context.Context, work *entity.Work) (*entity
 		}
 	}
 
-	_, err = tx.NewUpdate().Model(&dto.Thumbnail{}).Set("work_id = ?", dtoWork.ID).Where("id = ?", dtoWork.ThumbnailAssetID).Exec(ctx)
+	_, err = tx.NewUpdate().Model(&dto.Asset{}).Set("work_id = ?", dtoWork.ID).Where("id = ?", dtoWork.ThumbnailAssetID).Exec(ctx)
 	if err != nil {
 		return nil, domainerrors.ErrFailedToCreateAsset
 	}
