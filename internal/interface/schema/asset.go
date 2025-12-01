@@ -1,11 +1,15 @@
 package schema
 
+import "github.com/simesaba80/toybox-back/internal/domain/entity"
+
 type UploadAssetResponse struct {
+	ID  string `json:"id"`
 	URL string `json:"url"`
 }
 
-func ToUploadAssetResponse(url string) UploadAssetResponse {
+func ToUploadAssetResponse(asset *entity.Asset) UploadAssetResponse {
 	return UploadAssetResponse{
-		URL: url,
+		ID:  asset.ID,
+		URL: asset.URL,
 	}
 }

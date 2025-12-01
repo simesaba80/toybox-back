@@ -687,6 +687,9 @@ const docTemplate = `{
         "github_com_simesaba80_toybox-back_internal_interface_schema.UploadAssetResponse": {
             "type": "object",
             "properties": {
+                "id": {
+                    "type": "string"
+                },
                 "url": {
                     "type": "string"
                 }
