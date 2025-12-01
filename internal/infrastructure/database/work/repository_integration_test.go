@@ -39,7 +39,9 @@ func TestWorkRepository_Create(t *testing.T) {
 	require.Equal(t, work.Description, created.Description)
 	require.Equal(t, work.UserID, created.UserID)
 
-	fetched, err := repo.GetByID(ctx, created.ID)
+	createdUUID := uuid.MustParse(created.ID)
+
+	fetched, err := repo.GetByID(ctx, createdUUID)
 	require.NoError(t, err)
 	require.Equal(t, created.ID, fetched.ID)
 }
@@ -84,7 +86,9 @@ func TestWorkRepository_ExistsByID(t *testing.T) {
 	created, err := repo.Create(ctx, work)
 	require.NoError(t, err)
 
-	exists, err := repo.ExistsById(ctx, created.ID)
+	createdUUID := uuid.MustParse(created.ID)
+
+	exists, err := repo.ExistsById(ctx, createdUUID)
 	require.NoError(t, err)
 	require.True(t, exists)
 
@@ -118,10 +122,10 @@ func insertTestUser(t *testing.T, db *bun.DB) *entity.User {
 func newTestWork(userID uuid.UUID, title string) *entity.Work {
 	now := time.Now().UTC().Truncate(time.Second)
 	return &entity.Work{
-		ID:          uuid.New(),
+		ID:          uuid.NewString(),
 		Title:       title,
 		Description: "description",
-		UserID:      userID,
+		UserID:      userID.String(),
 		Visibility:  "public",
 		CreatedAt:   now,
 		UpdatedAt:   now,

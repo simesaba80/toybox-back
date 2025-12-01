@@ -17,9 +17,9 @@ type Work struct {
 	Title            string           `bun:"title,notnull"`
 	Description      string           `bun:"description,notnull"`
 	Visibility       types.Visibility `bun:"visibility"`
-	ThumbnailAssetID uuid.UUID        `bun:"thumbnail_asset_id,notnull,rel:belongs-to,join:id=work_id"`
+	ThumbnailAssetID uuid.UUID        `bun:"-"`
 	Assets           []*Asset         `bun:"rel:has-many,join:id=work_id"`
-	UserID           uuid.UUID        `bun:"user_id,notnull,rel:belongs-to,join:id=work_id"`
+	UserID           uuid.UUID        `bun:"user_id,notnull"`
 	CreatedAt        time.Time        `bun:"created_at,notnull"`
 	UpdatedAt        time.Time        `bun:"updated_at,notnull"`
 }
