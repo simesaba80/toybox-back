@@ -100,6 +100,7 @@ func (wc *WorkController) GetWorkByID(c echo.Context) error {
 // @Success 201 {object} schema.CreateWorkOutput
 // @Failure 400 {object} echo.HTTPError
 // @Failure 500 {object} echo.HTTPError
+// @Security BearerAuth
 // @Router /works [post]
 func (wc *WorkController) CreateWork(c echo.Context) error {
 	var input schema.CreateWorkInput

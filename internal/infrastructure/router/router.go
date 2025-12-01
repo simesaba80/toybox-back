@@ -54,7 +54,6 @@ func (r *Router) Setup() *echo.Echo {
 		return c.String(http.StatusOK, "Hello, World!")
 	})
 
-	r.echo.POST("/works", r.WorkController.CreateWork)
 	r.echo.GET("/works", r.WorkController.GetAllWorks)
 	r.echo.GET("/works/:work_id", r.WorkController.GetWorkByID)
 
@@ -70,6 +69,7 @@ func (r *Router) Setup() *echo.Echo {
 	e := r.echo.Group("/works", echojwt.WithConfig(config))
 	e.Use(echojwt.WithConfig(config))
 	e.GET("/", r.WorkController.GetAllWorks)
+	e.POST("", r.WorkController.CreateWork)
 	e.POST("", r.WorkController.CreateWork)
 	e.POST("/asset", r.AssetController.UploadAsset)
 	return r.echo

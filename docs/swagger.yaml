@@ -74,8 +74,6 @@ definitions:
       title:
         maxLength: 100
         type: string
-      user_id:
-        type: string
       visibility:
         type: string
     required:
@@ -83,7 +81,6 @@ definitions:
     - description
     - thumbnail_asset_id
     - title
-    - user_id
     type: object
   github_com_simesaba80_toybox-back_internal_interface_schema.CreateWorkOutput:
     properties:
@@ -343,6 +340,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/echo.HTTPError'
+      security:
+      - BearerAuth: []
       summary: Create a new work
       tags:
       - works

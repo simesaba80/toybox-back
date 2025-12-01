@@ -195,6 +195,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Create a new work with the input payload",
                 "consumes": [
                     "application/json"
@@ -543,8 +548,7 @@ const docTemplate = `{
                 "asset_ids",
                 "description",
                 "thumbnail_asset_id",
-                "title",
-                "user_id"
+                "title"
             ],
             "properties": {
                 "asset_ids": {
@@ -562,9 +566,6 @@ const docTemplate = `{
                 "title": {
                     "type": "string",
                     "maxLength": 100
-                },
-                "user_id": {
-                    "type": "string"
                 },
                 "visibility": {
                     "type": "string"

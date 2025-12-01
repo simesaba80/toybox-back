@@ -94,6 +94,7 @@ func (r *WorkRepository) Create(ctx context.Context, work *entity.Work) (*entity
 	}()
 
 	dtoWork := dto.ToWorkDTO(work)
+	dtoWork.ID = uuid.New()
 
 	_, err = tx.NewInsert().Model(dtoWork).Exec(ctx)
 	if err != nil {
@@ -110,7 +111,7 @@ func (r *WorkRepository) Create(ctx context.Context, work *entity.Work) (*entity
 	}
 
 	for _, asset := range dtoWork.Assets {
-		_, err = tx.Update().Model(asset).Exec(ctx)
+		_, err = tx.NewUpdate().Model(asset).Set("work_id = ?", dtoWork.ID).Where("id = ?", asset.ID).Exec(ctx)
 		if err != nil {
 			return nil, domainerrors.ErrFailedToCreateAsset
 		}

@@ -162,7 +162,6 @@ func TestWorkController_CreateWork(t *testing.T) {
 		Description:      "New Description",
 		ThumbnailAssetID: uuid.New().String(),
 		AssetIDs:         []string{uuid.New().String()},
-		UserID:           userID.String(),
 		Visibility:       "public",
 	}
 	inputJSON, _ := json.Marshal(input)
