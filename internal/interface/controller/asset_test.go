@@ -10,7 +10,9 @@ import (
 	"testing"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
+	"github.com/simesaba80/toybox-back/internal/domain/entity"
 	domainerrors "github.com/simesaba80/toybox-back/internal/domain/errors"
 	"github.com/simesaba80/toybox-back/internal/interface/controller"
 	"github.com/simesaba80/toybox-back/internal/interface/controller/mock"
@@ -46,7 +48,11 @@ func newAssetUploadRequest(t *testing.T, path string, includeFile bool) *http.Re
 }
 
 func TestAssetController_UploadAsset(t *testing.T) {
-	successResponseBytes, _ := json.Marshal(schema.ToUploadAssetResponse("https://example.com/assets/test.png"))
+	assetID := uuid.New().String()
+	successResponseBytes, _ := json.Marshal(schema.ToUploadAssetResponse(&entity.Asset{
+		ID:  assetID,
+		URL: "https://example.com/assets/test.png",
+	}))
 	fileRequiredResponseBytes, _ := json.Marshal(map[string]string{"message": "File is required"})
 	invalidRequestResponseBytes, _ := json.Marshal(map[string]string{"message": "無効なリクエストです"})
 	failedUploadResponseBytes, _ := json.Marshal(map[string]string{"message": "ファイルのアップロードに失敗しました"})
@@ -65,10 +71,12 @@ func TestAssetController_UploadAsset(t *testing.T) {
 			name:   "正常系: アセットアップロード成功",
 			userID: "user-123",
 			setupMock: func(mockAssetUsecase *mock.MockIAssetUseCase) {
-				uploadedURL := "https://example.com/assets/test.png"
 				mockAssetUsecase.EXPECT().
 					UploadFile(gomock.Any(), gomock.Any(), "user-123").
-					Return(&uploadedURL, nil)
+					Return(&entity.Asset{
+						ID:  assetID,
+						URL: "https://example.com/assets/test.png",
+					}, nil)
 			},
 			request: func(t *testing.T) *http.Request {
 				return newAssetUploadRequest(t, "/works/asset", true)
