@@ -13,14 +13,15 @@ import (
 type Work struct {
 	bun.BaseModel `bun:"table:work"`
 
-	ID          uuid.UUID        `bun:"id,pk"`
-	Title       string           `bun:"title,notnull"`
-	Description string           `bun:"description,notnull"`
-	UserID      uuid.UUID        `bun:"user_id,notnull"`
-	Visibility  types.Visibility `bun:"visibility"`
-	Assets      []*Asset         `bun:"rel:has-many,join:id=work_id"`
-	CreatedAt   time.Time        `bun:"created_at,notnull"`
-	UpdatedAt   time.Time        `bun:"updated_at,notnull"`
+	ID               uuid.UUID        `bun:"id,pk"`
+	Title            string           `bun:"title,notnull"`
+	Description      string           `bun:"description,notnull"`
+	Visibility       types.Visibility `bun:"visibility"`
+	ThumbnailAssetID uuid.UUID        `bun:"-"`
+	Assets           []*Asset         `bun:"rel:has-many,join:id=work_id"`
+	UserID           uuid.UUID        `bun:"user_id,notnull"`
+	CreatedAt        time.Time        `bun:"created_at,notnull"`
+	UpdatedAt        time.Time        `bun:"updated_at,notnull"`
 }
 
 func (w *Work) ToWorkEntity() *entity.Work {
@@ -30,10 +31,10 @@ func (w *Work) ToWorkEntity() *entity.Work {
 	}
 
 	return &entity.Work{
-		ID:          w.ID,
+		ID:          w.ID.String(),
 		Title:       w.Title,
 		Description: w.Description,
-		UserID:      w.UserID,
+		UserID:      w.UserID.String(),
 		Visibility:  string(w.Visibility),
 		Assets:      assets,
 		CreatedAt:   w.CreatedAt,
@@ -46,15 +47,28 @@ func ToWorkDTO(entity *entity.Work) *Work {
 	for i, asset := range entity.Assets {
 		assets[i] = ToAssetDTO(asset)
 	}
+	id := uuid.Nil
+	userID := uuid.Nil
+	thumbnailAssetID := uuid.Nil
+	if entity.ID != "" {
+		id = uuid.MustParse(entity.ID)
+	}
+	if entity.UserID != "" {
+		userID = uuid.MustParse(entity.UserID)
+	}
+	if entity.ThumbnailAssetID != "" {
+		thumbnailAssetID = uuid.MustParse(entity.ThumbnailAssetID)
+	}
 
 	return &Work{
-		ID:          entity.ID,
-		Title:       entity.Title,
-		Description: entity.Description,
-		UserID:      entity.UserID,
-		Visibility:  types.Visibility(entity.Visibility),
-		Assets:      assets,
-		CreatedAt:   entity.CreatedAt,
-		UpdatedAt:   entity.UpdatedAt,
+		ID:               id,
+		Title:            entity.Title,
+		Description:      entity.Description,
+		UserID:           userID,
+		ThumbnailAssetID: thumbnailAssetID,
+		Visibility:       types.Visibility(entity.Visibility),
+		Assets:           assets,
+		CreatedAt:        entity.CreatedAt,
+		UpdatedAt:        entity.UpdatedAt,
 	}
 }

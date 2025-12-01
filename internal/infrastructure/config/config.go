@@ -19,6 +19,10 @@ var (
 	TOKEN_SECRET          string
 	DISCORD_GUILD_IDS     []string
 	HOST_URL              string
+	S3_BUCKET             string
+	S3_DIR                string
+	S3_BASE_URL           string
+	REGION_NAME           string
 )
 
 // .envを呼び出します。
@@ -39,4 +43,8 @@ func LoadEnv() {
 	TOKEN_SECRET = os.Getenv("TOKEN_SECRET")
 	DISCORD_GUILD_IDS = strings.Split(os.Getenv("DISCORD_GUILD_IDS"), ",")
 	HOST_URL = os.Getenv("HOST_URL")
+	S3_BUCKET = os.Getenv("S3_BUCKET")
+	S3_DIR = os.Getenv("S3_DIR")
+	S3_BASE_URL = os.Getenv("S3_BASE_URL")
+	REGION_NAME = os.Getenv("REGION_NAME")
 }

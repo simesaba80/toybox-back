@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/simesaba80/toybox-back/internal/domain/entity"
@@ -22,7 +23,7 @@ import (
 )
 
 func TestWorkController_GetAllWorks(t *testing.T) {
-	mockWork := &entity.Work{ID: uuid.New(), Title: "Test Work"}
+	mockWork := &entity.Work{ID: uuid.New().String(), Title: "Test Work"}
 	successResponseBytes, _ := json.Marshal(schema.WorkListResponse{
 		Works:      []schema.GetWorkOutput{schema.ToWorkResponse(mockWork)},
 		TotalCount: 1,
@@ -88,7 +89,7 @@ func TestWorkController_GetAllWorks(t *testing.T) {
 
 func TestWorkController_GetWorkByID(t *testing.T) {
 	workID := uuid.New()
-	mockWork := &entity.Work{ID: workID, Title: "Test Work"}
+	mockWork := &entity.Work{ID: workID.String(), Title: "Test Work"}
 	successResponseBytes, _ := json.Marshal(schema.ToWorkResponse(mockWork))
 	invalidIDResponseBytes, _ := json.Marshal(map[string]string{"message": "無効なリクエストです"})
 	notFoundResponseBytes, _ := json.Marshal(map[string]string{"message": "作品が見つかりませんでした"})
@@ -157,14 +158,15 @@ func TestWorkController_GetWorkByID(t *testing.T) {
 func TestWorkController_CreateWork(t *testing.T) {
 	userID := uuid.New()
 	input := &schema.CreateWorkInput{
-		Title:       "New Work",
-		Description: "New Description",
-		UserID:      userID.String(),
-		Visibility:  "public",
+		Title:            "New Work",
+		Description:      "New Description",
+		ThumbnailAssetID: uuid.New().String(),
+		AssetIDs:         []string{uuid.New().String()},
+		Visibility:       "public",
 	}
 	inputJSON, _ := json.Marshal(input)
 
-	createdWork := &entity.Work{ID: uuid.New(), Title: input.Title}
+	createdWork := &entity.Work{ID: uuid.New().String(), Title: input.Title}
 	successResponseBytes, _ := json.Marshal(schema.ToCreateWorkOutput(createdWork))
 	badRequestResponseBytes, _ := json.Marshal(map[string]string{"message": "無効なリクエストボディです"})
 	internalErrorResponseBytes, _ := json.Marshal(map[string]string{"message": "サーバーエラーが発生しました"})
@@ -181,7 +183,7 @@ func TestWorkController_CreateWork(t *testing.T) {
 			body: inputJSON,
 			setupMock: func(mockWorkUsecase *mock.MockIWorkUseCase) {
 				mockWorkUsecase.EXPECT().
-					CreateWork(gomock.Any(), input.Title, input.Description, input.Visibility, userID).
+					CreateWork(gomock.Any(), input.Title, input.Description, input.Visibility, input.ThumbnailAssetID, input.AssetIDs, userID.String()).
 					Return(createdWork, nil)
 			},
 			wantStatus: http.StatusCreated,
@@ -199,7 +201,7 @@ func TestWorkController_CreateWork(t *testing.T) {
 			body: inputJSON,
 			setupMock: func(mockWorkUsecase *mock.MockIWorkUseCase) {
 				mockWorkUsecase.EXPECT().
-					CreateWork(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+					CreateWork(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(nil, errors.New("some error"))
 			},
 			wantStatus: http.StatusInternalServerError,
@@ -216,9 +218,15 @@ func TestWorkController_CreateWork(t *testing.T) {
 
 			mockWorkUsecase := mock.NewMockIWorkUseCase(ctrl)
 			tt.setupMock(mockWorkUsecase)
+			token := jwt.NewWithClaims(jwt.SigningMethodHS256, &schema.JWTCustomClaims{
+				UserID: userID.String(),
+			})
 
 			workController := controller.NewWorkController(mockWorkUsecase)
-			e.POST("/works", workController.CreateWork)
+			e.POST("/works", func(c echo.Context) error {
+				c.Set("user", token)
+				return workController.CreateWork(c)
+			})
 
 			req := httptest.NewRequest(http.MethodPost, "/works", bytes.NewReader(tt.body))
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)

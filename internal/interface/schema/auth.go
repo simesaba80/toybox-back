@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/simesaba80/toybox-back/internal/domain/entity"
 )
 
@@ -26,6 +27,11 @@ type RegenerateTokenInput struct {
 
 type RegenerateTokenResponse struct {
 	AppToken string `json:"app_token"`
+}
+
+type JWTCustomClaims struct {
+	UserID string `json:"user_id"`
+	jwt.RegisteredClaims
 }
 
 func ToGetDiscordAuthURLResponse(authURL string) GetDiscordAuthURLResponse {

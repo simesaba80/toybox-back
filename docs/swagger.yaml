@@ -63,19 +63,24 @@ definitions:
     type: object
   github_com_simesaba80_toybox-back_internal_interface_schema.CreateWorkInput:
     properties:
+      asset_ids:
+        items:
+          type: string
+        type: array
       description:
+        type: string
+      thumbnail_asset_id:
         type: string
       title:
         maxLength: 100
         type: string
-      user_id:
-        type: string
       visibility:
         type: string
     required:
+    - asset_ids
     - description
+    - thumbnail_asset_id
     - title
-    - user_id
     type: object
   github_com_simesaba80_toybox-back_internal_interface_schema.CreateWorkOutput:
     properties:
@@ -150,6 +155,11 @@ definitions:
       visibility:
         type: string
     type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.UploadAssetResponse:
+    properties:
+      url:
+        type: string
+    type: object
   github_com_simesaba80_toybox-back_internal_interface_schema.UserInCommentResponse:
     properties:
       avatar_url:
@@ -219,6 +229,10 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.GetDiscordTokenResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
         "403":
           description: Forbidden
           schema:
@@ -326,6 +340,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/echo.HTTPError'
+      security:
+      - BearerAuth: []
       summary: Create a new work
       tags:
       - works
@@ -432,4 +448,41 @@ paths:
       summary: Create a comment for a work
       tags:
       - comments
+  /works/asset:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload an asset
+      parameters:
+      - description: File to upload
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.UploadAssetResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: Upload an asset
+      tags:
+      - assets
+securityDefinitions:
+  BearerAuth:
+    description: Bearer token for authentication
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

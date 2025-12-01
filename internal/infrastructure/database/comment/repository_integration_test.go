@@ -29,10 +29,11 @@ func TestCommentRepository_Create(t *testing.T) {
 
 	ctx := context.Background()
 	work := insertTestWork(t, db)
+	workUUID := uuid.MustParse(work.ID)
 	comment := &entity.Comment{
 		ID:        uuid.New(),
 		Content:   "create-content",
-		WorkID:    work.ID,
+		WorkID:    workUUID,
 		UserID:    uuid.New(),
 		ReplyAt:   "",
 		CreatedAt: time.Now(),
@@ -44,7 +45,7 @@ func TestCommentRepository_Create(t *testing.T) {
 	anonymousComment := &entity.Comment{
 		ID:        uuid.New(),
 		Content:   "anonymous-content",
-		WorkID:    work.ID,
+		WorkID:    workUUID,
 		UserID:    uuid.Nil,
 		ReplyAt:   "",
 		CreatedAt: time.Now(),
@@ -60,10 +61,11 @@ func TestCommentRepository_FindByWorkID(t *testing.T) {
 
 	ctx := context.Background()
 	work := insertTestWork(t, db)
+	workUUID := uuid.MustParse(work.ID)
 	comment := &entity.Comment{
 		ID:        uuid.New(),
 		Content:   "find-content",
-		WorkID:    work.ID,
+		WorkID:    workUUID,
 		UserID:    uuid.New(),
 		ReplyAt:   "",
 		CreatedAt: time.Now(),
@@ -72,7 +74,7 @@ func TestCommentRepository_FindByWorkID(t *testing.T) {
 	_, err := commentRepo.Create(ctx, comment)
 	require.NoError(t, err)
 
-	comments, err := commentRepo.FindByWorkID(ctx, work.ID)
+	comments, err := commentRepo.FindByWorkID(ctx, workUUID)
 	require.NoError(t, err)
 	require.Equal(t, 1, len(comments))
 	require.Equal(t, comment.Content, comments[0].Content)
@@ -85,10 +87,11 @@ func TestCommentRepository_FindByID(t *testing.T) {
 
 	ctx := context.Background()
 	work := insertTestWork(t, db)
+	workUUID := uuid.MustParse(work.ID)
 	comment := &entity.Comment{
 		ID:        uuid.New(),
 		Content:   "find-content",
-		WorkID:    work.ID,
+		WorkID:    workUUID,
 		UserID:    uuid.New(),
 		ReplyAt:   "",
 		CreatedAt: time.Now(),
@@ -109,10 +112,10 @@ func insertTestWork(t *testing.T, db *bun.DB) *entity.Work {
 	ctx := context.Background()
 	workRepo := work.NewWorkRepository(db)
 	testWork := &entity.Work{
-		ID:          uuid.New(),
+		ID:          uuid.New().String(),
 		Title:       "create-title",
 		Description: "create-description",
-		UserID:      uuid.New(),
+		UserID:      uuid.New().String(),
 		Visibility:  "public",
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),

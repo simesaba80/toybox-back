@@ -18,10 +18,11 @@ type GetWorkOutput struct {
 }
 
 type CreateWorkInput struct {
-	Title       string `json:"title" validate:"required,max=100"`
-	Description string `json:"description" validate:"required"`
-	Visibility  string `json:"visibility"`
-	UserID      string `json:"user_id" validate:"required"`
+	Title            string   `json:"title" validate:"required,max=100"`
+	Description      string   `json:"description" validate:"required"`
+	Visibility       string   `json:"visibility"`
+	ThumbnailAssetID string   `json:"thumbnail_asset_id" validate:"required,uuid"`
+	AssetIDs         []string `json:"asset_ids" validate:"required,dive,uuid"`
 }
 
 type CreateWorkOutput struct {
@@ -62,10 +63,10 @@ func ToWorkResponse(work *entity.Work) GetWorkOutput {
 		return GetWorkOutput{}
 	}
 	return GetWorkOutput{
-		ID:          work.ID.String(),
+		ID:          work.ID,
 		Title:       work.Title,
 		Description: work.Description,
-		UserID:      work.UserID.String(),
+		UserID:      work.UserID,
 		Visibility:  work.Visibility,
 		Assets:      ToAssetResponses(work.Assets),
 		CreatedAt:   work.CreatedAt.Format(time.RFC3339),
@@ -78,10 +79,10 @@ func ToCreateWorkOutput(work *entity.Work) CreateWorkOutput {
 		return CreateWorkOutput{}
 	}
 	return CreateWorkOutput{
-		ID:          work.ID.String(),
+		ID:          work.ID,
 		Title:       work.Title,
 		Description: work.Description,
-		UserID:      work.UserID.String(),
+		UserID:      work.UserID,
 		Visibility:  work.Visibility,
 		CreatedAt:   work.CreatedAt.Format(time.RFC3339),
 		UpdatedAt:   work.UpdatedAt.Format(time.RFC3339),
@@ -94,10 +95,10 @@ func ToAssetResponse(asset *entity.Asset) AssetResponse {
 	}
 
 	return AssetResponse{
-		ID:        asset.ID.String(),
-		WorkID:    asset.WorkID.String(),
+		ID:        asset.ID,
+		WorkID:    asset.WorkID,
 		AssetType: asset.AssetType,
-		UserID:    asset.UserID.String(),
+		UserID:    asset.UserID,
 		Extension: asset.Extension,
 		URL:       asset.URL,
 		CreatedAt: asset.CreatedAt.Format(time.RFC3339),

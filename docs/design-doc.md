@@ -263,6 +263,11 @@ Docker 上の PostgreSQL v17.6 を使用しています。テーブル定義す�
 https://github.com/golang-migrate/migrate
 テーブル定義等に変更を加える場合は既存の SQL に変更を加えるのではなく新たにマイグレーションを積み重ねるようにします。
 
+# S3
+
+本番環境ではC3が契約しているWasabiを、開発環境ではdocker上のlocalstackを使います
+localstackは一度コンテナを停止するとオブジェクトが消去されるので注意してください
+
 ## 時間について
 
 - DB 内では Timezone ありで JST として保存します
@@ -297,3 +302,4 @@ go test -tags=integration ./...
 2025/10/02 simesaba80
 2025/10/07 simesaba80
 2025/11/26 simesaba80
+2025/11/29 simesaba80

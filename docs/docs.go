@@ -67,6 +67,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.GetDiscordTokenResponse"
                         }
                     },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/echo.HTTPError"
+                        }
+                    },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
@@ -189,6 +195,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Create a new work with the input payload",
                 "consumes": [
                     "application/json"
@@ -216,6 +227,55 @@ const docTemplate = `{
                         "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.CreateWorkOutput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/echo.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/echo.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/works/asset": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Upload an asset",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "assets"
+                ],
+                "summary": "Upload an asset",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "File to upload",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.UploadAssetResponse"
                         }
                     },
                     "400": {
@@ -485,20 +545,27 @@ const docTemplate = `{
         "github_com_simesaba80_toybox-back_internal_interface_schema.CreateWorkInput": {
             "type": "object",
             "required": [
+                "asset_ids",
                 "description",
-                "title",
-                "user_id"
+                "thumbnail_asset_id",
+                "title"
             ],
             "properties": {
+                "asset_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "description": {
+                    "type": "string"
+                },
+                "thumbnail_asset_id": {
                     "type": "string"
                 },
                 "title": {
                     "type": "string",
                     "maxLength": 100
-                },
-                "user_id": {
-                    "type": "string"
                 },
                 "visibility": {
                     "type": "string"
@@ -617,6 +684,14 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_simesaba80_toybox-back_internal_interface_schema.UploadAssetResponse": {
+            "type": "object",
+            "properties": {
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
         "github_com_simesaba80_toybox-back_internal_interface_schema.UserInCommentResponse": {
             "type": "object",
             "properties": {
@@ -661,6 +736,14 @@ const docTemplate = `{
                     }
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "Bearer token for authentication",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`

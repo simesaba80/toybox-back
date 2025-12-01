@@ -7,11 +7,13 @@ package di
 import (
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/google/wire"
 	"github.com/labstack/echo/v4"
 	"github.com/uptrace/bun"
 
 	"github.com/simesaba80/toybox-back/internal/domain/repository"
+	"github.com/simesaba80/toybox-back/internal/infrastructure/database/asset"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/comment"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/token"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/user"
@@ -22,6 +24,7 @@ import (
 	"github.com/simesaba80/toybox-back/internal/interface/controller"
 	"github.com/simesaba80/toybox-back/internal/usecase"
 	"github.com/simesaba80/toybox-back/pkg/db"
+	"github.com/simesaba80/toybox-back/pkg/s3_client"
 )
 
 var RepositorySet = wire.NewSet(
@@ -35,6 +38,8 @@ var RepositorySet = wire.NewSet(
 	wire.Bind(new(repository.DiscordRepository), new(*oauth.DiscordRepository)),
 	token.NewTokenRepository,
 	wire.Bind(new(repository.TokenRepository), new(*token.TokenRepository)),
+	asset.NewAssetRepository,
+	wire.Bind(new(repository.AssetRepository), new(*asset.AssetRepository)),
 )
 
 var UseCaseSet = wire.NewSet(
@@ -43,6 +48,7 @@ var UseCaseSet = wire.NewSet(
 	ProvideCommentUseCase,
 	ProvideAuthUseCase,
 	ProvideTokenProvider,
+	ProvideAssetUseCase,
 )
 
 var ControllerSet = wire.NewSet(
@@ -50,10 +56,12 @@ var ControllerSet = wire.NewSet(
 	controller.NewWorkController,
 	controller.NewCommentController,
 	controller.NewAuthController,
+	controller.NewAssetController,
 )
 
 var InfrastructureSet = wire.NewSet(
 	ProvideDatabase,
+	ProvideS3Client,
 	router.NewRouter,
 	ProvideEcho,
 )
@@ -71,6 +79,11 @@ var ProviderSet = wire.NewSet(
 func ProvideDatabase() *bun.DB {
 	db.Init()
 	return db.DB
+}
+
+func ProvideS3Client() *s3.Client {
+	s3_client.Init()
+	return s3_client.Client
 }
 
 // ProvideUserUseCase はUserUseCaseを提供します
@@ -104,16 +117,22 @@ func (f tokenProviderFunc) GenerateToken(userID string) (string, error) {
 	return f(userID)
 }
 
+// ProvideAssetUseCase はAssetUseCaseを提供します
+func ProvideAssetUseCase(assetRepo repository.AssetRepository) usecase.IAssetUseCase {
+	return usecase.NewAssetUseCase(assetRepo)
+}
+
 // ProvideEcho はEchoインスタンスを提供します
 func ProvideEcho() *echo.Echo {
 	return echo.New()
 }
 
 // NewApp はAppインスタンスを作成します
-func NewApp(router *router.Router, database *bun.DB) *App {
+func NewApp(router *router.Router, database *bun.DB, s3Client *s3.Client) *App {
 	return &App{
 		Router:   router,
 		Database: database,
+		S3Client: s3Client,
 	}
 }
 
@@ -126,6 +145,7 @@ func InitializeApp() (*App, func(), error) {
 type App struct {
 	Router   *router.Router
 	Database *bun.DB
+	S3Client *s3.Client
 }
 
 // Start アプリケーションの開始

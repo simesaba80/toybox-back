@@ -14,7 +14,7 @@ import (
 type IWorkUseCase interface {
 	GetAll(ctx context.Context, limit, page *int) ([]*entity.Work, int, int, int, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*entity.Work, error)
-	CreateWork(ctx context.Context, title, description, visibility string, userID uuid.UUID) (*entity.Work, error)
+	CreateWork(ctx context.Context, title, description, visibility, thumbnailAssetID string, assetIDs []string, userID string) (*entity.Work, error)
 }
 
 type workUseCase struct {
@@ -62,7 +62,7 @@ func (uc *workUseCase) GetByID(ctx context.Context, id uuid.UUID) (*entity.Work,
 	return work, nil
 }
 
-func (uc *workUseCase) CreateWork(ctx context.Context, title, description, visibility string, userID uuid.UUID) (*entity.Work, error) {
+func (uc *workUseCase) CreateWork(ctx context.Context, title, description, visibility, thumbnailAssetID string, assetIDs []string, userID string) (*entity.Work, error) {
 	ctx, cancel := context.WithTimeout(ctx, uc.timeout)
 	defer cancel()
 	if title == "" {
@@ -74,13 +74,23 @@ func (uc *workUseCase) CreateWork(ctx context.Context, title, description, visib
 	if visibility == "" {
 		return nil, domainerrors.ErrInvalidVisibility
 	}
+	assets := make([]*entity.Asset, len(assetIDs))
+	for i, assetID := range assetIDs {
+		assets[i] = &entity.Asset{
+			ID: assetID,
+		}
+	}
 
 	work := &entity.Work{
-		ID:          uuid.New(),
-		Title:       title,
-		Description: description,
-		UserID:      userID,
-		Visibility:  visibility,
+		ID:               "",
+		Title:            title,
+		Description:      description,
+		UserID:           userID,
+		Visibility:       visibility,
+		ThumbnailAssetID: thumbnailAssetID,
+		Assets:           assets,
+		CreatedAt:        time.Now(),
+		UpdatedAt:        time.Now(),
 	}
 
 	createdWork, err := uc.repo.Create(ctx, work)

@@ -41,6 +41,7 @@ var (
 	ErrFailedToGetAllWorksByLimitAndOffset = errors.New("failed to get all works by limit and offset")
 	ErrFailedToGetWorkById                 = errors.New("failed to get work by id")
 	ErrWorkNotFound                        = errors.New("work not found")
+	ErrFailedToCreateThumbnail             = errors.New("failed to create thumbnail")
 )
 
 // コメント関連のエラー定義
@@ -49,4 +50,11 @@ var (
 	ErrFailedToGetCommentById      = errors.New("failed to get comment by id")
 	ErrCommentNotFound             = errors.New("comment not found")
 	ErrFailedToCreateComment       = errors.New("failed to create comment")
+)
+
+// アセット関連のエラー定義
+var (
+	ErrFailedToOpenFile    = errors.New("failed to open file")
+	ErrFailedToUploadFile  = errors.New("failed to upload file")
+	ErrFailedToCreateAsset = errors.New("failed to create asset")
 )
