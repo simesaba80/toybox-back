@@ -33,8 +33,8 @@ func TestWorkUseCase_GetAll(t *testing.T) {
 			page:  nil,
 			setupMock: func(m *mock.MockWorkRepository) {
 				expectedWorks := []*entity.Work{
-					{ID: uuid.New().String(), Title: "Work1", Description: "Desc1", UserID: uuid.New().String()},
-					{ID: uuid.New().String(), Title: "Work2", Description: "Desc2", UserID: uuid.New().String()},
+					{ID: uuid.New(), Title: "Work1", Description: "Desc1", UserID: uuid.New()},
+					{ID: uuid.New(), Title: "Work2", Description: "Desc2", UserID: uuid.New()},
 				}
 				m.EXPECT().
 					GetAll(gomock.Any(), gomock.Eq(20), gomock.Eq(0)).
@@ -53,7 +53,7 @@ func TestWorkUseCase_GetAll(t *testing.T) {
 			page:  util.IntPtr(1),
 			setupMock: func(m *mock.MockWorkRepository) {
 				expectedWorks := []*entity.Work{
-					{ID: uuid.New().String(), Title: "Work1", Description: "Desc1", UserID: uuid.New().String()},
+					{ID: uuid.New(), Title: "Work1", Description: "Desc1", UserID: uuid.New()},
 				}
 				m.EXPECT().
 					GetAll(gomock.Any(), gomock.Eq(10), gomock.Eq(0)).
@@ -72,7 +72,7 @@ func TestWorkUseCase_GetAll(t *testing.T) {
 			page:  util.IntPtr(2),
 			setupMock: func(m *mock.MockWorkRepository) {
 				expectedWorks := []*entity.Work{
-					{ID: uuid.New().String(), Title: "Work3", Description: "Desc3", UserID: uuid.New().String()},
+					{ID: uuid.New(), Title: "Work3", Description: "Desc3", UserID: uuid.New()},
 				}
 				m.EXPECT().
 					GetAll(gomock.Any(), gomock.Eq(20), gomock.Eq(20)).
@@ -139,7 +139,7 @@ func TestWorkUseCase_GetAll(t *testing.T) {
 			page:  nil,
 			setupMock: func(m *mock.MockWorkRepository) {
 				expectedWorks := []*entity.Work{
-					{ID: uuid.New().String(), Title: "Work1", Description: "Desc1", UserID: uuid.New().String()},
+					{ID: uuid.New(), Title: "Work1", Description: "Desc1", UserID: uuid.New()},
 				}
 				m.EXPECT().
 					GetAll(gomock.Any(), gomock.Eq(5), gomock.Eq(0)).
@@ -158,7 +158,7 @@ func TestWorkUseCase_GetAll(t *testing.T) {
 			page:  util.IntPtr(3),
 			setupMock: func(m *mock.MockWorkRepository) {
 				expectedWorks := []*entity.Work{
-					{ID: uuid.New().String(), Title: "Work1", Description: "Desc1", UserID: uuid.New().String()},
+					{ID: uuid.New(), Title: "Work1", Description: "Desc1", UserID: uuid.New()},
 				}
 				m.EXPECT().
 					GetAll(gomock.Any(), gomock.Eq(20), gomock.Eq(40)).
@@ -219,19 +219,19 @@ func TestWorkUseCase_GetAll(t *testing.T) {
 func TestWorkUseCase_GetByID(t *testing.T) {
 	tests := []struct {
 		name      string
-		workID    string
+		workID    uuid.UUID
 		setupMock func(*mock.MockWorkRepository, uuid.UUID)
 		wantErr   bool
 	}{
 		{
 			name:   "正常系: 作品取得成功",
-			workID: uuid.New().String(),
+			workID: uuid.New(),
 			setupMock: func(m *mock.MockWorkRepository, workID uuid.UUID) {
 				expectedWork := &entity.Work{
-					ID:          workID.String(),
+					ID:          workID,
 					Title:       "Test Work",
 					Description: "Test Description",
-					UserID:      uuid.New().String(),
+					UserID:      uuid.New(),
 					CreatedAt:   time.Now(),
 					UpdatedAt:   time.Now(),
 				}
@@ -244,7 +244,7 @@ func TestWorkUseCase_GetByID(t *testing.T) {
 		},
 		{
 			name:   "異常系: リポジトリエラー",
-			workID: uuid.New().String(),
+			workID: uuid.New(),
 			setupMock: func(m *mock.MockWorkRepository, workID uuid.UUID) {
 				m.EXPECT().
 					GetByID(gomock.Any(), gomock.Eq(workID)).
@@ -261,11 +261,11 @@ func TestWorkUseCase_GetByID(t *testing.T) {
 			defer ctrl.Finish()
 
 			mockRepo := mock.NewMockWorkRepository(ctrl)
-			tt.setupMock(mockRepo, uuid.MustParse(tt.workID))
+			tt.setupMock(mockRepo, tt.workID)
 
 			uc := usecase.NewWorkUseCase(mockRepo, 30*time.Second)
 
-			got, err := uc.GetByID(context.Background(), uuid.MustParse(tt.workID))
+			got, err := uc.GetByID(context.Background(), tt.workID)
 
 			if tt.wantErr {
 				assert.Error(t, err)
@@ -285,9 +285,9 @@ func TestWorkUseCase_CreateWork(t *testing.T) {
 		title            string
 		description      string
 		visibility       string
-		thumbnailAssetID string
-		assetIDs         []string
-		userID           string
+		thumbnailAssetID uuid.UUID
+		assetIDs         []uuid.UUID
+		userID           uuid.UUID
 		setupMock        func(*mock.MockWorkRepository)
 		wantErr          bool
 	}{
@@ -296,9 +296,9 @@ func TestWorkUseCase_CreateWork(t *testing.T) {
 			title:            "New Work",
 			description:      "New Description",
 			visibility:       "public",
-			thumbnailAssetID: uuid.New().String(),
-			assetIDs:         []string{uuid.New().String()},
-			userID:           uuid.New().String(),
+			thumbnailAssetID: uuid.New(),
+			assetIDs:         []uuid.UUID{uuid.New()},
+			userID:           uuid.New(),
 			setupMock: func(m *mock.MockWorkRepository) {
 				m.EXPECT().
 					Create(gomock.Any(), gomock.Any()).
@@ -316,9 +316,9 @@ func TestWorkUseCase_CreateWork(t *testing.T) {
 			title:            "",
 			description:      "Description",
 			visibility:       "public",
-			thumbnailAssetID: uuid.New().String(),
-			assetIDs:         []string{uuid.New().String()},
-			userID:           uuid.New().String(),
+			thumbnailAssetID: uuid.New(),
+			assetIDs:         []uuid.UUID{uuid.New()},
+			userID:           uuid.New(),
 			setupMock: func(m *mock.MockWorkRepository) {
 				m.EXPECT().
 					Create(gomock.Any(), gomock.Any()).
@@ -331,9 +331,9 @@ func TestWorkUseCase_CreateWork(t *testing.T) {
 			title:            "Title",
 			description:      "",
 			visibility:       "public",
-			thumbnailAssetID: uuid.New().String(),
-			assetIDs:         []string{uuid.New().String()},
-			userID:           uuid.New().String(),
+			thumbnailAssetID: uuid.New(),
+			assetIDs:         []uuid.UUID{uuid.New()},
+			userID:           uuid.New(),
 			setupMock: func(m *mock.MockWorkRepository) {
 				m.EXPECT().
 					Create(gomock.Any(), gomock.Any()).
@@ -346,9 +346,9 @@ func TestWorkUseCase_CreateWork(t *testing.T) {
 			title:            "Title",
 			description:      "Description",
 			visibility:       "",
-			thumbnailAssetID: uuid.New().String(),
-			assetIDs:         []string{uuid.New().String()},
-			userID:           uuid.New().String(),
+			thumbnailAssetID: uuid.New(),
+			assetIDs:         []uuid.UUID{uuid.New()},
+			userID:           uuid.New(),
 			setupMock: func(m *mock.MockWorkRepository) {
 				m.EXPECT().
 					Create(gomock.Any(), gomock.Any()).
@@ -361,9 +361,9 @@ func TestWorkUseCase_CreateWork(t *testing.T) {
 			title:            "New Work",
 			description:      "New Description",
 			visibility:       "public",
-			thumbnailAssetID: uuid.New().String(),
-			assetIDs:         []string{uuid.New().String()},
-			userID:           uuid.New().String(),
+			thumbnailAssetID: uuid.New(),
+			assetIDs:         []uuid.UUID{uuid.New()},
+			userID:           uuid.New(),
 			setupMock: func(m *mock.MockWorkRepository) {
 				m.EXPECT().
 					Create(gomock.Any(), gomock.Any()).
