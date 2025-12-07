@@ -15,7 +15,6 @@ type User struct {
 	ID                  uuid.UUID `bun:"id,pk,default:gen_random_uuid()"`
 	Name                string    `bun:"name,notnull"`
 	Email               string    `bun:"email,notnull,unique"`
-	PasswordHash        string    `bun:"password_hash"`
 	DisplayName         string    `bun:"display_name,notnull"`
 	DiscordToken        string    `bun:"discord_token"`
 	DiscordRefreshToken string    `bun:"discord_refresh_token"`
@@ -33,7 +32,6 @@ func (u *User) ToUserEntity() *entity.User {
 		ID:                  u.ID,
 		Name:                u.Name,
 		Email:               u.Email,
-		PasswordHash:        u.PasswordHash,
 		DisplayName:         u.DisplayName,
 		DiscordToken:        u.DiscordToken,
 		DiscordRefreshToken: u.DiscordRefreshToken,
@@ -52,7 +50,6 @@ func ToUserDTO(entity *entity.User) *User {
 		ID:                  entity.ID,
 		Name:                entity.Name,
 		Email:               entity.Email,
-		PasswordHash:        entity.PasswordHash,
 		DisplayName:         entity.DisplayName,
 		DiscordToken:        entity.DiscordToken,
 		DiscordRefreshToken: entity.DiscordRefreshToken,
