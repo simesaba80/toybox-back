@@ -17,10 +17,10 @@ type Asset struct {
 	UpdatedAt time.Time
 }
 
-func NewAsset(workID uuid.UUID, assetType string, userID uuid.UUID, extension string, url string) *Asset {
+func NewAsset(assetType string, userID uuid.UUID, extension string, url string) *Asset {
 	return &Asset{
 		ID:        uuid.New(),
-		WorkID:    workID,
+		WorkID:    uuid.Nil,
 		AssetType: assetType,
 		UserID:    userID,
 		Extension: extension,

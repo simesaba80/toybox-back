@@ -14,6 +14,7 @@ import (
 	multipart "mime/multipart"
 	reflect "reflect"
 
+	uuid "github.com/google/uuid"
 	entity "github.com/simesaba80/toybox-back/internal/domain/entity"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -58,9 +59,9 @@ func (mr *MockAssetRepositoryMockRecorder) Create(ctx, asset any) *gomock.Call {
 }
 
 // UploadFile mocks base method.
-func (m *MockAssetRepository) UploadFile(ctx context.Context, file *multipart.FileHeader, extension string) (*string, *string, error) {
+func (m *MockAssetRepository) UploadFile(ctx context.Context, file *multipart.FileHeader, assetUUID uuid.UUID, extension string) (*string, *string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UploadFile", ctx, file, extension)
+	ret := m.ctrl.Call(m, "UploadFile", ctx, file, assetUUID, extension)
 	ret0, _ := ret[0].(*string)
 	ret1, _ := ret[1].(*string)
 	ret2, _ := ret[2].(error)
@@ -68,7 +69,7 @@ func (m *MockAssetRepository) UploadFile(ctx context.Context, file *multipart.Fi
 }
 
 // UploadFile indicates an expected call of UploadFile.
-func (mr *MockAssetRepositoryMockRecorder) UploadFile(ctx, file, extension any) *gomock.Call {
+func (mr *MockAssetRepositoryMockRecorder) UploadFile(ctx, file, assetUUID, extension any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UploadFile", reflect.TypeOf((*MockAssetRepository)(nil).UploadFile), ctx, file, extension)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UploadFile", reflect.TypeOf((*MockAssetRepository)(nil).UploadFile), ctx, file, assetUUID, extension)
 }

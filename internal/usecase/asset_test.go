@@ -19,29 +19,36 @@ func TestAssetUseCase_UploadFile(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		setup   func(t *testing.T, repo *mock.MockAssetRepository, file *multipart.FileHeader, userID string)
+		setup   func(t *testing.T, repo *mock.MockAssetRepository, file *multipart.FileHeader, userID uuid.UUID)
 		wantErr bool
 	}{
 		{
 			name: "正常系: ファイルアップロード成功",
-			setup: func(t *testing.T, repo *mock.MockAssetRepository, file *multipart.FileHeader, userID string) {
+			setup: func(t *testing.T, repo *mock.MockAssetRepository, file *multipart.FileHeader, userID uuid.UUID) {
 				t.Helper()
 
 				assetURL := "https://example.com/assets/" + uuid.NewString() + ".png"
-				assetUUID := uuid.NewString()
+				assetType := "image"
+				var capturedAssetID uuid.UUID
 
 				repo.EXPECT().
-					UploadFile(gomock.Any(), file, "png").
-					Return(&assetURL, &assetUUID, nil).
+					UploadFile(gomock.Any(), file, gomock.AssignableToTypeOf(uuid.UUID{}), "png").
+					DoAndReturn(func(ctx context.Context, fh *multipart.FileHeader, assetUUID uuid.UUID, extension string) (*string, *string, error) {
+						assert.Equal(t, file, fh)
+						assert.Equal(t, "png", extension)
+						capturedAssetID = assetUUID
+						return &assetURL, &assetType, nil
+					}).
 					Times(1)
 
 				repo.EXPECT().
 					Create(gomock.Any(), gomock.Any()).
 					DoAndReturn(func(ctx context.Context, asset *entity.Asset) (*entity.Asset, error) {
-						assert.Equal(t, assetUUID, asset.ID)
+						assert.Equal(t, capturedAssetID, asset.ID)
 						assert.Equal(t, userID, asset.UserID)
 						assert.Equal(t, "png", asset.Extension)
 						assert.Equal(t, assetURL, asset.URL)
+						assert.Equal(t, assetType, asset.AssetType)
 						return asset, nil
 					}).
 					Times(1)
@@ -50,11 +57,11 @@ func TestAssetUseCase_UploadFile(t *testing.T) {
 		},
 		{
 			name: "異常系: UploadFile でエラー",
-			setup: func(t *testing.T, repo *mock.MockAssetRepository, file *multipart.FileHeader, userID string) {
+			setup: func(t *testing.T, repo *mock.MockAssetRepository, file *multipart.FileHeader, userID uuid.UUID) {
 				t.Helper()
 
 				repo.EXPECT().
-					UploadFile(gomock.Any(), file, "png").
+					UploadFile(gomock.Any(), file, gomock.AssignableToTypeOf(uuid.UUID{}), "png").
 					Return(nil, nil, errors.New("upload failed")).
 					Times(1)
 			},
@@ -62,15 +69,15 @@ func TestAssetUseCase_UploadFile(t *testing.T) {
 		},
 		{
 			name: "異常系: Create でエラー",
-			setup: func(t *testing.T, repo *mock.MockAssetRepository, file *multipart.FileHeader, userID string) {
+			setup: func(t *testing.T, repo *mock.MockAssetRepository, file *multipart.FileHeader, userID uuid.UUID) {
 				t.Helper()
 
 				assetURL := "https://example.com/assets/" + uuid.NewString() + ".png"
-				assetUUID := uuid.NewString()
+				assetType := "image"
 
 				repo.EXPECT().
-					UploadFile(gomock.Any(), file, "png").
-					Return(&assetURL, &assetUUID, nil).
+					UploadFile(gomock.Any(), file, gomock.AssignableToTypeOf(uuid.UUID{}), "png").
+					Return(&assetURL, &assetType, nil).
 					Times(1)
 
 				repo.EXPECT().
@@ -91,7 +98,7 @@ func TestAssetUseCase_UploadFile(t *testing.T) {
 			defer ctrl.Finish()
 
 			file := &multipart.FileHeader{Filename: "test.png"}
-			userID := uuid.NewString()
+			userID := uuid.New()
 
 			mockRepo := mock.NewMockAssetRepository(ctrl)
 			tt.setup(t, mockRepo, file, userID)
@@ -110,6 +117,8 @@ func TestAssetUseCase_UploadFile(t *testing.T) {
 			assert.NotNil(t, got)
 			assert.Equal(t, userID, got.UserID)
 			assert.Equal(t, "png", got.Extension)
+			assert.NotEmpty(t, got.AssetType)
+			assert.NotEmpty(t, got.URL)
 		})
 	}
 }
