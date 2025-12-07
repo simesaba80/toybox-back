@@ -14,6 +14,7 @@ import (
 	multipart "mime/multipart"
 	reflect "reflect"
 
+	uuid "github.com/google/uuid"
 	entity "github.com/simesaba80/toybox-back/internal/domain/entity"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -43,7 +44,7 @@ func (m *MockIAssetUseCase) EXPECT() *MockIAssetUseCaseMockRecorder {
 }
 
 // UploadFile mocks base method.
-func (m *MockIAssetUseCase) UploadFile(ctx context.Context, file *multipart.FileHeader, userID string) (*entity.Asset, error) {
+func (m *MockIAssetUseCase) UploadFile(ctx context.Context, file *multipart.FileHeader, userID uuid.UUID) (*entity.Asset, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UploadFile", ctx, file, userID)
 	ret0, _ := ret[0].(*entity.Asset)

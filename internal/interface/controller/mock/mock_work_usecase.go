@@ -43,7 +43,7 @@ func (m *MockIWorkUseCase) EXPECT() *MockIWorkUseCaseMockRecorder {
 }
 
 // CreateWork mocks base method.
-func (m *MockIWorkUseCase) CreateWork(ctx context.Context, title, description, visibility, thumbnailAssetID string, assetIDs []string, userID string) (*entity.Work, error) {
+func (m *MockIWorkUseCase) CreateWork(ctx context.Context, title, description, visibility string, thumbnailAssetID uuid.UUID, assetIDs []uuid.UUID, userID uuid.UUID) (*entity.Work, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateWork", ctx, title, description, visibility, thumbnailAssetID, assetIDs, userID)
 	ret0, _ := ret[0].(*entity.Work)

@@ -2,6 +2,7 @@ package controller_test
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"mime/multipart"
@@ -48,7 +49,7 @@ func newAssetUploadRequest(t *testing.T, path string, includeFile bool) *http.Re
 }
 
 func TestAssetController_UploadAsset(t *testing.T) {
-	assetID := uuid.New().String()
+	assetID := uuid.New()
 	successResponseBytes, _ := json.Marshal(schema.ToUploadAssetResponse(&entity.Asset{
 		ID:  assetID,
 		URL: "https://example.com/assets/test.png",
@@ -60,8 +61,8 @@ func TestAssetController_UploadAsset(t *testing.T) {
 
 	tests := []struct {
 		name          string
-		userID        string
-		setupMock     func(mockAssetUsecase *mock.MockIAssetUseCase)
+		userID        uuid.UUID
+		setupMock     func(mockAssetUsecase *mock.MockIAssetUseCase, userID uuid.UUID)
 		request       func(t *testing.T) *http.Request
 		wantStatus    int
 		wantBody      []byte
@@ -69,14 +70,17 @@ func TestAssetController_UploadAsset(t *testing.T) {
 	}{
 		{
 			name:   "正常系: アセットアップロード成功",
-			userID: "user-123",
-			setupMock: func(mockAssetUsecase *mock.MockIAssetUseCase) {
+			userID: uuid.New(),
+			setupMock: func(mockAssetUsecase *mock.MockIAssetUseCase, userID uuid.UUID) {
 				mockAssetUsecase.EXPECT().
-					UploadFile(gomock.Any(), gomock.Any(), "user-123").
-					Return(&entity.Asset{
-						ID:  assetID,
-						URL: "https://example.com/assets/test.png",
-					}, nil)
+					UploadFile(gomock.Any(), gomock.Any(), userID).
+					DoAndReturn(func(ctx context.Context, file *multipart.FileHeader, uid uuid.UUID) (*entity.Asset, error) {
+						assert.Equal(t, userID, uid)
+						return &entity.Asset{
+							ID:  assetID,
+							URL: "https://example.com/assets/test.png",
+						}, nil
+					})
 			},
 			request: func(t *testing.T) *http.Request {
 				return newAssetUploadRequest(t, "/works/asset", true)
@@ -87,8 +91,8 @@ func TestAssetController_UploadAsset(t *testing.T) {
 		},
 		{
 			name:   "異常系: ファイル未指定",
-			userID: "user-456",
-			setupMock: func(mockAssetUsecase *mock.MockIAssetUseCase) {
+			userID: uuid.New(),
+			setupMock: func(mockAssetUsecase *mock.MockIAssetUseCase, userID uuid.UUID) {
 				mockAssetUsecase.EXPECT().
 					UploadFile(gomock.Any(), gomock.Any(), gomock.Any()).
 					Times(0)
@@ -101,10 +105,10 @@ func TestAssetController_UploadAsset(t *testing.T) {
 		},
 		{
 			name:   "異常系: 無効なリクエスト",
-			userID: "user-789",
-			setupMock: func(mockAssetUsecase *mock.MockIAssetUseCase) {
+			userID: uuid.New(),
+			setupMock: func(mockAssetUsecase *mock.MockIAssetUseCase, userID uuid.UUID) {
 				mockAssetUsecase.EXPECT().
-					UploadFile(gomock.Any(), gomock.Any(), "user-789").
+					UploadFile(gomock.Any(), gomock.Any(), userID).
 					Return(nil, domainerrors.ErrInvalidRequestBody)
 			},
 			request: func(t *testing.T) *http.Request {
@@ -115,10 +119,10 @@ func TestAssetController_UploadAsset(t *testing.T) {
 		},
 		{
 			name:   "異常系: アップロード失敗",
-			userID: "user-987",
-			setupMock: func(mockAssetUsecase *mock.MockIAssetUseCase) {
+			userID: uuid.New(),
+			setupMock: func(mockAssetUsecase *mock.MockIAssetUseCase, userID uuid.UUID) {
 				mockAssetUsecase.EXPECT().
-					UploadFile(gomock.Any(), gomock.Any(), "user-987").
+					UploadFile(gomock.Any(), gomock.Any(), userID).
 					Return(nil, domainerrors.ErrFailedToUploadFile)
 			},
 			request: func(t *testing.T) *http.Request {
@@ -129,10 +133,10 @@ func TestAssetController_UploadAsset(t *testing.T) {
 		},
 		{
 			name:   "異常系: 想定外のエラー",
-			userID: "user-654",
-			setupMock: func(mockAssetUsecase *mock.MockIAssetUseCase) {
+			userID: uuid.New(),
+			setupMock: func(mockAssetUsecase *mock.MockIAssetUseCase, userID uuid.UUID) {
 				mockAssetUsecase.EXPECT().
-					UploadFile(gomock.Any(), gomock.Any(), "user-654").
+					UploadFile(gomock.Any(), gomock.Any(), userID).
 					Return(nil, errors.New("unexpected error"))
 			},
 			request: func(t *testing.T) *http.Request {
@@ -151,12 +155,12 @@ func TestAssetController_UploadAsset(t *testing.T) {
 
 			mockAssetUsecase := mock.NewMockIAssetUseCase(ctrl)
 			if tt.setupMock != nil {
-				tt.setupMock(mockAssetUsecase)
+				tt.setupMock(mockAssetUsecase, tt.userID)
 			}
 
 			assetController := controller.NewAssetController(mockAssetUsecase)
 			token := jwt.NewWithClaims(jwt.SigningMethodHS256, &schema.JWTCustomClaims{
-				UserID: tt.userID,
+				UserID: tt.userID.String(),
 			})
 
 			e.POST("/works/asset", func(c echo.Context) error {

@@ -106,7 +106,10 @@ func (wc *WorkController) CreateWork(c echo.Context) error {
 	var input schema.CreateWorkInput
 	user := c.Get("user").(*jwt.Token)
 	claims := user.Claims.(*schema.JWTCustomClaims)
-	userID := claims.UserID
+	userID, err := uuid.Parse(claims.UserID)
+	if err != nil {
+		return handleWorkError(c, domainerrors.ErrInvalidRequestBody)
+	}
 	if err := c.Bind(&input); err != nil {
 		c.Logger().Error("Bind error:", err)
 		return handleWorkError(c, domainerrors.ErrInvalidRequestBody)

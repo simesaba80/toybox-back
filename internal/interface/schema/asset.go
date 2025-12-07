@@ -1,10 +1,13 @@
 package schema
 
-import "github.com/simesaba80/toybox-back/internal/domain/entity"
+import (
+	"github.com/google/uuid"
+	"github.com/simesaba80/toybox-back/internal/domain/entity"
+)
 
 type UploadAssetResponse struct {
-	ID  string `json:"id"`
-	URL string `json:"url"`
+	ID  uuid.UUID `json:"id"`
+	URL string    `json:"url"`
 }
 
 func ToUploadAssetResponse(asset *entity.Asset) UploadAssetResponse {

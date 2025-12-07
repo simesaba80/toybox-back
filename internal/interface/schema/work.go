@@ -3,14 +3,15 @@ package schema
 import (
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/simesaba80/toybox-back/internal/domain/entity"
 )
 
 type GetWorkOutput struct {
-	ID          string          `json:"id"`
+	ID          uuid.UUID       `json:"id"`
 	Title       string          `json:"title"`
 	Description string          `json:"description"`
-	UserID      string          `json:"user_id"`
+	UserID      uuid.UUID       `json:"user_id"`
 	Visibility  string          `json:"visibility"`
 	Assets      []AssetResponse `json:"assets"`
 	CreatedAt   string          `json:"created_at"`
@@ -18,21 +19,21 @@ type GetWorkOutput struct {
 }
 
 type CreateWorkInput struct {
-	Title            string   `json:"title" validate:"required,max=100"`
-	Description      string   `json:"description" validate:"required"`
-	Visibility       string   `json:"visibility"`
-	ThumbnailAssetID string   `json:"thumbnail_asset_id" validate:"required,uuid"`
-	AssetIDs         []string `json:"asset_ids" validate:"required,dive,uuid"`
+	Title            string      `json:"title" validate:"required,max=100"`
+	Description      string      `json:"description" validate:"required"`
+	Visibility       string      `json:"visibility"`
+	ThumbnailAssetID uuid.UUID   `json:"thumbnail_asset_id" validate:"required,uuid"`
+	AssetIDs         []uuid.UUID `json:"asset_ids" validate:"required,dive,uuid"`
 }
 
 type CreateWorkOutput struct {
-	ID          string `json:"id"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	UserID      string `json:"user_id"`
-	Visibility  string `json:"visibility"`
-	CreatedAt   string `json:"created_at"`
-	UpdatedAt   string `json:"updated_at"`
+	ID          uuid.UUID `json:"id"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	UserID      uuid.UUID `json:"user_id"`
+	Visibility  string    `json:"visibility"`
+	CreatedAt   string    `json:"created_at"`
+	UpdatedAt   string    `json:"updated_at"`
 }
 
 type GetWorksQuery struct {
@@ -48,14 +49,14 @@ type WorkListResponse struct {
 }
 
 type AssetResponse struct {
-	ID        string `json:"id"`
-	WorkID    string `json:"work_id"`
-	AssetType string `json:"asset_type"`
-	UserID    string `json:"user_id"`
-	Extension string `json:"extension"`
-	URL       string `json:"url"`
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at"`
+	ID        uuid.UUID `json:"id"`
+	WorkID    uuid.UUID `json:"work_id"`
+	AssetType string    `json:"asset_type"`
+	UserID    uuid.UUID `json:"user_id"`
+	Extension string    `json:"extension"`
+	URL       string    `json:"url"`
+	CreatedAt string    `json:"created_at"`
+	UpdatedAt string    `json:"updated_at"`
 }
 
 func ToWorkResponse(work *entity.Work) GetWorkOutput {
