@@ -25,20 +25,17 @@ func MigrateUsers(ctx context.Context, sourceDB, targetDB bun.IDB) error {
 		}
 
 		newUser := &dto.User{
-			ID:                    parsedOldID,
-			Name:                  old.Name,
-			Email:                 old.Email,
-			PasswordHash:          derefString(old.PasswordHash),
-			DisplayName:           old.DisplayName,
-			DiscordToken:          derefString(old.DiscordToken),
-			DiscordRefreshToken:   derefString(old.DiscordRefreshToken),
-			DiscordUserID:         derefString(old.DiscordUserID),
-			Profile:               derefString(old.Profile),
-			AvatarURL:             derefString(old.AvatarURL),
-			TwitterID:             derefString(old.TwitterID),
-			GithubID:              derefString(old.GithubID),
-			CreatedAt:             old.CreatedAt,
-			UpdatedAt:             old.UpdatedAt,
+			ID:            parsedOldID,
+			Name:          old.Name,
+			Email:         old.Email,
+			DisplayName:   old.DisplayName,
+			DiscordUserID: derefString(old.DiscordUserID),
+			Profile:       derefString(old.Profile),
+			AvatarURL:     derefString(old.AvatarURL),
+			TwitterID:     derefString(old.TwitterID),
+			GithubID:      derefString(old.GithubID),
+			CreatedAt:     old.CreatedAt,
+			UpdatedAt:     old.UpdatedAt,
 		}
 		newUsers = append(newUsers, newUser)
 	}

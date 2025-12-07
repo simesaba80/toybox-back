@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	domainerrors "github.com/simesaba80/toybox-back/internal/domain/errors"
 	"github.com/simesaba80/toybox-back/internal/interface/schema"
@@ -36,7 +37,10 @@ func NewAssetController(assetUsecase usecase.IAssetUseCase) *AssetController {
 func (ac *AssetController) UploadAsset(c echo.Context) error {
 	user := c.Get("user").(*jwt.Token)
 	claims := user.Claims.(*schema.JWTCustomClaims)
-	userID := claims.UserID
+	userID, err := uuid.Parse(claims.UserID)
+	if err != nil {
+		return handleAssetError(c, domainerrors.ErrInvalidRequestBody)
+	}
 	file, err := c.FormFile("file")
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "File is required")

@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"mime/multipart"
 	"strings"
-	"time"
 
+	"github.com/google/uuid"
 	"github.com/simesaba80/toybox-back/internal/domain/entity"
 	"github.com/simesaba80/toybox-back/internal/domain/repository"
 )
 
 type IAssetUseCase interface {
-	UploadFile(ctx context.Context, file *multipart.FileHeader, userID string) (*entity.Asset, error)
+	UploadFile(ctx context.Context, file *multipart.FileHeader, userID uuid.UUID) (*entity.Asset, error)
 }
 
 type assetUseCase struct {
@@ -25,23 +25,17 @@ func NewAssetUseCase(assetRepo repository.AssetRepository) IAssetUseCase {
 	}
 }
 
-func (uc *assetUseCase) UploadFile(ctx context.Context, file *multipart.FileHeader, userID string) (*entity.Asset, error) {
+func (uc *assetUseCase) UploadFile(ctx context.Context, file *multipart.FileHeader, userID uuid.UUID) (*entity.Asset, error) {
 	extension := strings.Split(file.Filename, ".")[1]
+	asset := entity.NewAsset("", userID, extension, "")
 
-	assetURL, assetUUID, err := uc.assetRepo.UploadFile(ctx, file, extension)
+	assetURL, assetType, err := uc.assetRepo.UploadFile(ctx, file, asset.ID, extension)
 	if err != nil {
 		return nil, fmt.Errorf("failed to upload file: %w", err)
 	}
-	asset := &entity.Asset{
-		ID:        *assetUUID,
-		WorkID:    "",
-		UserID:    userID,
-		AssetType: "",
-		Extension: extension,
-		URL:       *assetURL,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-	}
+	asset.URL = *assetURL
+	asset.AssetType = *assetType
+
 	createdAsset, err := uc.assetRepo.Create(ctx, asset)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create asset: %w", err)

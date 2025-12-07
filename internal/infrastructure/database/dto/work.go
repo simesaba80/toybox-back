@@ -31,10 +31,10 @@ func (w *Work) ToWorkEntity() *entity.Work {
 	}
 
 	return &entity.Work{
-		ID:          w.ID.String(),
+		ID:          w.ID,
 		Title:       w.Title,
 		Description: w.Description,
-		UserID:      w.UserID.String(),
+		UserID:      w.UserID,
 		Visibility:  string(w.Visibility),
 		Assets:      assets,
 		CreatedAt:   w.CreatedAt,
@@ -47,25 +47,13 @@ func ToWorkDTO(entity *entity.Work) *Work {
 	for i, asset := range entity.Assets {
 		assets[i] = ToAssetDTO(asset)
 	}
-	id := uuid.Nil
-	userID := uuid.Nil
-	thumbnailAssetID := uuid.Nil
-	if entity.ID != "" {
-		id = uuid.MustParse(entity.ID)
-	}
-	if entity.UserID != "" {
-		userID = uuid.MustParse(entity.UserID)
-	}
-	if entity.ThumbnailAssetID != "" {
-		thumbnailAssetID = uuid.MustParse(entity.ThumbnailAssetID)
-	}
 
 	return &Work{
-		ID:               id,
+		ID:               entity.ID,
 		Title:            entity.Title,
 		Description:      entity.Description,
-		UserID:           userID,
-		ThumbnailAssetID: thumbnailAssetID,
+		UserID:           entity.UserID,
+		ThumbnailAssetID: entity.ThumbnailAssetID,
 		Visibility:       types.Visibility(entity.Visibility),
 		Assets:           assets,
 		CreatedAt:        entity.CreatedAt,

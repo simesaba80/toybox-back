@@ -122,10 +122,12 @@ func TestAuthUsecase_AuthenticateUser(t *testing.T) {
 				u.EXPECT().
 					GetUserByDiscordUserID(gomock.Any(), gomock.Any()).
 					Return(&entity.User{
-						ID:                  uuid.New(),
-						DiscordUserID:       "test",
-						DiscordToken:        "test",
-						DiscordRefreshToken: "test",
+						ID:            uuid.New(),
+						Name:          "test",
+						Email:         "test@example.com",
+						DisplayName:   "test",
+						DiscordUserID: "test",
+						AvatarURL:     "https://example.com/avatar.png",
 					}, nil).
 					Times(1)
 				tp.EXPECT().

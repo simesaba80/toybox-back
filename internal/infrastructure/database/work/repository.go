@@ -94,7 +94,6 @@ func (r *WorkRepository) Create(ctx context.Context, work *entity.Work) (*entity
 	}()
 
 	dtoWork := dto.ToWorkDTO(work)
-	dtoWork.ID = uuid.New()
 
 	_, err = tx.NewInsert().Model(dtoWork).Exec(ctx)
 	if err != nil {

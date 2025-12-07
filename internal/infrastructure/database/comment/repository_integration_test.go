@@ -29,7 +29,7 @@ func TestCommentRepository_Create(t *testing.T) {
 
 	ctx := context.Background()
 	work := insertTestWork(t, db)
-	workUUID := uuid.MustParse(work.ID)
+	workUUID := work.ID
 	comment := &entity.Comment{
 		ID:        uuid.New(),
 		Content:   "create-content",
@@ -61,7 +61,7 @@ func TestCommentRepository_FindByWorkID(t *testing.T) {
 
 	ctx := context.Background()
 	work := insertTestWork(t, db)
-	workUUID := uuid.MustParse(work.ID)
+	workUUID := work.ID
 	comment := &entity.Comment{
 		ID:        uuid.New(),
 		Content:   "find-content",
@@ -87,7 +87,7 @@ func TestCommentRepository_FindByID(t *testing.T) {
 
 	ctx := context.Background()
 	work := insertTestWork(t, db)
-	workUUID := uuid.MustParse(work.ID)
+	workUUID := work.ID
 	comment := &entity.Comment{
 		ID:        uuid.New(),
 		Content:   "find-content",
@@ -112,13 +112,15 @@ func insertTestWork(t *testing.T, db *bun.DB) *entity.Work {
 	ctx := context.Background()
 	workRepo := work.NewWorkRepository(db)
 	testWork := &entity.Work{
-		ID:          uuid.New().String(),
-		Title:       "create-title",
-		Description: "create-description",
-		UserID:      uuid.New().String(),
-		Visibility:  "public",
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
+		ID:               uuid.New(),
+		Title:            "create-title",
+		Description:      "create-description",
+		UserID:           uuid.New(),
+		Visibility:       "public",
+		ThumbnailAssetID: uuid.Nil,
+		Assets:           []*entity.Asset{},
+		CreatedAt:        time.Now(),
+		UpdatedAt:        time.Now(),
 	}
 	created, err := workRepo.Create(ctx, testWork)
 	require.NoError(t, err)
