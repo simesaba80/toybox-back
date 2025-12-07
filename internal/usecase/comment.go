@@ -72,14 +72,7 @@ func (uc *commentUsecase) CreateComment(ctx context.Context, content string, wor
 			return nil, fmt.Errorf("failed to validate reply target comment %s: %w", replyAt, err)
 		}
 	}
-
-	comment := &entity.Comment{
-		ID:      uuid.New(),
-		Content: content,
-		WorkID:  workID,
-		UserID:  userID,
-		ReplyAt: replyAt,
-	}
+	comment := entity.NewComment(content, workID, userID, replyAt)
 
 	createdComment, err := uc.commentRepo.Create(ctx, comment)
 	if err != nil {
