@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/google/uuid"
 	"github.com/uptrace/bun"
 
 	"github.com/simesaba80/toybox-back/internal/domain/entity"
@@ -25,7 +24,6 @@ func NewUserRepository(db *bun.DB) *UserRepository {
 
 func (r *UserRepository) Create(ctx context.Context, user *entity.User) (*entity.User, error) {
 	dtoUser := dto.ToUserDTO(user)
-	dtoUser.ID = uuid.New()
 
 	_, err := r.db.NewInsert().Model(dtoUser).Exec(ctx)
 	if err != nil {
