@@ -13,6 +13,7 @@ import (
 	"github.com/simesaba80/toybox-back/internal/domain/repository"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/asset"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/comment"
+	"github.com/simesaba80/toybox-back/internal/infrastructure/database/favorite"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/token"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/user"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/work"
@@ -51,7 +52,10 @@ func InitializeApp() (*App, func(), error) {
 	assetRepository := asset.NewAssetRepository(db, client)
 	iAssetUseCase := ProvideAssetUseCase(assetRepository)
 	assetController := controller.NewAssetController(iAssetUseCase)
-	routerRouter := router.NewRouter(echo, userController, workController, commentController, authController, assetController)
+	favoriteRepository := favorite.NewFavoriteRepository(db)
+	iFavoriteUsecase := ProvideFavoriteUseCase(favoriteRepository)
+	favoriteController := controller.NewFavoriteController(iFavoriteUsecase)
+	routerRouter := router.NewRouter(echo, userController, workController, commentController, authController, assetController, favoriteController)
 	app := NewApp(routerRouter, db, client)
 	return app, func() {
 	}, nil
@@ -59,7 +63,7 @@ func InitializeApp() (*App, func(), error) {
 
 // wire.go:
 
-var RepositorySet = wire.NewSet(user.NewUserRepository, wire.Bind(new(repository.UserRepository), new(*user.UserRepository)), work.NewWorkRepository, wire.Bind(new(repository.WorkRepository), new(*work.WorkRepository)), comment.NewCommentRepository, wire.Bind(new(repository.CommentRepository), new(*comment.CommentRepository)), oauth.NewDiscordRepository, wire.Bind(new(repository.DiscordRepository), new(*oauth.DiscordRepository)), token.NewTokenRepository, wire.Bind(new(repository.TokenRepository), new(*token.TokenRepository)), asset.NewAssetRepository, wire.Bind(new(repository.AssetRepository), new(*asset.AssetRepository)))
+var RepositorySet = wire.NewSet(user.NewUserRepository, wire.Bind(new(repository.UserRepository), new(*user.UserRepository)), work.NewWorkRepository, wire.Bind(new(repository.WorkRepository), new(*work.WorkRepository)), comment.NewCommentRepository, wire.Bind(new(repository.CommentRepository), new(*comment.CommentRepository)), oauth.NewDiscordRepository, wire.Bind(new(repository.DiscordRepository), new(*oauth.DiscordRepository)), token.NewTokenRepository, wire.Bind(new(repository.TokenRepository), new(*token.TokenRepository)), asset.NewAssetRepository, wire.Bind(new(repository.AssetRepository), new(*asset.AssetRepository)), favorite.NewFavoriteRepository, wire.Bind(new(repository.FavoriteRepository), new(*favorite.FavoriteRepository)))
 
 var UseCaseSet = wire.NewSet(
 	ProvideUserUseCase,
@@ -68,9 +72,10 @@ var UseCaseSet = wire.NewSet(
 	ProvideAuthUseCase,
 	ProvideTokenProvider,
 	ProvideAssetUseCase,
+	ProvideFavoriteUseCase,
 )
 
-var ControllerSet = wire.NewSet(controller.NewUserController, controller.NewWorkController, controller.NewCommentController, controller.NewAuthController, controller.NewAssetController)
+var ControllerSet = wire.NewSet(controller.NewUserController, controller.NewWorkController, controller.NewCommentController, controller.NewAuthController, controller.NewAssetController, controller.NewFavoriteController)
 
 var InfrastructureSet = wire.NewSet(
 	ProvideDatabase,
@@ -131,6 +136,11 @@ func (f tokenProviderFunc) GenerateToken(userID string) (string, error) {
 // ProvideAssetUseCase はAssetUseCaseを提供します
 func ProvideAssetUseCase(assetRepo repository.AssetRepository) usecase.IAssetUseCase {
 	return usecase.NewAssetUseCase(assetRepo)
+}
+
+// ProvideFavoriteUseCase はFavoriteUseCaseを提供します
+func ProvideFavoriteUseCase(favoriteRepo repository.FavoriteRepository) usecase.IFavoriteUsecase {
+	return usecase.NewFavoriteUsecase(favoriteRepo)
 }
 
 // ProvideEcho はEchoインスタンスを提供します

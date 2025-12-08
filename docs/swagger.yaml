@@ -38,6 +38,11 @@ definitions:
       user:
         $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.UserInCommentResponse'
     type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.CountFavoritesByWorkIDResponse:
+    properties:
+      total:
+        type: integer
+    type: object
   github_com_simesaba80_toybox-back_internal_interface_schema.CreateCommentRequest:
     properties:
       content:
@@ -155,6 +160,11 @@ definitions:
       visibility:
         type: string
     type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.IsFavoriteResponse:
+    properties:
+      is_favorite:
+        type: boolean
+    type: object
   github_com_simesaba80_toybox-back_internal_interface_schema.UploadAssetResponse:
     properties:
       id:
@@ -198,7 +208,7 @@ info:
   title: Toybox API
   version: "1.0"
 paths:
-  /auth/discord/:
+  /auth/discord:
     get:
       description: Get Discord authentication URL
       produces:
@@ -273,6 +283,157 @@ paths:
       summary: Regenerate token
       tags:
       - auth
+  /auth/works:
+    post:
+      consumes:
+      - application/json
+      description: Create a new work with the input payload
+      parameters:
+      - description: Work to create
+        in: body
+        name: work
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.CreateWorkInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.CreateWorkOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: Create a new work
+      tags:
+      - works
+  /auth/works/:work_id/favorite:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a favorite
+      parameters:
+      - description: Work ID
+        in: path
+        name: work_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: Delete a favorite
+      tags:
+      - favorites
+    post:
+      consumes:
+      - application/json
+      description: Create a favorite
+      parameters:
+      - description: Work ID
+        in: path
+        name: work_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: Create a favorite
+      tags:
+      - favorites
+  /auth/works/:work_id/favorite/is-favorite:
+    get:
+      consumes:
+      - application/json
+      description: Check if a user has favorited a work
+      parameters:
+      - description: Work ID
+        in: path
+        name: work_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.IsFavoriteResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: Check if a user has favorited a work
+      tags:
+      - favorites
+  /auth/works/asset:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload an asset
+      parameters:
+      - description: File to upload
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.UploadAssetResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: Upload an asset
+      tags:
+      - assets
   /users:
     get:
       description: Get all users
@@ -316,24 +477,24 @@ paths:
       summary: Get all works
       tags:
       - works
-    post:
+  /works/:work_id/favorite:
+    get:
       consumes:
       - application/json
-      description: Create a new work with the input payload
+      description: Count favorites by work ID
       parameters:
-      - description: Work to create
-        in: body
-        name: work
+      - description: Work ID
+        in: path
+        name: work_id
         required: true
-        schema:
-          $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.CreateWorkInput'
+        type: string
       produces:
       - application/json
       responses:
-        "201":
-          description: Created
+        "200":
+          description: OK
           schema:
-            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.CreateWorkOutput'
+            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.CountFavoritesByWorkIDResponse'
         "400":
           description: Bad Request
           schema:
@@ -342,11 +503,9 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/echo.HTTPError'
-      security:
-      - BearerAuth: []
-      summary: Create a new work
+      summary: Count favorites by work ID
       tags:
-      - works
+      - favorites
   /works/{work_id}:
     get:
       description: Get a work by ID
@@ -450,37 +609,6 @@ paths:
       summary: Create a comment for a work
       tags:
       - comments
-  /works/asset:
-    post:
-      consumes:
-      - multipart/form-data
-      description: Upload an asset
-      parameters:
-      - description: File to upload
-        in: formData
-        name: file
-        required: true
-        type: file
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.UploadAssetResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/echo.HTTPError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/echo.HTTPError'
-      security:
-      - BearerAuth: []
-      summary: Upload an asset
-      tags:
-      - assets
 securityDefinitions:
   BearerAuth:
     description: Bearer token for authentication
