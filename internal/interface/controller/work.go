@@ -101,7 +101,7 @@ func (wc *WorkController) GetWorkByID(c echo.Context) error {
 // @Failure 400 {object} echo.HTTPError
 // @Failure 500 {object} echo.HTTPError
 // @Security BearerAuth
-// @Router /works [post]
+// @Router /auth/works [post]
 func (wc *WorkController) CreateWork(c echo.Context) error {
 	var input schema.CreateWorkInput
 	user := c.Get("user").(*jwt.Token)

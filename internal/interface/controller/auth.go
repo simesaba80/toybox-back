@@ -27,7 +27,7 @@ func NewAuthController(authUsecase usecase.IAuthUsecase) *AuthController {
 // @Produce json
 // @Success 200 {object} schema.GetDiscordAuthURLResponse
 // @Failure 500 {object} echo.HTTPError
-// @Router /auth/discord/ [get]
+// @Router /auth/discord [get]
 func (ac *AuthController) GetDiscordAuthURL(c echo.Context) error {
 	authURL, err := ac.authUsecase.GetDiscordAuthURL(c.Request().Context())
 	if err != nil {
