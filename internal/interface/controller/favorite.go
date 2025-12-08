@@ -1,11 +1,13 @@
 package controller
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
+	domainerrors "github.com/simesaba80/toybox-back/internal/domain/errors"
 	"github.com/simesaba80/toybox-back/internal/interface/schema"
 	"github.com/simesaba80/toybox-back/internal/usecase"
 )
@@ -35,17 +37,20 @@ func (fc *FavoriteController) CreateFavorite(c echo.Context) error {
 	claims := user.Claims.(*schema.JWTCustomClaims)
 	userID, err := uuid.Parse(claims.UserID)
 	if err != nil {
+		c.Logger().Error("Invalid user ID:", err)
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid user ID")
 	}
 
 	workIDStr := c.Param("work_id")
 	workID, err := uuid.Parse(workIDStr)
 	if err != nil {
+		c.Logger().Error("Invalid work ID format:", err)
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid work ID format")
 	}
 	err = fc.favoriteUsecase.CreateFavorite(c.Request().Context(), workID, userID)
 	if err != nil {
-		return handleFavoriteError(c, err)
+		c.Logger().Error("Failed to create favorite:", err)
+		return handleFavoriteError(err)
 	}
 	return c.NoContent(http.StatusCreated)
 }
@@ -67,17 +72,20 @@ func (fc *FavoriteController) DeleteFavorite(c echo.Context) error {
 	claims := user.Claims.(*schema.JWTCustomClaims)
 	userID, err := uuid.Parse(claims.UserID)
 	if err != nil {
+		c.Logger().Error("Invalid user ID:", err)
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid user ID")
 	}
 
 	workIDStr := c.Param("work_id")
 	workID, err := uuid.Parse(workIDStr)
 	if err != nil {
+		c.Logger().Error("Invalid work ID format:", err)
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid work ID format")
 	}
 	err = fc.favoriteUsecase.DeleteFavorite(c.Request().Context(), workID, userID)
 	if err != nil {
-		return handleFavoriteError(c, err)
+		c.Logger().Error("Failed to delete favorite:", err)
+		return handleFavoriteError(err)
 	}
 	return c.NoContent(http.StatusNoContent)
 }
@@ -97,11 +105,13 @@ func (fc *FavoriteController) CountFavoritesByWorkID(c echo.Context) error {
 	workIDStr := c.Param("work_id")
 	workID, err := uuid.Parse(workIDStr)
 	if err != nil {
+		c.Logger().Error("Invalid work ID format:", err)
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid work ID format")
 	}
 	total, err := fc.favoriteUsecase.CountFavoritesByWorkID(c.Request().Context(), workID)
 	if err != nil {
-		return handleFavoriteError(c, err)
+		c.Logger().Error("Failed to count favorites by work ID:", err)
+		return handleFavoriteError(err)
 	}
 	return c.JSON(http.StatusOK, schema.CountFavoritesByWorkIDResponse{Total: total})
 }
@@ -122,18 +132,39 @@ func (fc *FavoriteController) IsFavorite(c echo.Context) error {
 	workIDStr := c.Param("work_id")
 	workID, err := uuid.Parse(workIDStr)
 	if err != nil {
+		c.Logger().Error("Invalid work ID format:", err)
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid work ID format")
 	}
 	user := c.Get("user").(*jwt.Token)
 	claims := user.Claims.(*schema.JWTCustomClaims)
 	userID, err := uuid.Parse(claims.UserID)
 	if err != nil {
+		c.Logger().Error("Invalid user ID:", err)
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid user ID")
 	}
 	isFavorite := fc.favoriteUsecase.IsFavorite(c.Request().Context(), workID, userID)
 	return c.JSON(http.StatusOK, schema.IsFavoriteResponse{IsFavorite: isFavorite})
 }
 
-func handleFavoriteError(c echo.Context, err error) error {
-	return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+func handleFavoriteError(err error) error {
+	var httpErr *echo.HTTPError
+	if errors.As(err, &httpErr) {
+		return httpErr
+	}
+
+	switch {
+	case errors.Is(err, domainerrors.ErrInvalidRequestBody):
+		return echo.NewHTTPError(http.StatusBadRequest, "無効なリクエストです")
+	case errors.Is(err, domainerrors.ErrFailedToCreateFavorite):
+		return echo.NewHTTPError(http.StatusInternalServerError, "いいねに失敗しました")
+	case errors.Is(err, domainerrors.ErrFailedToDeleteFavorite):
+		return echo.NewHTTPError(http.StatusInternalServerError, "いいねの削除に失敗しました")
+	case errors.Is(err, domainerrors.ErrFailedToCountFavoritesByWorkID):
+		return echo.NewHTTPError(http.StatusInternalServerError, "いいねのカウントに失敗しました")
+	case errors.Is(err, domainerrors.ErrFavoriteAlreadyExists):
+		return echo.NewHTTPError(http.StatusBadRequest, "既にいいねしています")
+	case errors.Is(err, domainerrors.ErrFavoriteNotFound):
+		return echo.NewHTTPError(http.StatusNotFound, "いいねが見つかりませんでした")
+	}
+	return echo.NewHTTPError(http.StatusInternalServerError, "サーバーエラーが発生しました")
 }
