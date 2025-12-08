@@ -82,7 +82,7 @@ func TestUserUseCase_GetAllUser(t *testing.T) {
 			mockRepo := mock.NewMockUserRepository(ctrl)
 			tt.setupMock(mockRepo)
 
-			uc := usecase.NewUserUseCase(mockRepo, 30*time.Second)
+			uc := usecase.NewUserUseCase(mockRepo)
 
 			got, err := uc.GetAllUser(context.Background())
 
