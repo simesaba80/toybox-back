@@ -15,6 +15,7 @@ import (
 	"github.com/simesaba80/toybox-back/internal/domain/repository"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/asset"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/comment"
+	"github.com/simesaba80/toybox-back/internal/infrastructure/database/favorite"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/token"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/user"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/work"
@@ -40,6 +41,8 @@ var RepositorySet = wire.NewSet(
 	wire.Bind(new(repository.TokenRepository), new(*token.TokenRepository)),
 	asset.NewAssetRepository,
 	wire.Bind(new(repository.AssetRepository), new(*asset.AssetRepository)),
+	favorite.NewFavoriteRepository,
+	wire.Bind(new(repository.FavoriteRepository), new(*favorite.FavoriteRepository)),
 )
 
 var UseCaseSet = wire.NewSet(
@@ -49,6 +52,7 @@ var UseCaseSet = wire.NewSet(
 	ProvideAuthUseCase,
 	ProvideTokenProvider,
 	ProvideAssetUseCase,
+	ProvideFavoriteUseCase,
 )
 
 var ControllerSet = wire.NewSet(
@@ -57,6 +61,7 @@ var ControllerSet = wire.NewSet(
 	controller.NewCommentController,
 	controller.NewAuthController,
 	controller.NewAssetController,
+	controller.NewFavoriteController,
 )
 
 var InfrastructureSet = wire.NewSet(
@@ -120,6 +125,11 @@ func (f tokenProviderFunc) GenerateToken(userID string) (string, error) {
 // ProvideAssetUseCase はAssetUseCaseを提供します
 func ProvideAssetUseCase(assetRepo repository.AssetRepository) usecase.IAssetUseCase {
 	return usecase.NewAssetUseCase(assetRepo)
+}
+
+// ProvideFavoriteUseCase はFavoriteUseCaseを提供します
+func ProvideFavoriteUseCase(favoriteRepo repository.FavoriteRepository) usecase.IFavoriteUsecase {
+	return usecase.NewFavoriteUsecase(favoriteRepo)
 }
 
 // ProvideEcho はEchoインスタンスを提供します
