@@ -447,6 +447,37 @@ paths:
       summary: Get all users
       tags:
       - users
+  /users/{id}:
+    get:
+      description: Get a user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.GetUserOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Get a user by ID
+      tags:
+      - users
   /works:
     get:
       description: Get all works with pagination

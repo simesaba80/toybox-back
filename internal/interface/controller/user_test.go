@@ -22,7 +22,7 @@ func TestUserController_GetAllUsers(t *testing.T) {
 	successResponseBytes, _ := json.Marshal(schema.UserListResponse{
 		Users: []schema.GetUserOutput{schema.ToUserResponse(mockUser)},
 	})
-	internalErrorResponseBytes, _ := json.Marshal(map[string]string{"message": "Internal Server Error"})
+	internalErrorResponseBytes, _ := json.Marshal(map[string]string{"message": "サーバーエラーが発生しました"})
 
 	tests := []struct {
 		name       string
@@ -65,6 +65,62 @@ func TestUserController_GetAllUsers(t *testing.T) {
 			e.GET("/users", userController.GetAllUsers)
 
 			req := httptest.NewRequest(http.MethodGet, "/users", nil)
+			rec := httptest.NewRecorder()
+
+			e.ServeHTTP(rec, req)
+
+			assert.Equal(t, tt.wantStatus, rec.Code)
+			assert.JSONEq(t, string(tt.wantBody), rec.Body.String())
+		})
+	}
+}
+
+func TestUserController_GetUserByID(t *testing.T) {
+	mockUser := &entity.User{ID: uuid.New(), Name: "testuser"}
+	successResponseBytes, _ := json.Marshal(schema.ToUserResponse(mockUser))
+	internalErrorResponseBytes, _ := json.Marshal(map[string]string{"message": "サーバーエラーが発生しました"})
+
+	tests := []struct {
+		name       string
+		setupMock  func(mockUserUsecase *mock.MockIUserUseCase)
+		wantStatus int
+		wantBody   []byte
+	}{
+		{
+			name: "正常系",
+			setupMock: func(mockUserUsecase *mock.MockIUserUseCase) {
+				mockUserUsecase.EXPECT().
+					GetByUserID(gomock.Any(), gomock.Eq(mockUser.ID)).
+					Return(mockUser, nil)
+			},
+			wantStatus: http.StatusOK,
+			wantBody:   successResponseBytes,
+		},
+		{
+			name: "異常系: Usecaseエラー",
+			setupMock: func(mockUserUsecase *mock.MockIUserUseCase) {
+				mockUserUsecase.EXPECT().
+					GetByUserID(gomock.Any(), gomock.Eq(mockUser.ID)).
+					Return(nil, errors.New("some error"))
+			},
+			wantStatus: http.StatusInternalServerError,
+			wantBody:   internalErrorResponseBytes,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := echo.New()
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockUsecase := mock.NewMockIUserUseCase(ctrl)
+			tt.setupMock(mockUsecase)
+
+			userController := controller.NewUserController(mockUsecase)
+			e.GET("/users/:id", userController.GetUserByID)
+
+			req := httptest.NewRequest(http.MethodGet, "/users/"+mockUser.ID.String(), nil)
 			rec := httptest.NewRecorder()
 
 			e.ServeHTTP(rec, req)

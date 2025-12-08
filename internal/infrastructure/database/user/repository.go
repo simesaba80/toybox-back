@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 
+	"github.com/google/uuid"
 	"github.com/uptrace/bun"
 
 	"github.com/simesaba80/toybox-back/internal/domain/entity"
@@ -46,6 +47,15 @@ func (r *UserRepository) GetAll(ctx context.Context) ([]*entity.User, error) {
 	}
 
 	return entityUsers, nil
+}
+
+func (r *UserRepository) GetByID(ctx context.Context, id uuid.UUID) (*entity.User, error) {
+	dtoUser := new(dto.User)
+	err := r.db.NewSelect().Model(dtoUser).Where("id = ?", id).Scan(ctx)
+	if err != nil {
+		return nil, domainerrors.ErrUserNotFound
+	}
+	return dtoUser.ToUserEntity(), nil
 }
 
 func (r *UserRepository) GetUserByDiscordUserID(ctx context.Context, discordUserID string) (*entity.User, error) {

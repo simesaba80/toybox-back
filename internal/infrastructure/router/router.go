@@ -53,6 +53,7 @@ func (r *Router) Setup() *echo.Echo {
 
 	// User
 	r.echo.GET("/users", r.UserController.GetAllUsers)
+	r.echo.GET("/users/:id", r.UserController.GetUserByID)
 
 	// Work
 	r.echo.GET("/works", r.WorkController.GetAllWorks)

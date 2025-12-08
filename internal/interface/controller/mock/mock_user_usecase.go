@@ -13,6 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
+	uuid "github.com/google/uuid"
 	entity "github.com/simesaba80/toybox-back/internal/domain/entity"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -41,21 +42,6 @@ func (m *MockIUserUseCase) EXPECT() *MockIUserUseCaseMockRecorder {
 	return m.recorder
 }
 
-// CreateUser mocks base method.
-func (m *MockIUserUseCase) CreateUser(ctx context.Context, name, email, passwordHash, displayName, avatar_url string) (*entity.User, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateUser", ctx, name, email, passwordHash, displayName, avatar_url)
-	ret0, _ := ret[0].(*entity.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CreateUser indicates an expected call of CreateUser.
-func (mr *MockIUserUseCaseMockRecorder) CreateUser(ctx, name, email, passwordHash, displayName, avatar_url any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockIUserUseCase)(nil).CreateUser), ctx, name, email, passwordHash, displayName, avatar_url)
-}
-
 // GetAllUser mocks base method.
 func (m *MockIUserUseCase) GetAllUser(ctx context.Context) ([]*entity.User, error) {
 	m.ctrl.T.Helper()
@@ -69,4 +55,19 @@ func (m *MockIUserUseCase) GetAllUser(ctx context.Context) ([]*entity.User, erro
 func (mr *MockIUserUseCaseMockRecorder) GetAllUser(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllUser", reflect.TypeOf((*MockIUserUseCase)(nil).GetAllUser), ctx)
+}
+
+// GetByUserID mocks base method.
+func (m *MockIUserUseCase) GetByUserID(ctx context.Context, id uuid.UUID) (*entity.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByUserID", ctx, id)
+	ret0, _ := ret[0].(*entity.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByUserID indicates an expected call of GetByUserID.
+func (mr *MockIUserUseCaseMockRecorder) GetByUserID(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByUserID", reflect.TypeOf((*MockIUserUseCase)(nil).GetByUserID), ctx, id)
 }
