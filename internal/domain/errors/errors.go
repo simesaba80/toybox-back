@@ -58,3 +58,12 @@ var (
 	ErrFailedToUploadFile  = errors.New("failed to upload file")
 	ErrFailedToCreateAsset = errors.New("failed to create asset")
 )
+
+// いいね関連のエラー定義
+var (
+	ErrFailedToCreateFavorite         = errors.New("failed to create favorite")
+	ErrFailedToDeleteFavorite         = errors.New("failed to delete favorite")
+	ErrFailedToCountFavoritesByWorkID = errors.New("failed to count favorites by work id")
+	ErrFavoriteAlreadyExists          = errors.New("favorite already exists")
+	ErrFavoriteNotFound               = errors.New("favorite not found")
+)
