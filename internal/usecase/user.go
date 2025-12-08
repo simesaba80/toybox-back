@@ -11,6 +11,7 @@ import (
 
 type IUserUseCase interface {
 	GetAllUser(ctx context.Context) ([]*entity.User, error)
+	GetByUserID(ctx context.Context, id uuid.UUID) (*entity.User, error)
 }
 
 type userUseCase struct {
