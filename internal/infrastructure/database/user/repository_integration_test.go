@@ -61,6 +61,32 @@ func TestUserRepository_GetAll(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestUserRepository_GetByID(t *testing.T) {
+	db := testutil.SetupTestDB(t)
+	repo := user.NewUserRepository(db)
+
+	ctx := context.Background()
+	user := &entity.User{
+		ID:            uuid.New(),
+		Name:          "testuser",
+		Email:         "testuser@example.com",
+		DisplayName:   "testuser",
+		AvatarURL:     "https://example.com/avatar.png",
+		DiscordUserID: "testuser",
+	}
+	created, err := repo.Create(ctx, user)
+	require.NoError(t, err)
+
+	found, err := repo.GetByID(ctx, created.ID)
+	require.NoError(t, err)
+	require.Equal(t, created.ID, found.ID)
+	require.Equal(t, created.Name, found.Name)
+	require.Equal(t, created.Email, found.Email)
+	require.Equal(t, created.DisplayName, found.DisplayName)
+	require.Equal(t, created.AvatarURL, found.AvatarURL)
+	require.Equal(t, created.DiscordUserID, found.DiscordUserID)
+}
+
 func TestUserRepository_GetUserByDiscordUserID(t *testing.T) {
 	db := testutil.SetupTestDB(t)
 	repo := user.NewUserRepository(db)

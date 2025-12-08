@@ -97,3 +97,66 @@ func TestUserUseCase_GetAllUser(t *testing.T) {
 		})
 	}
 }
+
+func TestUserUseCase_GetByUserID(t *testing.T) {
+	tests := []struct {
+		name      string
+		userID    uuid.UUID
+		setupMock func(*mock.MockUserRepository, uuid.UUID)
+		wantErr   bool
+	}{
+		{
+			name:   "正常系: ユーザー取得成功",
+			userID: uuid.New(),
+			setupMock: func(m *mock.MockUserRepository, userID uuid.UUID) {
+				expectedUser := &entity.User{
+					ID:          userID,
+					Name:        "testuser",
+					Email:       "testuser@example.com",
+					DisplayName: "testuser",
+					CreatedAt:   time.Now(),
+					UpdatedAt:   time.Now(),
+				}
+				m.EXPECT().
+					GetByID(gomock.Any(), gomock.Eq(userID)).
+					Return(expectedUser, nil).
+					Times(1)
+			},
+			wantErr: false,
+		},
+		{
+			name:   "異常系: リポジトリエラー",
+			userID: uuid.New(),
+			setupMock: func(m *mock.MockUserRepository, userID uuid.UUID) {
+				m.EXPECT().
+					GetByID(gomock.Any(), gomock.Eq(userID)).
+					Return(nil, errors.New("database error")).
+					Times(1)
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockRepo := mock.NewMockUserRepository(ctrl)
+			tt.setupMock(mockRepo, tt.userID)
+
+			uc := usecase.NewUserUseCase(mockRepo)
+
+			got, err := uc.GetByUserID(context.Background(), tt.userID)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+				assert.Nil(t, got)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, got)
+				assert.Equal(t, tt.userID, got.ID)
+			}
+		})
+	}
+}

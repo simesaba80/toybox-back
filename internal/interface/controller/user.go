@@ -32,7 +32,8 @@ func NewUserController(userusecase usecase.IUserUseCase) *UserController {
 func (uc *UserController) GetAllUsers(c echo.Context) error {
 	users, err := uc.userusecase.GetAllUser(c.Request().Context())
 	if err != nil {
-		return err
+		c.Logger().Error("Failed to get all users:", err)
+		return handleUserError(err)
 	}
 
 	response := make([]schema.GetUserOutput, len(users))
@@ -62,6 +63,7 @@ func (uc *UserController) GetUserByID(c echo.Context) error {
 	}
 	user, err := uc.userusecase.GetByUserID(c.Request().Context(), id)
 	if err != nil {
+		c.Logger().Error("Failed to get user by ID:", err)
 		return handleUserError(err)
 	}
 	return c.JSON(http.StatusOK, schema.ToUserResponse(user))
@@ -70,7 +72,7 @@ func (uc *UserController) GetUserByID(c echo.Context) error {
 func handleUserError(err error) error {
 	switch {
 	case errors.Is(err, domainerrors.ErrUserNotFound):
-		return echo.NewHTTPError(http.StatusNotFound, "User not found")
+		return echo.NewHTTPError(http.StatusNotFound, "ユーザーが見つかりませんでした")
 	}
-	return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	return echo.NewHTTPError(http.StatusInternalServerError, "サーバーエラーが発生しました")
 }
