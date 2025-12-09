@@ -42,6 +42,7 @@ var (
 	ErrFailedToGetWorkById                 = errors.New("failed to get work by id")
 	ErrWorkNotFound                        = errors.New("work not found")
 	ErrFailedToCreateThumbnail             = errors.New("failed to create thumbnail")
+	ErrFailedToCreateURL                   = errors.New("failed to create url")
 )
 
 // コメント関連のエラー定義

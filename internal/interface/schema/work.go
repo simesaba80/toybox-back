@@ -33,7 +33,6 @@ type CreateWorkOutput struct {
 	Description string    `json:"description"`
 	UserID      uuid.UUID `json:"user_id"`
 	Visibility  string    `json:"visibility"`
-	URLs        []string  `json:"urls"`
 	CreatedAt   string    `json:"created_at"`
 	UpdatedAt   string    `json:"updated_at"`
 }

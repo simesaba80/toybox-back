@@ -121,6 +121,13 @@ func (r *WorkRepository) Create(ctx context.Context, work *entity.Work) (*entity
 		return nil, domainerrors.ErrFailedToCreateAsset
 	}
 
+	if len(dtoWork.URLs) > 0 {
+		_, err = tx.NewInsert().Model(&dtoWork.URLs).Exec(ctx)
+		if err != nil {
+			return nil, domainerrors.ErrFailedToCreateURL
+		}
+	}
+
 	err = tx.Commit()
 	if err != nil {
 		return nil, domainerrors.ErrFailedToCommitTransaction

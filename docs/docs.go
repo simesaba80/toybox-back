@@ -788,7 +788,8 @@ const docTemplate = `{
                 "asset_ids",
                 "description",
                 "thumbnail_asset_id",
-                "title"
+                "title",
+                "urls"
             ],
             "properties": {
                 "asset_ids": {
@@ -806,6 +807,12 @@ const docTemplate = `{
                 "title": {
                     "type": "string",
                     "maxLength": 100
+                },
+                "urls": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "visibility": {
                     "type": "string"
