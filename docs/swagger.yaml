@@ -79,6 +79,10 @@ definitions:
       title:
         maxLength: 100
         type: string
+      urls:
+        items:
+          type: string
+        type: array
       visibility:
         type: string
     required:
@@ -86,6 +90,7 @@ definitions:
     - description
     - thumbnail_asset_id
     - title
+    - urls
     type: object
   github_com_simesaba80_toybox-back_internal_interface_schema.CreateWorkOutput:
     properties:

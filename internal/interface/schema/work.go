@@ -24,6 +24,7 @@ type CreateWorkInput struct {
 	Visibility       string      `json:"visibility"`
 	ThumbnailAssetID uuid.UUID   `json:"thumbnail_asset_id" validate:"required,uuid"`
 	AssetIDs         []uuid.UUID `json:"asset_ids" validate:"required,dive,uuid"`
+	URLs             []string    `json:"urls" validate:"required,dive,url"`
 }
 
 type CreateWorkOutput struct {

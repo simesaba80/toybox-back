@@ -18,3 +18,19 @@ type URLInfo struct {
 	CreatedAt     time.Time     `json:"created_at" bun:"created_at,notnull"`
 	UpdatedAt     time.Time     `json:"updated_at" bun:"updated_at,notnull"`
 }
+
+func (u *URLInfo) ToURLInfoEntity() *string {
+	return &u.URL
+}
+
+func ToURLInfoDTO(workID uuid.UUID, url string, userID uuid.UUID) *URLInfo {
+	return &URLInfo{
+		ID:        uuid.New(),
+		WorkID:    workID,
+		URL:       url,
+		URLType:   "other",
+		UserID:    userID,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+}
