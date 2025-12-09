@@ -19,6 +19,7 @@ type Work struct {
 	Visibility       types.Visibility `bun:"visibility"`
 	ThumbnailAssetID uuid.UUID        `bun:"-"`
 	Assets           []*Asset         `bun:"rel:has-many,join:id=work_id"`
+	URLs             []*URLInfo       `bun:"rel:has-many,join:id=work_id"`
 	UserID           uuid.UUID        `bun:"user_id,notnull"`
 	CreatedAt        time.Time        `bun:"created_at,notnull"`
 	UpdatedAt        time.Time        `bun:"updated_at,notnull"`
@@ -30,6 +31,11 @@ func (w *Work) ToWorkEntity() *entity.Work {
 		assets[i] = asset.ToAssetEntity()
 	}
 
+	urls := make([]*string, len(w.URLs))
+	for i, url := range w.URLs {
+		urls[i] = url.ToURLInfoEntity()
+	}
+
 	return &entity.Work{
 		ID:          w.ID,
 		Title:       w.Title,
@@ -37,6 +43,7 @@ func (w *Work) ToWorkEntity() *entity.Work {
 		UserID:      w.UserID,
 		Visibility:  string(w.Visibility),
 		Assets:      assets,
+		URLs:        urls,
 		CreatedAt:   w.CreatedAt,
 		UpdatedAt:   w.UpdatedAt,
 	}
@@ -48,6 +55,11 @@ func ToWorkDTO(entity *entity.Work) *Work {
 		assets[i] = ToAssetDTO(asset)
 	}
 
+	urls := make([]*URLInfo, len(entity.URLs))
+	for i, url := range entity.URLs {
+		urls[i] = ToURLInfoDTO(entity.ID, *url, entity.UserID)
+	}
+
 	return &Work{
 		ID:               entity.ID,
 		Title:            entity.Title,
@@ -56,6 +68,7 @@ func ToWorkDTO(entity *entity.Work) *Work {
 		ThumbnailAssetID: entity.ThumbnailAssetID,
 		Visibility:       types.Visibility(entity.Visibility),
 		Assets:           assets,
+		URLs:             urls,
 		CreatedAt:        entity.CreatedAt,
 		UpdatedAt:        entity.UpdatedAt,
 	}

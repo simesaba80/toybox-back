@@ -81,7 +81,12 @@ func (uc *workUseCase) CreateWork(ctx context.Context, title, description, visib
 		}
 	}
 
-	work := entity.NewWork(title, description, userID, visibility, thumbnailAssetID, assets, urls)
+	urlPointers := make([]*string, len(urls))
+	for i, url := range urls {
+		urlPointers[i] = &url
+	}
+
+	work := entity.NewWork(title, description, userID, visibility, thumbnailAssetID, assets, urlPointers)
 
 	createdWork, err := uc.repo.Create(ctx, work)
 	if err != nil {
