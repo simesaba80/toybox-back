@@ -38,6 +38,7 @@ func TestWorkRepository_Create(t *testing.T) {
 	require.Equal(t, work.Title, created.Title)
 	require.Equal(t, work.Description, created.Description)
 	require.Equal(t, work.UserID, created.UserID)
+	require.Equal(t, work.URLs, created.URLs)
 
 	fetched, err := repo.GetByID(ctx, created.ID)
 	require.NoError(t, err)
@@ -124,6 +125,7 @@ func newTestWork(userID uuid.UUID, title string) *entity.Work {
 		Visibility:       "public",
 		ThumbnailAssetID: uuid.Nil,
 		Assets:           []*entity.Asset{},
+		URLs:             []*string{},
 		CreatedAt:        now,
 		UpdatedAt:        now,
 	}
