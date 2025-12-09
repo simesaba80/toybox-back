@@ -15,11 +15,12 @@ type Work struct {
 	Visibility       string
 	ThumbnailAssetID uuid.UUID
 	Assets           []*Asset
+	URLs             []string
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
 }
 
-func NewWork(title string, description string, userID uuid.UUID, visibility string, thumbnailAssetID uuid.UUID, assets []*Asset) *Work {
+func NewWork(title string, description string, userID uuid.UUID, visibility string, thumbnailAssetID uuid.UUID, assets []*Asset, urls []string) *Work {
 	return &Work{
 		ID:               uuid.New(),
 		Title:            title,
@@ -28,6 +29,7 @@ func NewWork(title string, description string, userID uuid.UUID, visibility stri
 		Visibility:       visibility,
 		ThumbnailAssetID: thumbnailAssetID,
 		Assets:           assets,
+		URLs:             urls,
 		CreatedAt:        time.Now(),
 		UpdatedAt:        time.Now(),
 	}

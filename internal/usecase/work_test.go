@@ -287,6 +287,7 @@ func TestWorkUseCase_CreateWork(t *testing.T) {
 		visibility       string
 		thumbnailAssetID uuid.UUID
 		assetIDs         []uuid.UUID
+		urls             []string
 		userID           uuid.UUID
 		setupMock        func(*mock.MockWorkRepository)
 		wantErr          bool
@@ -298,6 +299,7 @@ func TestWorkUseCase_CreateWork(t *testing.T) {
 			visibility:       "public",
 			thumbnailAssetID: uuid.New(),
 			assetIDs:         []uuid.UUID{uuid.New()},
+			urls:             []string{"https://example.com"},
 			userID:           uuid.New(),
 			setupMock: func(m *mock.MockWorkRepository) {
 				m.EXPECT().
@@ -318,6 +320,7 @@ func TestWorkUseCase_CreateWork(t *testing.T) {
 			visibility:       "public",
 			thumbnailAssetID: uuid.New(),
 			assetIDs:         []uuid.UUID{uuid.New()},
+			urls:             []string{"https://example.com"},
 			userID:           uuid.New(),
 			setupMock: func(m *mock.MockWorkRepository) {
 				m.EXPECT().
@@ -333,6 +336,7 @@ func TestWorkUseCase_CreateWork(t *testing.T) {
 			visibility:       "public",
 			thumbnailAssetID: uuid.New(),
 			assetIDs:         []uuid.UUID{uuid.New()},
+			urls:             []string{"https://example.com"},
 			userID:           uuid.New(),
 			setupMock: func(m *mock.MockWorkRepository) {
 				m.EXPECT().
@@ -348,6 +352,7 @@ func TestWorkUseCase_CreateWork(t *testing.T) {
 			visibility:       "",
 			thumbnailAssetID: uuid.New(),
 			assetIDs:         []uuid.UUID{uuid.New()},
+			urls:             []string{"https://example.com"},
 			userID:           uuid.New(),
 			setupMock: func(m *mock.MockWorkRepository) {
 				m.EXPECT().
@@ -363,6 +368,7 @@ func TestWorkUseCase_CreateWork(t *testing.T) {
 			visibility:       "public",
 			thumbnailAssetID: uuid.New(),
 			assetIDs:         []uuid.UUID{uuid.New()},
+			urls:             []string{"https://example.com"},
 			userID:           uuid.New(),
 			setupMock: func(m *mock.MockWorkRepository) {
 				m.EXPECT().
@@ -382,7 +388,7 @@ func TestWorkUseCase_CreateWork(t *testing.T) {
 			mockRepo := mock.NewMockWorkRepository(ctrl)
 			tt.setupMock(mockRepo)
 			uc := usecase.NewWorkUseCase(mockRepo, 30*time.Second)
-			got, err := uc.CreateWork(context.Background(), tt.title, tt.description, tt.visibility, tt.thumbnailAssetID, tt.assetIDs, tt.userID)
+			got, err := uc.CreateWork(context.Background(), tt.title, tt.description, tt.visibility, tt.thumbnailAssetID, tt.assetIDs, tt.urls, tt.userID)
 
 			if tt.wantErr {
 				assert.Error(t, err)

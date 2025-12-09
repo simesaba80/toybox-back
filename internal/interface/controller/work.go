@@ -126,6 +126,7 @@ func (wc *WorkController) CreateWork(c echo.Context) error {
 		input.Visibility,
 		input.ThumbnailAssetID,
 		input.AssetIDs,
+		input.URLs,
 		userID,
 	)
 	if err != nil {

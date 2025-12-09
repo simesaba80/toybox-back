@@ -176,6 +176,7 @@ func TestWorkController_CreateWork(t *testing.T) {
 		ThumbnailAssetID: uuid.New(),
 		AssetIDs:         []uuid.UUID{uuid.New()},
 		Visibility:       "public",
+		URLs:             []string{"https://example.com"},
 	}
 	inputJSON, _ := json.Marshal(input)
 
@@ -202,7 +203,7 @@ func TestWorkController_CreateWork(t *testing.T) {
 			body: inputJSON,
 			setupMock: func(mockWorkUsecase *mock.MockIWorkUseCase) {
 				mockWorkUsecase.EXPECT().
-					CreateWork(gomock.Any(), input.Title, input.Description, input.Visibility, input.ThumbnailAssetID, input.AssetIDs, userID).
+					CreateWork(gomock.Any(), input.Title, input.Description, input.Visibility, input.ThumbnailAssetID, input.AssetIDs, input.URLs, userID).
 					Return(createdWork, nil)
 			},
 			wantStatus: http.StatusCreated,
@@ -220,7 +221,7 @@ func TestWorkController_CreateWork(t *testing.T) {
 			body: inputJSON,
 			setupMock: func(mockWorkUsecase *mock.MockIWorkUseCase) {
 				mockWorkUsecase.EXPECT().
-					CreateWork(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+					CreateWork(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(nil, errors.New("some error"))
 			},
 			wantStatus: http.StatusInternalServerError,
