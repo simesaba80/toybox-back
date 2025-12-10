@@ -1,10 +1,14 @@
 package entity
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type Token struct {
-	RefreshToken string
-	UserID       string
+	RefreshToken uuid.UUID
+	UserID       uuid.UUID
 	ExpiredAt    time.Time
 	CreatedAt    time.Time
 	UpdatedAt    time.Time

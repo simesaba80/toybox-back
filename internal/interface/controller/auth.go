@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	domainerrors "github.com/simesaba80/toybox-back/internal/domain/errors"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/config"
@@ -98,8 +99,11 @@ func (ac *AuthController) RegenerateToken(c echo.Context) error {
 		c.Logger().Error("Refresh token is required")
 		return echo.NewHTTPError(http.StatusBadRequest, "Refresh token is required")
 	}
-
-	appToken, newRefreshToken, err := ac.authUsecase.RegenerateToken(c.Request().Context(), cookie.Value)
+	refreshToken, err := uuid.Parse(cookie.Value)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid refresh token")
+	}
+	appToken, newRefreshToken, err := ac.authUsecase.RegenerateToken(c.Request().Context(), refreshToken)
 	if err != nil {
 		return handleAuthError(c, err)
 	}

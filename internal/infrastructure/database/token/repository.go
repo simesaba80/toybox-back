@@ -26,7 +26,7 @@ func NewTokenRepository(db *bun.DB) *TokenRepository {
 func (r *TokenRepository) Create(ctx context.Context, token *entity.Token) (*entity.Token, error) {
 	now := time.Now()
 
-	token.RefreshToken = uuid.NewString()
+	token.RefreshToken = uuid.New()
 	token.ExpiredAt = now.Add(24 * time.Hour * 30)
 	token.CreatedAt = now
 	token.UpdatedAt = now
@@ -40,7 +40,7 @@ func (r *TokenRepository) Create(ctx context.Context, token *entity.Token) (*ent
 	return dtoToken.ToTokenEntity(), nil
 }
 
-func (r *TokenRepository) CheckRefreshToken(ctx context.Context, refreshToken string) (string, error) {
+func (r *TokenRepository) CheckRefreshToken(ctx context.Context, refreshToken uuid.UUID) (string, error) {
 	dtoToken := new(dto.Token)
 	err := r.db.NewSelect().Model(dtoToken).Where("refresh_token = ?", refreshToken).Scan(ctx)
 	if err != nil {
@@ -53,4 +53,13 @@ func (r *TokenRepository) CheckRefreshToken(ctx context.Context, refreshToken st
 		return "", domainerrors.ErrRefreshTokenExpired
 	}
 	return dtoToken.UserID.String(), nil
+}
+
+func (r *TokenRepository) UpdateRefreshToken(ctx context.Context, refreshToken uuid.UUID) (*entity.Token, error) {
+	dtoToken := new(dto.Token)
+	// err := r.db.NewUpdate().Model(dtoToken).Where("refresh_token = ?", refreshToken).Set("expired_at = ?", time.Now().Add(24*time.Hour*30)).Exec(ctx)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	return dtoToken.ToTokenEntity(), nil
 }
