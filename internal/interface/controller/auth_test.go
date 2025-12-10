@@ -1,7 +1,6 @@
 package controller_test
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -187,21 +186,20 @@ func TestAuthController_AuthenticateUser(t *testing.T) {
 
 func TestAuthController_RegenerateToken(t *testing.T) {
 	successResponseBytes, _ := json.Marshal(schema.ToRegenerateTokenResponse("new-app-token"))
-	bindErrorResponseBytes, _ := json.Marshal(map[string]string{"message": "Invalid request body"})
-	validationErrorResponseBytes, _ := json.Marshal(map[string]string{"message": "Key: 'RegenerateTokenInput.RefreshToken' Error:Field validation for 'RefreshToken' failed on the 'required' tag"})
+	refreshRequiredResponseBytes, _ := json.Marshal(map[string]string{"message": "Refresh token is required"})
 	expiredResponseBytes, _ := json.Marshal(map[string]string{"message": "リフレッシュトークンが期限切れです"})
 	internalErrorResponseBytes, _ := json.Marshal(map[string]string{"message": "Internal server error"})
 
 	tests := []struct {
 		name       string
-		body       []byte
+		cookie     *http.Cookie
 		setupMock  func(mockAuthUsecase *mock.MockIAuthUsecase)
 		wantStatus int
 		wantBody   []byte
 	}{
 		{
-			name: "正常系: トークン再発行成功",
-			body: []byte(`{"refresh_token":"valid-refresh-token"}`),
+			name:   "正常系: トークン再発行成功",
+			cookie: &http.Cookie{Name: "refresh_token", Value: "valid-refresh-token"},
 			setupMock: func(mockAuthUsecase *mock.MockIAuthUsecase) {
 				mockAuthUsecase.EXPECT().
 					RegenerateToken(gomock.Any(), "valid-refresh-token").
@@ -211,22 +209,15 @@ func TestAuthController_RegenerateToken(t *testing.T) {
 			wantBody:   successResponseBytes,
 		},
 		{
-			name:       "異常系: Bindエラー",
-			body:       []byte("invalid json"),
+			name:       "異常系: リフレッシュトークン未送信",
+			cookie:     nil,
 			setupMock:  nil,
 			wantStatus: http.StatusBadRequest,
-			wantBody:   bindErrorResponseBytes,
+			wantBody:   refreshRequiredResponseBytes,
 		},
 		{
-			name:       "異常系: バリデーションエラー",
-			body:       []byte(`{"refresh_token":""}`),
-			setupMock:  nil,
-			wantStatus: http.StatusBadRequest,
-			wantBody:   validationErrorResponseBytes,
-		},
-		{
-			name: "異常系: リフレッシュトークン期限切れ",
-			body: []byte(`{"refresh_token":"expired-token"}`),
+			name:   "異常系: リフレッシュトークン期限切れ",
+			cookie: &http.Cookie{Name: "refresh_token", Value: "expired-token"},
 			setupMock: func(mockAuthUsecase *mock.MockIAuthUsecase) {
 				mockAuthUsecase.EXPECT().
 					RegenerateToken(gomock.Any(), "expired-token").
@@ -236,8 +227,8 @@ func TestAuthController_RegenerateToken(t *testing.T) {
 			wantBody:   expiredResponseBytes,
 		},
 		{
-			name: "異常系: 予期しないエラー",
-			body: []byte(`{"refresh_token":"unexpected-token"}`),
+			name:   "異常系: 予期しないエラー",
+			cookie: &http.Cookie{Name: "refresh_token", Value: "unexpected-token"},
 			setupMock: func(mockAuthUsecase *mock.MockIAuthUsecase) {
 				mockAuthUsecase.EXPECT().
 					RegenerateToken(gomock.Any(), "unexpected-token").
@@ -263,8 +254,10 @@ func TestAuthController_RegenerateToken(t *testing.T) {
 			authController := controller.NewAuthController(mockAuthUsecase)
 			e.POST("/auth/refresh", authController.RegenerateToken)
 
-			req := httptest.NewRequest(http.MethodPost, "/auth/refresh", bytes.NewReader(tt.body))
-			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+			req := httptest.NewRequest(http.MethodPost, "/auth/refresh", nil)
+			if tt.cookie != nil {
+				req.AddCookie(tt.cookie)
+			}
 			rec := httptest.NewRecorder()
 
 			e.ServeHTTP(rec, req)
