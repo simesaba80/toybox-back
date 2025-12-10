@@ -137,7 +137,7 @@ func TestAuthUsecase_AuthenticateUser(t *testing.T) {
 				tr.EXPECT().
 					Create(gomock.Any(), gomock.Any()).
 					Return(&entity.Token{
-						RefreshToken: "test",
+						RefreshToken: uuid.New(),
 					}, nil).
 					Times(1)
 			},
@@ -183,7 +183,7 @@ func TestAuthUsecase_AuthenticateUser(t *testing.T) {
 				tr.EXPECT().
 					Create(gomock.Any(), gomock.Any()).
 					Return(&entity.Token{
-						RefreshToken: "test",
+						RefreshToken: uuid.New(),
 					}, nil).
 					Times(1)
 			},

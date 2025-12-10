@@ -13,6 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
+	uuid "github.com/google/uuid"
 	entity "github.com/simesaba80/toybox-back/internal/domain/entity"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -42,7 +43,7 @@ func (m *MockTokenRepository) EXPECT() *MockTokenRepositoryMockRecorder {
 }
 
 // CheckRefreshToken mocks base method.
-func (m *MockTokenRepository) CheckRefreshToken(ctx context.Context, refreshToken string) (string, error) {
+func (m *MockTokenRepository) CheckRefreshToken(ctx context.Context, refreshToken uuid.UUID) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CheckRefreshToken", ctx, refreshToken)
 	ret0, _ := ret[0].(string)
@@ -69,4 +70,19 @@ func (m *MockTokenRepository) Create(ctx context.Context, token *entity.Token) (
 func (mr *MockTokenRepositoryMockRecorder) Create(ctx, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockTokenRepository)(nil).Create), ctx, token)
+}
+
+// UpdateRefreshToken mocks base method.
+func (m *MockTokenRepository) UpdateRefreshToken(ctx context.Context, refreshToken uuid.UUID) (*entity.Token, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateRefreshToken", ctx, refreshToken)
+	ret0, _ := ret[0].(*entity.Token)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateRefreshToken indicates an expected call of UpdateRefreshToken.
+func (mr *MockTokenRepositoryMockRecorder) UpdateRefreshToken(ctx, refreshToken any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateRefreshToken", reflect.TypeOf((*MockTokenRepository)(nil).UpdateRefreshToken), ctx, refreshToken)
 }

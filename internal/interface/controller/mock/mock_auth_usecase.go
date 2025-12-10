@@ -13,6 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
+	uuid "github.com/google/uuid"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -72,7 +73,7 @@ func (mr *MockIAuthUsecaseMockRecorder) GetDiscordAuthURL(ctx any) *gomock.Call 
 }
 
 // RegenerateToken mocks base method.
-func (m *MockIAuthUsecase) RegenerateToken(ctx context.Context, refreshToken string) (string, string, error) {
+func (m *MockIAuthUsecase) RegenerateToken(ctx context.Context, refreshToken uuid.UUID) (string, string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RegenerateToken", ctx, refreshToken)
 	ret0, _ := ret[0].(string)

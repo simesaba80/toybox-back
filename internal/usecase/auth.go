@@ -5,6 +5,7 @@ import (
 	"errors"
 	"slices"
 
+	"github.com/google/uuid"
 	"github.com/simesaba80/toybox-back/internal/domain/entity"
 	domainerrors "github.com/simesaba80/toybox-back/internal/domain/errors"
 	"github.com/simesaba80/toybox-back/internal/domain/repository"
@@ -13,7 +14,7 @@ import (
 type IAuthUsecase interface {
 	GetDiscordAuthURL(ctx context.Context) (string, error)
 	AuthenticateUser(ctx context.Context, code string) (string, string, error)
-	RegenerateToken(ctx context.Context, refreshToken string) (string, string, error)
+	RegenerateToken(ctx context.Context, refreshToken uuid.UUID) (string, string, error)
 }
 
 type authUsecase struct {
@@ -83,13 +84,13 @@ func (uc *authUsecase) AuthenticateUser(ctx context.Context, code string) (strin
 	}
 
 	refreshToken, err := uc.tokenRepository.Create(ctx, &entity.Token{
-		UserID: user.ID.String(),
+		UserID: user.ID,
 	})
 	if err != nil {
 		return "", "", err
 	}
 
-	return appToken, refreshToken.RefreshToken, nil
+	return appToken, refreshToken.RefreshToken.String(), nil
 }
 
 func userBelongsToAllowedGuild(guildIDs []string, allowedGuildIDs []string) bool {
@@ -101,7 +102,7 @@ func userBelongsToAllowedGuild(guildIDs []string, allowedGuildIDs []string) bool
 	return false
 }
 
-func (uc *authUsecase) RegenerateToken(ctx context.Context, refreshToken string) (string, string, error) {
+func (uc *authUsecase) RegenerateToken(ctx context.Context, refreshToken uuid.UUID) (string, string, error) {
 	userID, err := uc.tokenRepository.CheckRefreshToken(ctx, refreshToken)
 	if err != nil {
 		return "", "", err
@@ -111,9 +112,9 @@ func (uc *authUsecase) RegenerateToken(ctx context.Context, refreshToken string)
 	if err != nil {
 		return "", "", err
 	}
-	newRefreshToken, err := uc.tokenProvider.RegenerateToken(refreshToken)
+	updatedRefreshToken, err := uc.tokenRepository.UpdateRefreshToken(ctx, refreshToken)
 	if err != nil {
 		return "", "", err
 	}
-	return appToken, newRefreshToken, nil
+	return appToken, updatedRefreshToken.RefreshToken.String(), nil
 }
