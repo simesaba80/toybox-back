@@ -30,6 +30,8 @@ type RegenerateTokenResponse struct {
 
 type JWTCustomClaims struct {
 	UserID string `json:"user_id"`
+	// RefreshToken is optional and used when embedding refresh token in JWTs.
+	RefreshToken string `json:"refresh_token,omitempty"`
 	jwt.RegisteredClaims
 }
 

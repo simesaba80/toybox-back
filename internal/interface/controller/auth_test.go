@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	domainerrors "github.com/simesaba80/toybox-back/internal/domain/errors"
 	"github.com/simesaba80/toybox-back/internal/interface/controller"
@@ -190,6 +191,10 @@ func TestAuthController_RegenerateToken(t *testing.T) {
 	expiredResponseBytes, _ := json.Marshal(map[string]string{"message": "リフレッシュトークンが期限切れです"})
 	internalErrorResponseBytes, _ := json.Marshal(map[string]string{"message": "Internal server error"})
 
+	validRefreshToken := uuid.MustParse("11111111-1111-1111-1111-111111111111")
+	expiredRefreshToken := uuid.MustParse("22222222-2222-2222-2222-222222222222")
+	unexpectedRefreshToken := uuid.MustParse("33333333-3333-3333-3333-333333333333")
+
 	tests := []struct {
 		name       string
 		cookie     *http.Cookie
@@ -199,10 +204,10 @@ func TestAuthController_RegenerateToken(t *testing.T) {
 	}{
 		{
 			name:   "正常系: トークン再発行成功",
-			cookie: &http.Cookie{Name: "refresh_token", Value: "valid-refresh-token"},
+			cookie: &http.Cookie{Name: "refresh_token", Value: validRefreshToken.String()},
 			setupMock: func(mockAuthUsecase *mock.MockIAuthUsecase) {
 				mockAuthUsecase.EXPECT().
-					RegenerateToken(gomock.Any(), "valid-refresh-token").
+					RegenerateToken(gomock.Any(), validRefreshToken).
 					Return("new-app-token", "new-refresh-token", nil)
 			},
 			wantStatus: http.StatusOK,
@@ -217,10 +222,10 @@ func TestAuthController_RegenerateToken(t *testing.T) {
 		},
 		{
 			name:   "異常系: リフレッシュトークン期限切れ",
-			cookie: &http.Cookie{Name: "refresh_token", Value: "expired-token"},
+			cookie: &http.Cookie{Name: "refresh_token", Value: expiredRefreshToken.String()},
 			setupMock: func(mockAuthUsecase *mock.MockIAuthUsecase) {
 				mockAuthUsecase.EXPECT().
-					RegenerateToken(gomock.Any(), "expired-token").
+					RegenerateToken(gomock.Any(), expiredRefreshToken).
 					Return("", "", domainerrors.ErrRefreshTokenExpired)
 			},
 			wantStatus: http.StatusBadRequest,
@@ -228,10 +233,10 @@ func TestAuthController_RegenerateToken(t *testing.T) {
 		},
 		{
 			name:   "異常系: 予期しないエラー",
-			cookie: &http.Cookie{Name: "refresh_token", Value: "unexpected-token"},
+			cookie: &http.Cookie{Name: "refresh_token", Value: unexpectedRefreshToken.String()},
 			setupMock: func(mockAuthUsecase *mock.MockIAuthUsecase) {
 				mockAuthUsecase.EXPECT().
-					RegenerateToken(gomock.Any(), "unexpected-token").
+					RegenerateToken(gomock.Any(), unexpectedRefreshToken).
 					Return("", "", errors.New("unexpected error"))
 			},
 			wantStatus: http.StatusInternalServerError,

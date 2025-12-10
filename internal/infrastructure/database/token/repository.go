@@ -56,10 +56,26 @@ func (r *TokenRepository) CheckRefreshToken(ctx context.Context, refreshToken uu
 }
 
 func (r *TokenRepository) UpdateRefreshToken(ctx context.Context, refreshToken uuid.UUID) (*entity.Token, error) {
+	// 既存トークンを取得
 	dtoToken := new(dto.Token)
-	// err := r.db.NewUpdate().Model(dtoToken).Where("refresh_token = ?", refreshToken).Set("expired_at = ?", time.Now().Add(24*time.Hour*30)).Exec(ctx)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	return dtoToken.ToTokenEntity(), nil
+	if err := r.db.NewSelect().Model(dtoToken).Where("refresh_token = ?", refreshToken).Scan(ctx); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domainerrors.ErrRefreshTokenInvalid
+		}
+		return nil, err
+	}
+
+	// 旧トークンを削除
+	if _, err := r.db.NewDelete().Model(dtoToken).Where("refresh_token = ?", refreshToken).Exec(ctx); err != nil {
+		return nil, err
+	}
+
+	// 新しいリフレッシュトークンを発行して再保存
+	dtoToken.ExpiredAt = time.Now().Add(24 * time.Hour * 30)
+	newRefreshToken := entity.NewToken(dtoToken.UserID)
+	newRefreshToken, err := r.Create(ctx, newRefreshToken)
+	if err != nil {
+		return nil, err
+	}
+	return newRefreshToken, nil
 }

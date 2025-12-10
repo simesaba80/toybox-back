@@ -13,3 +13,13 @@ type Token struct {
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 }
+
+func NewToken(userID uuid.UUID) *Token {
+	return &Token{
+		RefreshToken: uuid.New(),
+		UserID:       userID,
+		ExpiredAt:    time.Now().Add(24 * time.Hour * 30),
+		CreatedAt:    time.Now(),
+		UpdatedAt:    time.Now(),
+	}
+}
