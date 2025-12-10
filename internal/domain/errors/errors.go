@@ -43,6 +43,7 @@ var (
 	ErrWorkNotFound                        = errors.New("work not found")
 	ErrFailedToCreateThumbnail             = errors.New("failed to create thumbnail")
 	ErrFailedToCreateURL                   = errors.New("failed to create url")
+	ErrFailedToCreateTagging               = errors.New("failed to create tagging")
 )
 
 // コメント関連のエラー定義
@@ -67,4 +68,9 @@ var (
 	ErrFailedToCountFavoritesByWorkID = errors.New("failed to count favorites by work id")
 	ErrFavoriteAlreadyExists          = errors.New("favorite already exists")
 	ErrFavoriteNotFound               = errors.New("favorite not found")
+)
+
+// タグ関連のエラー定義
+var (
+	ErrTagNotFound = errors.New("tag not found")
 )
