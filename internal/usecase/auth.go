@@ -5,6 +5,7 @@ import (
 	"errors"
 	"slices"
 
+	"github.com/google/uuid"
 	"github.com/simesaba80/toybox-back/internal/domain/entity"
 	domainerrors "github.com/simesaba80/toybox-back/internal/domain/errors"
 	"github.com/simesaba80/toybox-back/internal/domain/repository"
@@ -13,7 +14,7 @@ import (
 type IAuthUsecase interface {
 	GetDiscordAuthURL(ctx context.Context) (string, error)
 	AuthenticateUser(ctx context.Context, code string) (string, string, error)
-	RegenerateToken(ctx context.Context, refreshToken string) (string, error)
+	RegenerateToken(ctx context.Context, refreshToken uuid.UUID) (string, string, error)
 }
 
 type authUsecase struct {
@@ -36,7 +37,7 @@ func (uc *authUsecase) GetDiscordAuthURL(ctx context.Context) (string, error) {
 	if _, err := uc.discordRepository.GetDiscordClientID(ctx); err != nil {
 		return "", err
 	}
-	if _, err := uc.discordRepository.GetHostURL(ctx); err != nil {
+	if _, err := uc.discordRepository.GetRedirectURL(ctx); err != nil {
 		return "", err
 	}
 	return uc.discordRepository.GetDiscordAuthURL(ctx)
@@ -77,19 +78,18 @@ func (uc *authUsecase) AuthenticateUser(ctx context.Context, code string) (strin
 		}
 	}
 
-	appToken, err := uc.tokenProvider.GenerateToken(user.ID.String())
+	appToken, err := uc.tokenProvider.GenerateToken(user.ID)
 	if err != nil {
 		return "", "", err
 	}
 
-	refreshToken, err := uc.tokenRepository.Create(ctx, &entity.Token{
-		UserID: user.ID.String(),
-	})
+	newRefreshToken := entity.NewToken(user.ID)
+	refreshToken, err := uc.tokenRepository.Create(ctx, newRefreshToken)
 	if err != nil {
 		return "", "", err
 	}
 
-	return appToken, refreshToken.RefreshToken, nil
+	return appToken, refreshToken.RefreshToken.String(), nil
 }
 
 func userBelongsToAllowedGuild(guildIDs []string, allowedGuildIDs []string) bool {
@@ -101,15 +101,19 @@ func userBelongsToAllowedGuild(guildIDs []string, allowedGuildIDs []string) bool
 	return false
 }
 
-func (uc *authUsecase) RegenerateToken(ctx context.Context, refreshToken string) (string, error) {
+func (uc *authUsecase) RegenerateToken(ctx context.Context, refreshToken uuid.UUID) (string, string, error) {
 	userID, err := uc.tokenRepository.CheckRefreshToken(ctx, refreshToken)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	appToken, err := uc.tokenProvider.GenerateToken(userID)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
-	return appToken, nil
+	updatedRefreshToken, err := uc.tokenRepository.UpdateRefreshToken(ctx, refreshToken)
+	if err != nil {
+		return "", "", err
+	}
+	return appToken, updatedRefreshToken.RefreshToken.String(), nil
 }

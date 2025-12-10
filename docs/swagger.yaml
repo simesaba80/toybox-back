@@ -118,8 +118,6 @@ definitions:
     properties:
       access_token:
         type: string
-      refresh_token:
-        type: string
     type: object
   github_com_simesaba80_toybox-back_internal_interface_schema.GetUserOutput:
     properties:
@@ -263,13 +261,7 @@ paths:
       - auth
   /auth/refresh:
     post:
-      description: Regenerate token
-      parameters:
-      - description: Refresh token
-        in: query
-        name: refresh_token
-        required: true
-        type: string
+      description: Regenerate token(need refresh token in cookie)
       produces:
       - application/json
       responses:

@@ -90,7 +90,7 @@ const docTemplate = `{
         },
         "/auth/refresh": {
             "post": {
-                "description": "Regenerate token",
+                "description": "Regenerate token(need refresh token in cookie)",
                 "produces": [
                     "application/json"
                 ],
@@ -98,15 +98,6 @@ const docTemplate = `{
                     "auth"
                 ],
                 "summary": "Regenerate token",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Refresh token",
-                        "name": "refresh_token",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -857,9 +848,6 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "access_token": {
-                    "type": "string"
-                },
-                "refresh_token": {
                     "type": "string"
                 }
             }

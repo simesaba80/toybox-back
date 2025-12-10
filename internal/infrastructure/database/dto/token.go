@@ -19,8 +19,8 @@ type Token struct {
 
 func (t *Token) ToTokenEntity() *entity.Token {
 	return &entity.Token{
-		RefreshToken: t.RefreshToken.String(),
-		UserID:       t.UserID.String(),
+		RefreshToken: t.RefreshToken,
+		UserID:       t.UserID,
 		ExpiredAt:    t.ExpiredAt,
 		CreatedAt:    t.CreatedAt,
 		UpdatedAt:    t.UpdatedAt,
@@ -29,8 +29,8 @@ func (t *Token) ToTokenEntity() *entity.Token {
 
 func ToTokenDTO(entity *entity.Token) *Token {
 	return &Token{
-		RefreshToken: uuid.MustParse(entity.RefreshToken),
-		UserID:       uuid.MustParse(entity.UserID),
+		RefreshToken: entity.RefreshToken,
+		UserID:       entity.UserID,
 		ExpiredAt:    entity.ExpiredAt,
 		CreatedAt:    entity.CreatedAt,
 		UpdatedAt:    entity.UpdatedAt,

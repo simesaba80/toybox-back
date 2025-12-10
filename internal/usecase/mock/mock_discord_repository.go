@@ -131,17 +131,17 @@ func (mr *MockDiscordRepositoryMockRecorder) GetDiscordToken(ctx, code any) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDiscordToken", reflect.TypeOf((*MockDiscordRepository)(nil).GetDiscordToken), ctx, code)
 }
 
-// GetHostURL mocks base method.
-func (m *MockDiscordRepository) GetHostURL(ctx context.Context) (string, error) {
+// GetRedirectURL mocks base method.
+func (m *MockDiscordRepository) GetRedirectURL(ctx context.Context) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetHostURL", ctx)
+	ret := m.ctrl.Call(m, "GetRedirectURL", ctx)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetHostURL indicates an expected call of GetHostURL.
-func (mr *MockDiscordRepositoryMockRecorder) GetHostURL(ctx any) *gomock.Call {
+// GetRedirectURL indicates an expected call of GetRedirectURL.
+func (mr *MockDiscordRepositoryMockRecorder) GetRedirectURL(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHostURL", reflect.TypeOf((*MockDiscordRepository)(nil).GetHostURL), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRedirectURL", reflect.TypeOf((*MockDiscordRepository)(nil).GetRedirectURL), ctx)
 }
