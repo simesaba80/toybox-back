@@ -77,6 +77,9 @@ func (uc *workUseCase) CreateWork(ctx context.Context, title, description, visib
 		return nil, domainerrors.ErrInvalidVisibility
 	}
 
+	var tags []*entity.Tag
+	var err error
+
 	if len(tagIDs) > 0 {
 		exists, err := uc.tagRepo.ExistAll(ctx, tagIDs)
 		if err != nil {
@@ -84,6 +87,11 @@ func (uc *workUseCase) CreateWork(ctx context.Context, title, description, visib
 		}
 		if !exists {
 			return nil, domainerrors.ErrTagNotFound
+		}
+
+		tags, err = uc.tagRepo.FindAllByIDs(ctx, tagIDs)
+		if err != nil {
+			return nil, fmt.Errorf("failed to find tags by ids: %w", err)
 		}
 	}
 
@@ -99,7 +107,7 @@ func (uc *workUseCase) CreateWork(ctx context.Context, title, description, visib
 		urlPointers[i] = &url
 	}
 
-	work := entity.NewWork(title, description, userID, visibility, thumbnailAssetID, assets, urlPointers, tagIDs)
+	work := entity.NewWork(title, description, userID, visibility, thumbnailAssetID, assets, urlPointers, tagIDs, tags)
 
 	createdWork, err := uc.workRepo.Create(ctx, work)
 	if err != nil {
