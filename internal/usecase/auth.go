@@ -13,7 +13,7 @@ import (
 type IAuthUsecase interface {
 	GetDiscordAuthURL(ctx context.Context) (string, error)
 	AuthenticateUser(ctx context.Context, code string) (string, string, error)
-	RegenerateToken(ctx context.Context, refreshToken string) (string, error)
+	RegenerateToken(ctx context.Context, refreshToken string) (string, string, error)
 }
 
 type authUsecase struct {
@@ -101,15 +101,19 @@ func userBelongsToAllowedGuild(guildIDs []string, allowedGuildIDs []string) bool
 	return false
 }
 
-func (uc *authUsecase) RegenerateToken(ctx context.Context, refreshToken string) (string, error) {
+func (uc *authUsecase) RegenerateToken(ctx context.Context, refreshToken string) (string, string, error) {
 	userID, err := uc.tokenRepository.CheckRefreshToken(ctx, refreshToken)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	appToken, err := uc.tokenProvider.GenerateToken(userID)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
-	return appToken, nil
+	newRefreshToken, err := uc.tokenProvider.RegenerateToken(refreshToken)
+	if err != nil {
+		return "", "", err
+	}
+	return appToken, newRefreshToken, nil
 }

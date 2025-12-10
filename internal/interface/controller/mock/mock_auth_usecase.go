@@ -72,12 +72,13 @@ func (mr *MockIAuthUsecaseMockRecorder) GetDiscordAuthURL(ctx any) *gomock.Call 
 }
 
 // RegenerateToken mocks base method.
-func (m *MockIAuthUsecase) RegenerateToken(ctx context.Context, refreshToken string) (string, error) {
+func (m *MockIAuthUsecase) RegenerateToken(ctx context.Context, refreshToken string) (string, string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RegenerateToken", ctx, refreshToken)
 	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // RegenerateToken indicates an expected call of RegenerateToken.

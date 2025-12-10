@@ -99,9 +99,31 @@ func (ac *AuthController) RegenerateToken(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Refresh token is required")
 	}
 
-	appToken, err := ac.authUsecase.RegenerateToken(c.Request().Context(), cookie.Value)
+	appToken, newRefreshToken, err := ac.authUsecase.RegenerateToken(c.Request().Context(), cookie.Value)
 	if err != nil {
 		return handleAuthError(c, err)
+	}
+	switch config.ENV {
+	case "prod":
+		cookie := &http.Cookie{
+			Name:     "refresh_token",
+			Value:    newRefreshToken,
+			HttpOnly: true,
+			Secure:   true,
+			SameSite: http.SameSiteNoneMode,
+			Path:     "/auth/refresh",
+		}
+		c.SetCookie(cookie)
+	case "dev":
+		cookie := &http.Cookie{
+			Name:     "refresh_token",
+			Value:    newRefreshToken,
+			HttpOnly: true,
+			Secure:   false,
+			SameSite: http.SameSiteLaxMode,
+			Path:     "/auth/refresh",
+		}
+		c.SetCookie(cookie)
 	}
 	return c.JSON(http.StatusOK, schema.ToRegenerateTokenResponse(appToken))
 }
