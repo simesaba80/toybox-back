@@ -203,7 +203,7 @@ func TestAuthController_RegenerateToken(t *testing.T) {
 			setupMock: func(mockAuthUsecase *mock.MockIAuthUsecase) {
 				mockAuthUsecase.EXPECT().
 					RegenerateToken(gomock.Any(), "valid-refresh-token").
-					Return("new-app-token", nil)
+					Return("new-app-token", "new-refresh-token", nil)
 			},
 			wantStatus: http.StatusOK,
 			wantBody:   successResponseBytes,
@@ -221,7 +221,7 @@ func TestAuthController_RegenerateToken(t *testing.T) {
 			setupMock: func(mockAuthUsecase *mock.MockIAuthUsecase) {
 				mockAuthUsecase.EXPECT().
 					RegenerateToken(gomock.Any(), "expired-token").
-					Return("", domainerrors.ErrRefreshTokenExpired)
+					Return("", "", domainerrors.ErrRefreshTokenExpired)
 			},
 			wantStatus: http.StatusBadRequest,
 			wantBody:   expiredResponseBytes,
@@ -232,7 +232,7 @@ func TestAuthController_RegenerateToken(t *testing.T) {
 			setupMock: func(mockAuthUsecase *mock.MockIAuthUsecase) {
 				mockAuthUsecase.EXPECT().
 					RegenerateToken(gomock.Any(), "unexpected-token").
-					Return("", errors.New("unexpected error"))
+					Return("", "", errors.New("unexpected error"))
 			},
 			wantStatus: http.StatusInternalServerError,
 			wantBody:   internalErrorResponseBytes,
