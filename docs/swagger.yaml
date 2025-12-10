@@ -160,6 +160,10 @@ definitions:
         type: string
       id:
         type: string
+      tags:
+        items:
+          $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.TagResponse'
+        type: array
       title:
         type: string
       updated_at:
@@ -173,6 +177,13 @@ definitions:
     properties:
       is_favorite:
         type: boolean
+    type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.TagResponse:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
     type: object
   github_com_simesaba80_toybox-back_internal_interface_schema.UploadAssetResponse:
     properties:
