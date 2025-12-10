@@ -128,6 +128,20 @@ func (r *WorkRepository) Create(ctx context.Context, work *entity.Work) (*entity
 		}
 	}
 
+	if len(dtoWork.TagIDs) > 0 {
+		taggings := make([]*dto.Tagging, len(dtoWork.TagIDs))
+		for i, tagID := range dtoWork.TagIDs {
+			taggings[i] = &dto.Tagging{
+				WorkID: dtoWork.ID,
+				TagID:  tagID,
+			}
+		}
+		_, err = tx.NewInsert().Model(&taggings).Exec(ctx)
+		if err != nil {
+			return nil, domainerrors.ErrFailedToCreateTagging
+		}
+	}
+
 	err = tx.Commit()
 	if err != nil {
 		return nil, domainerrors.ErrFailedToCommitTransaction

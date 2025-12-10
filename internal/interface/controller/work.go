@@ -128,6 +128,7 @@ func (wc *WorkController) CreateWork(c echo.Context) error {
 		input.AssetIDs,
 		input.URLs,
 		userID,
+		input.TagIDs,
 	)
 	if err != nil {
 		c.Logger().Error("WorkUseCase.CreateWork error:", err)
@@ -162,6 +163,8 @@ func handleWorkError(c echo.Context, err error) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "トランザクションのロールバックに失敗しました")
 	case errors.Is(err, domainerrors.ErrFailedToCreateWork):
 		return echo.NewHTTPError(http.StatusBadRequest, "作品の作成に失敗しました")
+	case errors.Is(err, domainerrors.ErrTagNotFound):
+		return echo.NewHTTPError(http.StatusBadRequest, "存在しないタグIDが含まれています")
 	default:
 		c.Logger().Error("Work error:", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, "サーバーエラーが発生しました")

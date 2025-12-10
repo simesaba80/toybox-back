@@ -20,6 +20,8 @@ type Work struct {
 	ThumbnailAssetID uuid.UUID        `bun:"-"`
 	Assets           []*Asset         `bun:"rel:has-many,join:id=work_id"`
 	URLs             []*URLInfo       `bun:"rel:has-many,join:id=work_id"`
+	Tags             []*Tag           `bun:"-"`
+	TagIDs           []uuid.UUID      `bun:"-"`
 	UserID           uuid.UUID        `bun:"user_id,notnull"`
 	CreatedAt        time.Time        `bun:"created_at,notnull"`
 	UpdatedAt        time.Time        `bun:"updated_at,notnull"`
@@ -36,6 +38,11 @@ func (w *Work) ToWorkEntity() *entity.Work {
 		urls[i] = url.ToURLInfoEntity()
 	}
 
+	tagIDs := make([]uuid.UUID, len(w.Tags))
+	for i, tag := range w.Tags {
+		tagIDs[i] = tag.ID
+	}
+
 	return &entity.Work{
 		ID:          w.ID,
 		Title:       w.Title,
@@ -44,6 +51,7 @@ func (w *Work) ToWorkEntity() *entity.Work {
 		Visibility:  string(w.Visibility),
 		Assets:      assets,
 		URLs:        urls,
+		TagIDs:      tagIDs,
 		CreatedAt:   w.CreatedAt,
 		UpdatedAt:   w.UpdatedAt,
 	}
@@ -69,6 +77,7 @@ func ToWorkDTO(entity *entity.Work) *Work {
 		Visibility:       types.Visibility(entity.Visibility),
 		Assets:           assets,
 		URLs:             urls,
+		TagIDs:           entity.TagIDs,
 		CreatedAt:        entity.CreatedAt,
 		UpdatedAt:        entity.UpdatedAt,
 	}
