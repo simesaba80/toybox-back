@@ -51,11 +51,11 @@ func TestTokenRepository_CheckRefreshToken(t *testing.T) {
 
 	userID, err := repo.CheckRefreshToken(ctx, created.RefreshToken)
 	require.NoError(t, err)
-	require.Equal(t, tokenEntity.UserID.String(), userID)
+	require.Equal(t, tokenEntity.UserID, userID)
 
 	userID, err = repo.CheckRefreshToken(ctx, uuid.Nil)
 	require.ErrorIs(t, err, domainerrors.ErrRefreshTokenInvalid)
-	require.Empty(t, userID)
+	require.Equal(t, uuid.Nil, userID)
 
 	expiredToken := entity.NewToken(uuid.New())
 	created, err = repo.Create(ctx, expiredToken)
@@ -66,7 +66,7 @@ func TestTokenRepository_CheckRefreshToken(t *testing.T) {
 	db.NewUpdate().Model(tokenDTO).Where("refresh_token = ?", created.RefreshToken).Set("expired_at = ?", time.Now().Add(-24*time.Hour*60)).Exec(ctx)
 	userID, err = repo.CheckRefreshToken(ctx, created.RefreshToken)
 	require.ErrorIs(t, err, domainerrors.ErrRefreshTokenExpired)
-	require.Empty(t, userID)
+	require.Equal(t, uuid.Nil, userID)
 }
 
 func TestTokenRepository_UpdateRefreshToken(t *testing.T) {
