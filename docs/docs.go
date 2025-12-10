@@ -801,6 +801,12 @@ const docTemplate = `{
                 "description": {
                     "type": "string"
                 },
+                "tag_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "thumbnail_asset_id": {
                     "type": "string"
                 },
