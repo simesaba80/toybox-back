@@ -94,7 +94,7 @@ func TestAuthController_GetDiscordAuthURL(t *testing.T) {
 }
 
 func TestAuthController_AuthenticateUser(t *testing.T) {
-	successResponseBytes, _ := json.Marshal(schema.ToGetDiscordTokenResponse("app-token", "refresh-token"))
+	successResponseBytes, _ := json.Marshal(schema.ToGetDiscordTokenResponse("app-token"))
 	codeRequiredResponseBytes, _ := json.Marshal(map[string]string{"message": "code is required"})
 	userNotAllowedResponseBytes, _ := json.Marshal(map[string]string{"message": "ユーザーは許可されたDiscordギルドに所属していません"})
 	internalErrorResponseBytes, _ := json.Marshal(map[string]string{"message": "Internal server error"})

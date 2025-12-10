@@ -10,8 +10,7 @@ type GetDiscordAuthURLResponse struct {
 }
 
 type GetDiscordTokenResponse struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
+	AccessToken string `json:"access_token"`
 }
 
 type DiscordUserResponse struct {
@@ -40,10 +39,9 @@ func ToGetDiscordAuthURLResponse(authURL string) GetDiscordAuthURLResponse {
 	}
 }
 
-func ToGetDiscordTokenResponse(appToken string, refreshToken string) GetDiscordTokenResponse {
+func ToGetDiscordTokenResponse(appToken string) GetDiscordTokenResponse {
 	return GetDiscordTokenResponse{
-		AccessToken:  appToken,
-		RefreshToken: refreshToken,
+		AccessToken: appToken,
 	}
 }
 

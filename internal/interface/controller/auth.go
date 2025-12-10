@@ -6,6 +6,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	domainerrors "github.com/simesaba80/toybox-back/internal/domain/errors"
+	"github.com/simesaba80/toybox-back/internal/infrastructure/config"
 	"github.com/simesaba80/toybox-back/internal/interface/schema"
 	"github.com/simesaba80/toybox-back/internal/usecase"
 )
@@ -56,30 +57,49 @@ func (ac *AuthController) AuthenticateUser(c echo.Context) error {
 	if err != nil {
 		return handleAuthError(c, err)
 	}
-	return c.JSON(http.StatusOK, schema.ToGetDiscordTokenResponse(appToken, refreshToken))
+	switch config.ENV {
+	case "prod":
+		cookie := &http.Cookie{
+			Name:     "refresh_token",
+			Value:    refreshToken,
+			HttpOnly: true,
+			Secure:   true,
+			SameSite: http.SameSiteNoneMode,
+			Path:     "/auth/refresh",
+		}
+		c.SetCookie(cookie)
+	case "dev":
+		cookie := &http.Cookie{
+			Name:     "refresh_token",
+			Value:    refreshToken,
+			HttpOnly: true,
+			Secure:   false,
+			SameSite: http.SameSiteLaxMode,
+			Path:     "/auth/refresh",
+		}
+		c.SetCookie(cookie)
+	}
+
+	return c.JSON(http.StatusOK, schema.ToGetDiscordTokenResponse(appToken))
 }
 
 // RegenerateToken godoc
 // @Summary Regenerate token
-// @Description Regenerate token
+// @Description Regenerate token(need refresh token in cookie)
 // @Tags auth
 // @Produce json
 // @Success 200 {object} schema.GetDiscordTokenResponse
 // @Failure 400 {object} echo.HTTPError
 // @Failure 500 {object} echo.HTTPError
 // @Router /auth/refresh [post]
-// @Param refresh_token query string true "Refresh token"
 func (ac *AuthController) RegenerateToken(c echo.Context) error {
-	var input schema.RegenerateTokenInput
-	if err := c.Bind(&input); err != nil {
-		c.Logger().Error("Bind error:", err)
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
-	}
-	if err := c.Validate(&input); err != nil {
-		return err
+	cookie, err := c.Cookie("refresh_token")
+	if err != nil {
+		c.Logger().Error("Refresh token is required")
+		return echo.NewHTTPError(http.StatusBadRequest, "Refresh token is required")
 	}
 
-	appToken, err := ac.authUsecase.RegenerateToken(c.Request().Context(), input.RefreshToken)
+	appToken, err := ac.authUsecase.RegenerateToken(c.Request().Context(), cookie.Value)
 	if err != nil {
 		return handleAuthError(c, err)
 	}

@@ -9,6 +9,7 @@ import (
 )
 
 var (
+	ENV                   string
 	DB_DSN                string
 	POSTGRES_USER         string
 	POSTGRES_PASSWORD     string
@@ -33,6 +34,7 @@ func LoadEnv() {
 		log.Printf("読み込み出来ませんでした: %v", err)
 	}
 
+	ENV = os.Getenv("ENV")
 	DB_DSN = os.Getenv("DB_DSN")
 	POSTGRES_USER = os.Getenv("POSTGRES_USER")
 	POSTGRES_PASSWORD = os.Getenv("POSTGRES_PASSWORD")
