@@ -5,6 +5,9 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/uptrace/bun"
+
+	"github.com/simesaba80/toybox-back/internal/domain/entity"
+	"github.com/simesaba80/toybox-back/internal/infrastructure/database/dto"
 )
 
 type TagRepository struct {
@@ -31,4 +34,22 @@ func (r *TagRepository) ExistAll(ctx context.Context, ids []uuid.UUID) (bool, er
 	}
 
 	return count == len(ids), nil
+}
+
+func (r *TagRepository) FindAllByIDs(ctx context.Context, ids []uuid.UUID) ([]*entity.Tag, error) {
+	var dtoTags []*dto.Tag
+	err := r.db.NewSelect().
+		Model(&dtoTags).
+		Where("id IN (?)", bun.In(ids)).
+		Scan(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	entityTags := make([]*entity.Tag, len(dtoTags))
+	for i, dtoTag := range dtoTags {
+		entityTags[i] = dtoTag.ToTagEntity()
+	}
+
+	return entityTags, nil
 }

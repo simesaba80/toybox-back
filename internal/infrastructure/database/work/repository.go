@@ -45,6 +45,51 @@ func (r *WorkRepository) GetAll(ctx context.Context, limit, offset int) ([]*enti
 		return nil, 0, domainerrors.ErrFailedToGetAllWorksByLimitAndOffset
 	}
 
+	workIDs := make([]uuid.UUID, len(dtoWorks))
+	for i, work := range dtoWorks {
+		workIDs[i] = work.ID
+	}
+
+	var taggings []*dto.Tagging
+	err = r.db.NewSelect().
+		Model(&taggings).
+		Where("work_id IN (?)", bun.In(workIDs)).
+		Scan(ctx)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, 0, domainerrors.ErrFailedToGetTagging
+	}
+
+	tagIDs := make([]uuid.UUID, len(taggings))
+	for i, tagging := range taggings {
+		tagIDs[i] = tagging.TagID
+	}
+
+	var tags []*dto.Tag
+	if len(tagIDs) > 0 {
+		err = r.db.NewSelect().
+			Model(&tags).
+			Where("id IN (?)", bun.In(tagIDs)).
+			Scan(ctx)
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			return nil, 0, domainerrors.ErrFailedToGetTag
+		}
+	}
+
+	tagsByWorkID := make(map[uuid.UUID][]*dto.Tag)
+	for _, tagging := range taggings {
+		for _, tag := range tags {
+			if tagging.TagID == tag.ID {
+				tagsByWorkID[tagging.WorkID] = append(tagsByWorkID[tagging.WorkID], tag)
+			}
+		}
+	}
+
+	for _, work := range dtoWorks {
+		if tags, ok := tagsByWorkID[work.ID]; ok {
+			work.Tags = tags
+		}
+	}
+
 	entityWorks := make([]*entity.Work, len(dtoWorks))
 	for i, dtoWork := range dtoWorks {
 		entityWorks[i] = dtoWork.ToWorkEntity()
@@ -62,6 +107,33 @@ func (r *WorkRepository) GetByID(ctx context.Context, id uuid.UUID) (*entity.Wor
 		}
 		return nil, domainerrors.ErrFailedToGetWorkById
 	}
+
+	var taggings []*dto.Tagging
+	err = r.db.NewSelect().
+		Model(&taggings).
+		Where("work_id = ?", id).
+		Scan(ctx)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, domainerrors.ErrFailedToGetTagging
+	}
+
+	if len(taggings) > 0 {
+		tagIDs := make([]uuid.UUID, len(taggings))
+		for i, tagging := range taggings {
+			tagIDs[i] = tagging.TagID
+		}
+
+		var tags []*dto.Tag
+		err = r.db.NewSelect().
+			Model(&tags).
+			Where("id IN (?)", bun.In(tagIDs)).
+			Scan(ctx)
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			return nil, domainerrors.ErrFailedToGetTag
+		}
+		dtoWork.Tags = tags
+	}
+
 	return dtoWork.ToWorkEntity(), nil
 }
 

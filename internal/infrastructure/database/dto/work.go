@@ -38,8 +38,10 @@ func (w *Work) ToWorkEntity() *entity.Work {
 		urls[i] = url.ToURLInfoEntity()
 	}
 
+	entityTags := make([]*entity.Tag, len(w.Tags))
 	tagIDs := make([]uuid.UUID, len(w.Tags))
 	for i, tag := range w.Tags {
+		entityTags[i] = tag.ToTagEntity()
 		tagIDs[i] = tag.ID
 	}
 
@@ -52,6 +54,7 @@ func (w *Work) ToWorkEntity() *entity.Work {
 		Assets:      assets,
 		URLs:        urls,
 		TagIDs:      tagIDs,
+		Tags:        entityTags,
 		CreatedAt:   w.CreatedAt,
 		UpdatedAt:   w.UpdatedAt,
 	}
@@ -68,6 +71,11 @@ func ToWorkDTO(entity *entity.Work) *Work {
 		urls[i] = ToURLInfoDTO(entity.ID, *url, entity.UserID)
 	}
 
+	tags := make([]*Tag, len(entity.Tags))
+	for i, tag := range entity.Tags {
+		tags[i] = ToTagDTO(tag)
+	}
+
 	return &Work{
 		ID:               entity.ID,
 		Title:            entity.Title,
@@ -77,6 +85,7 @@ func ToWorkDTO(entity *entity.Work) *Work {
 		Visibility:       types.Visibility(entity.Visibility),
 		Assets:           assets,
 		URLs:             urls,
+		Tags:             tags,
 		TagIDs:           entity.TagIDs,
 		CreatedAt:        entity.CreatedAt,
 		UpdatedAt:        entity.UpdatedAt,
