@@ -14,6 +14,7 @@ type GetWorkOutput struct {
 	UserID      uuid.UUID       `json:"user_id"`
 	Visibility  string          `json:"visibility"`
 	Assets      []AssetResponse `json:"assets"`
+	Tags        []TagResponse   `json:"tags"`
 	CreatedAt   string          `json:"created_at"`
 	UpdatedAt   string          `json:"updated_at"`
 }
@@ -61,6 +62,11 @@ type AssetResponse struct {
 	UpdatedAt string    `json:"updated_at"`
 }
 
+type TagResponse struct {
+	ID   uuid.UUID `json:"id"`
+	Name string    `json:"name"`
+}
+
 func ToWorkResponse(work *entity.Work) GetWorkOutput {
 	if work == nil {
 		return GetWorkOutput{}
@@ -72,6 +78,7 @@ func ToWorkResponse(work *entity.Work) GetWorkOutput {
 		UserID:      work.UserID,
 		Visibility:  work.Visibility,
 		Assets:      ToAssetResponses(work.Assets),
+		Tags:        ToTagResponses(work.Tags),
 		CreatedAt:   work.CreatedAt.Format(time.RFC3339),
 		UpdatedAt:   work.UpdatedAt.Format(time.RFC3339),
 	}
@@ -117,6 +124,29 @@ func ToAssetResponses(assets []*entity.Asset) []AssetResponse {
 	res := make([]AssetResponse, 0, len(assets))
 	for _, asset := range assets {
 		res = append(res, ToAssetResponse(asset))
+	}
+	return res
+}
+
+func ToTagResponse(tag *entity.Tag) TagResponse {
+	if tag == nil {
+		return TagResponse{}
+	}
+
+	return TagResponse{
+		ID:   tag.ID,
+		Name: tag.Name,
+	}
+}
+
+func ToTagResponses(tags []*entity.Tag) []TagResponse {
+	if len(tags) == 0 {
+		return []TagResponse{}
+	}
+
+	res := make([]TagResponse, 0, len(tags))
+	for _, tag := range tags {
+		res = append(res, ToTagResponse(tag))
 	}
 	return res
 }
