@@ -10,6 +10,7 @@ import (
 
 var (
 	ENV                   string
+	FRONTEND_URL          []string
 	DB_DSN                string
 	POSTGRES_USER         string
 	POSTGRES_PASSWORD     string
@@ -35,6 +36,7 @@ func LoadEnv() {
 	}
 
 	ENV = os.Getenv("ENV")
+	FRONTEND_URL = strings.Split(os.Getenv("FRONTEND_URL"), ",")
 	DB_DSN = os.Getenv("DB_DSN")
 	POSTGRES_USER = os.Getenv("POSTGRES_USER")
 	POSTGRES_PASSWORD = os.Getenv("POSTGRES_PASSWORD")

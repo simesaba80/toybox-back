@@ -1,6 +1,8 @@
 package router
 
 import (
+	"net/http"
+
 	"github.com/golang-jwt/jwt/v5"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
@@ -38,7 +40,12 @@ func (r *Router) Setup() *echo.Echo {
 	r.echo.Validator = echovalidator.NewValidator()
 	r.echo.Use(middleware.Logger())
 	r.echo.Use(middleware.Recover())
-	r.echo.Use(middleware.CORS())
+	r.echo.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins:     config.FRONTEND_URL,
+		AllowMethods:     []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete, http.MethodOptions},
+		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+		AllowCredentials: true,
+	}))
 
 	r.echo.GET("/swagger/*", echoSwagger.WrapHandler)
 
