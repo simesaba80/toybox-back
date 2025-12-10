@@ -78,14 +78,13 @@ func (uc *authUsecase) AuthenticateUser(ctx context.Context, code string) (strin
 		}
 	}
 
-	appToken, err := uc.tokenProvider.GenerateToken(user.ID.String())
+	appToken, err := uc.tokenProvider.GenerateToken(user.ID)
 	if err != nil {
 		return "", "", err
 	}
 
-	refreshToken, err := uc.tokenRepository.Create(ctx, &entity.Token{
-		UserID: user.ID,
-	})
+	newRefreshToken := entity.NewToken(user.ID)
+	refreshToken, err := uc.tokenRepository.Create(ctx, newRefreshToken)
 	if err != nil {
 		return "", "", err
 	}

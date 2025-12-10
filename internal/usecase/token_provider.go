@@ -1,5 +1,7 @@
 package usecase
 
+import "github.com/google/uuid"
+
 type TokenProvider interface {
-	GenerateToken(userID string) (string, error)
+	GenerateToken(userID uuid.UUID) (string, error)
 }

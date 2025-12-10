@@ -43,10 +43,10 @@ func (m *MockTokenRepository) EXPECT() *MockTokenRepositoryMockRecorder {
 }
 
 // CheckRefreshToken mocks base method.
-func (m *MockTokenRepository) CheckRefreshToken(ctx context.Context, refreshToken uuid.UUID) (string, error) {
+func (m *MockTokenRepository) CheckRefreshToken(ctx context.Context, refreshToken uuid.UUID) (uuid.UUID, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CheckRefreshToken", ctx, refreshToken)
-	ret0, _ := ret[0].(string)
+	ret0, _ := ret[0].(uuid.UUID)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

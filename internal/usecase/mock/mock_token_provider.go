@@ -12,6 +12,7 @@ package mock
 import (
 	reflect "reflect"
 
+	uuid "github.com/google/uuid"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -40,7 +41,7 @@ func (m *MockTokenProvider) EXPECT() *MockTokenProviderMockRecorder {
 }
 
 // GenerateToken mocks base method.
-func (m *MockTokenProvider) GenerateToken(userID string) (string, error) {
+func (m *MockTokenProvider) GenerateToken(userID uuid.UUID) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GenerateToken", userID)
 	ret0, _ := ret[0].(string)

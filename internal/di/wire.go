@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/google/uuid"
 	"github.com/google/wire"
 	"github.com/labstack/echo/v4"
 	"github.com/uptrace/bun"
@@ -116,9 +117,9 @@ func ProvideTokenProvider() usecase.TokenProvider {
 	return tokenProviderFunc(customejwt.GenerateToken)
 }
 
-type tokenProviderFunc func(userID string) (string, error)
+type tokenProviderFunc func(userID uuid.UUID) (string, error)
 
-func (f tokenProviderFunc) GenerateToken(userID string) (string, error) {
+func (f tokenProviderFunc) GenerateToken(userID uuid.UUID) (string, error) {
 	return f(userID)
 }
 
