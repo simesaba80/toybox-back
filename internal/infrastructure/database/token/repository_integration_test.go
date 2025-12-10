@@ -28,13 +28,7 @@ func TestTokenRepository_Create(t *testing.T) {
 	repo := token.NewTokenRepository(db)
 
 	ctx := context.Background()
-	token := &entity.Token{
-		RefreshToken: uuid.NewString(),
-		UserID:       uuid.NewString(),
-		ExpiredAt:    time.Now().Add(24 * time.Hour * 30),
-		CreatedAt:    time.Now(),
-		UpdatedAt:    time.Now(),
-	}
+	token := entity.NewToken(uuid.New())
 
 	created, err := repo.Create(ctx, token)
 	require.NoError(t, err)
@@ -50,27 +44,20 @@ func TestTokenRepository_CheckRefreshToken(t *testing.T) {
 	repo := token.NewTokenRepository(db)
 
 	ctx := context.Background()
-	token := &entity.Token{
-		RefreshToken: uuid.NewString(),
-		UserID:       uuid.NewString(),
-		ExpiredAt:    time.Now().Add(24 * time.Hour * 30),
-		CreatedAt:    time.Now(),
-		UpdatedAt:    time.Now(),
-	}
-	created, err := repo.Create(ctx, token)
+	tokenEntity := entity.NewToken(uuid.New())
+
+	created, err := repo.Create(ctx, tokenEntity)
 	require.NoError(t, err)
 
 	userID, err := repo.CheckRefreshToken(ctx, created.RefreshToken)
 	require.NoError(t, err)
-	require.Equal(t, token.UserID, userID)
+	require.Equal(t, tokenEntity.UserID.String(), userID)
 
-	userID, err = repo.CheckRefreshToken(ctx, "invalid")
+	userID, err = repo.CheckRefreshToken(ctx, uuid.Nil)
 	require.ErrorIs(t, err, domainerrors.ErrRefreshTokenInvalid)
 	require.Empty(t, userID)
 
-	expiredToken := &entity.Token{
-		UserID: uuid.NewString(),
-	}
+	expiredToken := entity.NewToken(uuid.New())
 	created, err = repo.Create(ctx, expiredToken)
 	require.NoError(t, err)
 
@@ -80,4 +67,26 @@ func TestTokenRepository_CheckRefreshToken(t *testing.T) {
 	userID, err = repo.CheckRefreshToken(ctx, created.RefreshToken)
 	require.ErrorIs(t, err, domainerrors.ErrRefreshTokenExpired)
 	require.Empty(t, userID)
+}
+
+func TestTokenRepository_UpdateRefreshToken(t *testing.T) {
+	db := testutil.SetupTestDB(t)
+	repo := token.NewTokenRepository(db)
+
+	ctx := context.Background()
+	origToken := entity.NewToken(uuid.New())
+	origToken.ExpiredAt = time.Now().Add(24 * time.Hour * 30)
+	origToken.CreatedAt = time.Now()
+	origToken.UpdatedAt = time.Now()
+
+	created, err := repo.Create(ctx, origToken)
+	require.NoError(t, err)
+
+	updated, err := repo.UpdateRefreshToken(ctx, created.RefreshToken)
+	require.NoError(t, err)
+
+	// 新しいトークンに差し替わっていること
+	require.NotEqual(t, created.RefreshToken, updated.RefreshToken)
+	require.Equal(t, created.UserID, updated.UserID)
+	require.True(t, updated.ExpiredAt.After(time.Now()))
 }
