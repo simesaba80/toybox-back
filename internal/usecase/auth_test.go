@@ -28,7 +28,7 @@ func TestAuthUsecase_GetDiscordAuthURL(t *testing.T) {
 					Return("1234567890", nil).
 					Times(1)
 				m.EXPECT().
-					GetHostURL(gomock.Any()).
+					GetRedirectURL(gomock.Any()).
 					Return("https://localhost:8080", nil).
 					Times(1)
 				m.EXPECT().
@@ -57,7 +57,7 @@ func TestAuthUsecase_GetDiscordAuthURL(t *testing.T) {
 					Return("1234567890", nil).
 					Times(1)
 				m.EXPECT().
-					GetHostURL(gomock.Any()).
+					GetRedirectURL(gomock.Any()).
 					Return("", domainerrors.ErrRedirectURLNotSet).
 					Times(1)
 			},

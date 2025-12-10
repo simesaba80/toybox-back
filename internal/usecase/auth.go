@@ -36,7 +36,7 @@ func (uc *authUsecase) GetDiscordAuthURL(ctx context.Context) (string, error) {
 	if _, err := uc.discordRepository.GetDiscordClientID(ctx); err != nil {
 		return "", err
 	}
-	if _, err := uc.discordRepository.GetHostURL(ctx); err != nil {
+	if _, err := uc.discordRepository.GetRedirectURL(ctx); err != nil {
 		return "", err
 	}
 	return uc.discordRepository.GetDiscordAuthURL(ctx)

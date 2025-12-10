@@ -34,7 +34,7 @@ func NewDiscordRepository() *DiscordRepository {
 		DiscordOAuthConfig: &oauth2.Config{
 			ClientID:     config.DISCORD_CLIENT_ID,
 			ClientSecret: config.DISCORD_CLIENT_SECRET,
-			RedirectURL:  config.HOST_URL + "/auth/discord/callback",
+			RedirectURL:  config.REDIRECT_URL,
 			Scopes:       []string{"identify", "email", "guilds"},
 			Endpoint: oauth2.Endpoint{
 				AuthURL:  "https://discord.com/oauth2/authorize",
@@ -51,7 +51,7 @@ func (r *DiscordRepository) GetDiscordClientID(ctx context.Context) (string, err
 	return r.DiscordOAuthConfig.ClientID, nil
 }
 
-func (r *DiscordRepository) GetHostURL(ctx context.Context) (string, error) {
+func (r *DiscordRepository) GetRedirectURL(ctx context.Context) (string, error) {
 	if r.DiscordOAuthConfig.RedirectURL == "" {
 		return "", domainerrors.ErrRedirectURLNotSet
 	}
