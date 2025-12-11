@@ -445,7 +445,6 @@ func TestWorkUseCase_GetByUserID(t *testing.T) {
 			mockRepo := mock.NewMockWorkRepository(ctrl)
 			mockTagRepo := mock.NewMockTagRepository(ctrl)
 			tt.setupMock(mockRepo, tt.userID)
-			tt.setupTagMock(mockTagRepo)
 
 			uc := usecase.NewWorkUseCase(mockRepo, mockTagRepo)
 
