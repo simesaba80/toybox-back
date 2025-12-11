@@ -56,6 +56,7 @@ func (ac *AuthController) AuthenticateUser(c echo.Context) error {
 	}
 	appToken, refreshToken, err := ac.authUsecase.AuthenticateUser(c.Request().Context(), code)
 	if err != nil {
+		c.Logger().Error("Failed to authenticate user: %w", err)
 		return handleAuthError(c, err)
 	}
 	switch config.ENV {
