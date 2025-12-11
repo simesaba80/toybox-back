@@ -101,10 +101,10 @@ func (r *DiscordRepository) FetchDiscordUser(ctx context.Context, token entity.D
 	}
 
 	return entity.DiscordUser{
-		ID:       payload.ID,
-		Username: payload.Username,
-		Avatar:   payload.Avatar,
-		Email:    payload.Email,
+		ID:         payload.ID,
+		Username:   payload.Username,
+		AvatarHash: payload.Avatar,
+		Email:      payload.Email,
 	}, nil
 }
 

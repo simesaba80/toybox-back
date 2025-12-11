@@ -11,8 +11,8 @@ type DiscordToken struct {
 }
 
 type DiscordUser struct {
-	ID       string
-	Username string
-	Avatar   string
-	Email    string
+	ID         string
+	Username   string
+	AvatarHash string
+	Email      string
 }
