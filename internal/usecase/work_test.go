@@ -649,6 +649,7 @@ func TestWorkUseCase_CreateWork(t *testing.T) {
 
 			mockWorkRepo := mock.NewMockWorkRepository(ctrl)
 			mockTagRepo := mock.NewMockTagRepository(ctrl)
+
 			tt.setupWorkMock(mockWorkRepo)
 			tt.setupTagMock(mockTagRepo, tt.tagIDs)
 
