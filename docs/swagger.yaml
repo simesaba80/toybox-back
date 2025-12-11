@@ -122,8 +122,6 @@ definitions:
     properties:
       access_token:
         type: string
-      refresh_token:
-        type: string
     type: object
   github_com_simesaba80_toybox-back_internal_interface_schema.GetUserOutput:
     properties:
@@ -278,13 +276,7 @@ paths:
       - auth
   /auth/refresh:
     post:
-      description: Regenerate token
-      parameters:
-      - description: Refresh token
-        in: query
-        name: refresh_token
-        required: true
-        type: string
+      description: Regenerate token(need refresh token in cookie)
       produces:
       - application/json
       responses:
@@ -525,6 +517,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/echo.HTTPError'
+      security:
+      - BearerAuth: []
       summary: Get all works
       tags:
       - works
@@ -660,6 +654,35 @@ paths:
       summary: Create a comment for a work
       tags:
       - comments
+  /works/users/{user_id}:
+    get:
+      description: Get works by user ID
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.WorkListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: Get works by user ID
+      tags:
+      - works
 securityDefinitions:
   BearerAuth:
     description: Bearer token for authentication

@@ -45,6 +45,7 @@ var (
 	ErrFailedToCreateThumbnail             = errors.New("failed to create thumbnail")
 	ErrFailedToCreateURL                   = errors.New("failed to create url")
 	ErrFailedToCreateTagging               = errors.New("failed to create tagging")
+	ErrFailedToGetWorksByUserID            = errors.New("failed to get works by user id")
 )
 
 // コメント関連のエラー定義

@@ -90,7 +90,7 @@ const docTemplate = `{
         },
         "/auth/refresh": {
             "post": {
-                "description": "Regenerate token",
+                "description": "Regenerate token(need refresh token in cookie)",
                 "produces": [
                     "application/json"
                 ],
@@ -98,15 +98,6 @@ const docTemplate = `{
                     "auth"
                 ],
                 "summary": "Regenerate token",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Refresh token",
-                        "name": "refresh_token",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -437,6 +428,11 @@ const docTemplate = `{
         },
         "/works": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get all works with pagination",
                 "produces": [
                     "application/json"
@@ -508,6 +504,52 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.CountFavoritesByWorkIDResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/echo.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/echo.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/works/users/{user_id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get works by user ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "works"
+                ],
+                "summary": "Get works by user ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.WorkListResponse"
                         }
                     },
                     "400": {
@@ -863,9 +905,6 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "access_token": {
-                    "type": "string"
-                },
-                "refresh_token": {
                     "type": "string"
                 }
             }

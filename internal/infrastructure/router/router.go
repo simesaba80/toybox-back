@@ -1,6 +1,8 @@
 package router
 
 import (
+	"net/http"
+
 	"github.com/golang-jwt/jwt/v5"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
@@ -38,7 +40,12 @@ func (r *Router) Setup() *echo.Echo {
 	r.echo.Validator = echovalidator.NewValidator()
 	r.echo.Use(middleware.Logger())
 	r.echo.Use(middleware.Recover())
-	r.echo.Use(middleware.CORS())
+	r.echo.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins:     config.FRONTEND_URL,
+		AllowMethods:     []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete, http.MethodOptions},
+		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+		AllowCredentials: true,
+	}))
 
 	r.echo.GET("/swagger/*", echoSwagger.WrapHandler)
 
@@ -56,7 +63,21 @@ func (r *Router) Setup() *echo.Echo {
 	r.echo.GET("/users/:id", r.UserController.GetUserByID)
 
 	// Work
-	r.echo.GET("/works", r.WorkController.GetAllWorks)
+	optionalConfig := echojwt.Config{
+		NewClaimsFunc: func(c echo.Context) jwt.Claims {
+			return new(schema.JWTCustomClaims)
+		},
+		SigningKey: []byte(config.TOKEN_SECRET),
+		Skipper: func(c echo.Context) bool {
+			authHeader := c.Request().Header.Get("Authorization")
+			return authHeader == ""
+		},
+	}
+	o := r.echo.Group("/works", echojwt.WithConfig(optionalConfig))
+
+	o.GET("", r.WorkController.GetAllWorks)
+	o.GET("/users/:user_id", r.WorkController.GetWorksByUserID)
+
 	r.echo.GET("/works/:work_id", r.WorkController.GetWorkByID)
 
 	// Comment

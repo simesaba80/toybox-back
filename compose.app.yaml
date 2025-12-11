@@ -1,0 +1,12 @@
+services:
+  app:
+    build:
+      dockerfile: ./docker/app.dockerfile
+    env_file:
+      - .env
+    volumes: !reset []
+    dns: !reset []
+
+  localstack-s3:
+    profiles:
+      - disabled-by-app

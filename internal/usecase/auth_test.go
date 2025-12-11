@@ -28,7 +28,7 @@ func TestAuthUsecase_GetDiscordAuthURL(t *testing.T) {
 					Return("1234567890", nil).
 					Times(1)
 				m.EXPECT().
-					GetHostURL(gomock.Any()).
+					GetRedirectURL(gomock.Any()).
 					Return("https://localhost:8080", nil).
 					Times(1)
 				m.EXPECT().
@@ -57,7 +57,7 @@ func TestAuthUsecase_GetDiscordAuthURL(t *testing.T) {
 					Return("1234567890", nil).
 					Times(1)
 				m.EXPECT().
-					GetHostURL(gomock.Any()).
+					GetRedirectURL(gomock.Any()).
 					Return("", domainerrors.ErrRedirectURLNotSet).
 					Times(1)
 			},
@@ -137,7 +137,7 @@ func TestAuthUsecase_AuthenticateUser(t *testing.T) {
 				tr.EXPECT().
 					Create(gomock.Any(), gomock.Any()).
 					Return(&entity.Token{
-						RefreshToken: "test",
+						RefreshToken: uuid.New(),
 					}, nil).
 					Times(1)
 			},
@@ -183,7 +183,7 @@ func TestAuthUsecase_AuthenticateUser(t *testing.T) {
 				tr.EXPECT().
 					Create(gomock.Any(), gomock.Any()).
 					Return(&entity.Token{
-						RefreshToken: "test",
+						RefreshToken: uuid.New(),
 					}, nil).
 					Times(1)
 			},

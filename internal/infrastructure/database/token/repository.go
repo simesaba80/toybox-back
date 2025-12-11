@@ -24,13 +24,6 @@ func NewTokenRepository(db *bun.DB) *TokenRepository {
 }
 
 func (r *TokenRepository) Create(ctx context.Context, token *entity.Token) (*entity.Token, error) {
-	now := time.Now()
-
-	token.RefreshToken = uuid.NewString()
-	token.ExpiredAt = now.Add(24 * time.Hour * 30)
-	token.CreatedAt = now
-	token.UpdatedAt = now
-
 	dtoToken := dto.ToTokenDTO(token)
 
 	_, err := r.db.NewInsert().Model(dtoToken).Exec(ctx)
@@ -40,17 +33,42 @@ func (r *TokenRepository) Create(ctx context.Context, token *entity.Token) (*ent
 	return dtoToken.ToTokenEntity(), nil
 }
 
-func (r *TokenRepository) CheckRefreshToken(ctx context.Context, refreshToken string) (string, error) {
+func (r *TokenRepository) CheckRefreshToken(ctx context.Context, refreshToken uuid.UUID) (uuid.UUID, error) {
 	dtoToken := new(dto.Token)
 	err := r.db.NewSelect().Model(dtoToken).Where("refresh_token = ?", refreshToken).Scan(ctx)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return "", domainerrors.ErrRefreshTokenInvalid
+			return uuid.Nil, domainerrors.ErrRefreshTokenInvalid
 		}
-		return "", err
+		return uuid.Nil, err
 	}
 	if dtoToken.ExpiredAt.Before(time.Now()) {
-		return "", domainerrors.ErrRefreshTokenExpired
+		return uuid.Nil, domainerrors.ErrRefreshTokenExpired
 	}
-	return dtoToken.UserID.String(), nil
+	return dtoToken.UserID, nil
+}
+
+func (r *TokenRepository) UpdateRefreshToken(ctx context.Context, refreshToken uuid.UUID) (*entity.Token, error) {
+	// 既存トークンを取得
+	dtoToken := new(dto.Token)
+	if err := r.db.NewSelect().Model(dtoToken).Where("refresh_token = ?", refreshToken).Scan(ctx); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domainerrors.ErrRefreshTokenInvalid
+		}
+		return nil, err
+	}
+
+	// 旧トークンを削除
+	if _, err := r.db.NewDelete().Model(dtoToken).Where("refresh_token = ?", refreshToken).Exec(ctx); err != nil {
+		return nil, err
+	}
+
+	// 新しいリフレッシュトークンを発行して再保存
+	dtoToken.ExpiredAt = time.Now().Add(24 * time.Hour * 30)
+	newRefreshToken := entity.NewToken(dtoToken.UserID)
+	newRefreshToken, err := r.Create(ctx, newRefreshToken)
+	if err != nil {
+		return nil, err
+	}
+	return newRefreshToken, nil
 }

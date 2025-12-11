@@ -37,6 +37,9 @@ $ cp .env.example .env
 # サーバーを起動
 $ docker compose up -d
 
+# 本番環境の場合
+$ docker compose -f compose.yaml -f compose.app.yaml up -d --build
+
 # マイグレーションの実行
 $ migrate --path db/migrations --database '<DBの接続文字列>' up
 
