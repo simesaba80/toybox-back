@@ -74,6 +74,9 @@ func TestWorkController_GetAllWorks(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			e := echo.New()
 			e.Validator = echovalidator.NewValidator()
+			token := jwt.NewWithClaims(jwt.SigningMethodHS256, &schema.JWTCustomClaims{
+				UserID: "",
+			})
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -81,7 +84,10 @@ func TestWorkController_GetAllWorks(t *testing.T) {
 			tt.setupMock(mockWorkUsecase)
 
 			workController := controller.NewWorkController(mockWorkUsecase)
-			e.GET("/works", workController.GetAllWorks)
+			e.GET("/works", func(c echo.Context) error {
+				c.Set("user", token)
+				return workController.GetAllWorks(c)
+			})
 
 			req := httptest.NewRequest(http.MethodGet, "/works"+tt.queryParams, nil)
 			rec := httptest.NewRecorder()
