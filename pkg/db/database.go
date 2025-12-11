@@ -10,6 +10,8 @@ import (
 	"github.com/uptrace/bun/dialect/pgdialect"
 	"github.com/uptrace/bun/driver/pgdriver"
 	"github.com/uptrace/bun/extra/bundebug"
+
+	"github.com/simesaba80/toybox-back/internal/infrastructure/database/dto"
 )
 
 var DB *bun.DB
@@ -26,6 +28,8 @@ func Init() {
 		pgdriver.WithDSN(DB_DSN),
 	))
 	DB = bun.NewDB(sqlDB, pgdialect.New())
+
+	DB.RegisterModel((*dto.Tagging)(nil))
 
 	if err := sqlDB.Ping(); err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)

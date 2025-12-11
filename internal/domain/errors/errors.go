@@ -73,7 +73,5 @@ var (
 
 // タグ関連のエラー定義
 var (
-	ErrTagNotFound        = errors.New("tag not found")
-	ErrFailedToGetTag     = errors.New("failed to get tag")
-	ErrFailedToGetTagging = errors.New("failed to get tagging")
+	ErrTagNotFound = errors.New("tag not found")
 )

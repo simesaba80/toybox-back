@@ -20,7 +20,7 @@ type Work struct {
 	ThumbnailAssetID uuid.UUID        `bun:"-"`
 	Assets           []*Asset         `bun:"rel:has-many,join:id=work_id"`
 	URLs             []*URLInfo       `bun:"rel:has-many,join:id=work_id"`
-	Tags             []*Tag           `bun:"-"`
+	Tags             []*Tag           `bun:"m2m:tagging,join:Work=Tag"`
 	TagIDs           []uuid.UUID      `bun:"-"`
 	UserID           uuid.UUID        `bun:"user_id,notnull"`
 	CreatedAt        time.Time        `bun:"created_at,notnull"`

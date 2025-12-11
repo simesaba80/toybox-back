@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/simesaba80/toybox-back/db/migrations"
+	"github.com/simesaba80/toybox-back/internal/infrastructure/database/dto"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
@@ -66,6 +67,8 @@ func SetupTestDB(tb testing.TB) *bun.DB {
 		}
 
 		dbInstance = bun.NewDB(sqlInstance, pgdialect.New())
+
+		dbInstance.RegisterModel((*dto.Tagging)(nil))
 	})
 
 	if initErr != nil {
