@@ -76,6 +76,7 @@ func (r *Router) Setup() *echo.Echo {
 	o := r.echo.Group("/works", echojwt.WithConfig(optionalConfig))
 
 	o.GET("", r.WorkController.GetAllWorks)
+	o.GET("/users/:user_id", r.WorkController.GetWorksByUserID)
 
 	r.echo.GET("/works/:work_id", r.WorkController.GetWorkByID)
 

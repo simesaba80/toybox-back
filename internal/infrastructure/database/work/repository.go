@@ -98,6 +98,26 @@ func (r *WorkRepository) GetByID(ctx context.Context, id uuid.UUID) (*entity.Wor
 	return dtoWork.ToWorkEntity(), nil
 }
 
+func (r *WorkRepository) GetByUserID(ctx context.Context, userID uuid.UUID, public bool) ([]*entity.Work, error) {
+	var dtoWorks []*dto.Work
+	if public {
+		err := r.db.NewSelect().Model(&dtoWorks).Where("user_id = ?", userID).Where("visibility IN (?)", bun.In([]types.Visibility{types.VisibilityPublic})).Relation("Assets").Scan(ctx)
+		if err != nil {
+			return nil, domainerrors.ErrFailedToGetWorksByUserID
+		}
+	} else {
+		err := r.db.NewSelect().Model(&dtoWorks).Where("user_id = ?", userID).Where("visibility IN (?)", bun.In([]types.Visibility{types.VisibilityPublic, types.VisibilityPrivate})).Relation("Assets").Scan(ctx)
+		if err != nil {
+			return nil, domainerrors.ErrFailedToGetWorksByUserID
+		}
+	}
+	entityWorks := make([]*entity.Work, len(dtoWorks))
+	for i, dtoWork := range dtoWorks {
+		entityWorks[i] = dtoWork.ToWorkEntity()
+	}
+	return entityWorks, nil
+}
+
 func (r *WorkRepository) ExistsById(ctx context.Context, id uuid.UUID) (bool, error) {
 	var dtoWork dto.Work
 	exists, err := r.db.NewSelect().

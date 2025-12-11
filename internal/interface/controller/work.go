@@ -104,6 +104,44 @@ func (wc *WorkController) GetWorkByID(c echo.Context) error {
 	return c.JSON(http.StatusOK, schema.ToWorkResponse(work))
 }
 
+// GetWorksByUserID godoc
+// @Summary Get works by user ID
+// @Description Get works by user ID
+// @Tags works
+// @Produce json
+// @Param user_id path string true "User ID"
+// @Success 200 {object} schema.WorkListResponse
+// @Failure 400 {object} echo.HTTPError
+// @Failure 500 {object} echo.HTTPError
+// @Router /works/users/{user_id} [get]
+// @Security BearerAuth
+func (wc *WorkController) GetWorksByUserID(c echo.Context) error {
+	rawUser := c.Get("user")
+	var authenticatedUserID uuid.UUID
+	if rawUser == nil {
+		authenticatedUserID = uuid.Nil
+	} else {
+		authenticatedUser := rawUser.(*jwt.Token)
+		authenticatedClaims := authenticatedUser.Claims.(*schema.JWTCustomClaims)
+		var err error
+		authenticatedUserID, err = uuid.Parse(authenticatedClaims.UserID)
+		if err != nil {
+			return handleWorkError(c, domainerrors.ErrInvalidRequestBody)
+		}
+	}
+
+	userIDStr := c.Param("user_id")
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		return handleWorkError(c, domainerrors.ErrInvalidRequestBody)
+	}
+	works, err := wc.workUsecase.GetByUserID(c.Request().Context(), userID, authenticatedUserID)
+	if err != nil {
+		return handleWorkError(c, err)
+	}
+	return c.JSON(http.StatusOK, schema.ToWorkListResponse(works))
+}
+
 // CreateWork godoc
 // @Summary Create a new work
 // @Description Create a new work with the input payload

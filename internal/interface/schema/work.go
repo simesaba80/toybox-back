@@ -119,3 +119,19 @@ func ToAssetResponses(assets []*entity.Asset) []AssetResponse {
 	}
 	return res
 }
+
+func ToWorkListResponse(works []*entity.Work) WorkListResponse {
+	if len(works) == 0 {
+		return WorkListResponse{}
+	}
+	workResponses := make([]GetWorkOutput, 0, len(works))
+	for _, work := range works {
+		workResponses = append(workResponses, ToWorkResponse(work))
+	}
+	return WorkListResponse{
+		Works:      workResponses,
+		TotalCount: len(works),
+		Page:       1,
+		Limit:      20,
+	}
+}

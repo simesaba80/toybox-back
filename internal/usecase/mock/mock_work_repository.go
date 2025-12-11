@@ -118,3 +118,18 @@ func (mr *MockWorkRepositoryMockRecorder) GetByID(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockWorkRepository)(nil).GetByID), ctx, id)
 }
+
+// GetByUserID mocks base method.
+func (m *MockWorkRepository) GetByUserID(ctx context.Context, userID uuid.UUID, public bool) ([]*entity.Work, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByUserID", ctx, userID, public)
+	ret0, _ := ret[0].([]*entity.Work)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByUserID indicates an expected call of GetByUserID.
+func (mr *MockWorkRepositoryMockRecorder) GetByUserID(ctx, userID, public any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByUserID", reflect.TypeOf((*MockWorkRepository)(nil).GetByUserID), ctx, userID, public)
+}
