@@ -22,14 +22,16 @@ type authUsecase struct {
 	userRepository    repository.UserRepository
 	tokenProvider     TokenProvider
 	tokenRepository   repository.TokenRepository
+	assetRepository   repository.AssetRepository
 }
 
-func NewAuthUsecase(discordRepository repository.DiscordRepository, userRepository repository.UserRepository, tokenProvider TokenProvider, tokenRepository repository.TokenRepository) IAuthUsecase {
+func NewAuthUsecase(discordRepository repository.DiscordRepository, userRepository repository.UserRepository, tokenProvider TokenProvider, tokenRepository repository.TokenRepository, assetRepository repository.AssetRepository) IAuthUsecase {
 	return &authUsecase{
 		discordRepository: discordRepository,
 		userRepository:    userRepository,
 		tokenProvider:     tokenProvider,
 		tokenRepository:   tokenRepository,
+		assetRepository:   assetRepository,
 	}
 }
 
@@ -68,7 +70,11 @@ func (uc *authUsecase) AuthenticateUser(ctx context.Context, code string) (strin
 	user, err := uc.userRepository.GetUserByDiscordUserID(ctx, discordUser.ID)
 	if err != nil {
 		if errors.Is(err, domainerrors.ErrUserNotFound) {
-			user = entity.NewUser(discordUser.Username, discordUser.Email, discordUser.Username, discordUser.ID, discordUser.Avatar)
+			avatarURL, err := uc.assetRepository.UploadAvatar(ctx, discordUser.ID, discordUser.AvatarHash)
+			if err != nil {
+				return "", "", err
+			}
+			user = entity.NewUser(discordUser.Username, discordUser.Email, discordUser.Username, discordUser.ID, *avatarURL)
 			user, err = uc.userRepository.Create(ctx, user)
 			if err != nil {
 				return "", "", err

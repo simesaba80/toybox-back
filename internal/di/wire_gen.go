@@ -49,10 +49,10 @@ func InitializeApp() (*App, func(), error) {
 	discordRepository := oauth.NewDiscordRepository()
 	tokenProvider := ProvideTokenProvider()
 	tokenRepository := token.NewTokenRepository(db)
-	iAuthUsecase := ProvideAuthUseCase(discordRepository, userRepository, tokenProvider, tokenRepository)
-	authController := controller.NewAuthController(iAuthUsecase)
 	client := ProvideS3Client()
 	assetRepository := asset.NewAssetRepository(db, client)
+	iAuthUsecase := ProvideAuthUseCase(discordRepository, userRepository, tokenProvider, tokenRepository, assetRepository)
+	authController := controller.NewAuthController(iAuthUsecase)
 	iAssetUseCase := ProvideAssetUseCase(assetRepository)
 	assetController := controller.NewAssetController(iAssetUseCase)
 	favoriteRepository := favorite.NewFavoriteRepository(db)
@@ -121,8 +121,8 @@ func ProvideCommentUseCase(commentRepo repository.CommentRepository, workRepo re
 }
 
 // ProvideDiscordUseCase はDiscordUseCaseを提供します
-func ProvideAuthUseCase(authRepo repository.DiscordRepository, userRepo repository.UserRepository, tokenProvider usecase.TokenProvider, tokenRepo repository.TokenRepository) usecase.IAuthUsecase {
-	return usecase.NewAuthUsecase(authRepo, userRepo, tokenProvider, tokenRepo)
+func ProvideAuthUseCase(authRepo repository.DiscordRepository, userRepo repository.UserRepository, tokenProvider usecase.TokenProvider, tokenRepo repository.TokenRepository, assetRepo repository.AssetRepository) usecase.IAuthUsecase {
+	return usecase.NewAuthUsecase(authRepo, userRepo, tokenProvider, tokenRepo, assetRepo)
 }
 
 // ProvideTokenProvider はTokenProviderを提供します

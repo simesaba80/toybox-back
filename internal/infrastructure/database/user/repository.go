@@ -25,7 +25,6 @@ func NewUserRepository(db *bun.DB) *UserRepository {
 
 func (r *UserRepository) Create(ctx context.Context, user *entity.User) (*entity.User, error) {
 	dtoUser := dto.ToUserDTO(user)
-
 	_, err := r.db.NewInsert().Model(dtoUser).Exec(ctx)
 	if err != nil {
 		return nil, domainerrors.ErrFailedToCreateUser

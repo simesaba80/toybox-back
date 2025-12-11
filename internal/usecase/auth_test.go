@@ -16,13 +16,13 @@ import (
 func TestAuthUsecase_GetDiscordAuthURL(t *testing.T) {
 	tests := []struct {
 		name        string
-		setupMock   func(*mock.MockDiscordRepository, *mock.MockUserRepository, *mock.MockTokenProvider, *mock.MockTokenRepository)
+		setupMock   func(*mock.MockDiscordRepository, *mock.MockUserRepository, *mock.MockTokenProvider, *mock.MockTokenRepository, *mock.MockAssetRepository)
 		wantAuthURL string
 		wantErr     bool
 	}{
 		{
 			name: "正常系: ディスコード認証URL取得成功",
-			setupMock: func(m *mock.MockDiscordRepository, _ *mock.MockUserRepository, _ *mock.MockTokenProvider, _ *mock.MockTokenRepository) {
+			setupMock: func(m *mock.MockDiscordRepository, _ *mock.MockUserRepository, _ *mock.MockTokenProvider, _ *mock.MockTokenRepository, _ *mock.MockAssetRepository) {
 				m.EXPECT().
 					GetDiscordClientID(gomock.Any()).
 					Return("1234567890", nil).
@@ -41,7 +41,7 @@ func TestAuthUsecase_GetDiscordAuthURL(t *testing.T) {
 		},
 		{
 			name: "異常系: ディスコードクライアントID取得失敗",
-			setupMock: func(m *mock.MockDiscordRepository, _ *mock.MockUserRepository, _ *mock.MockTokenProvider, _ *mock.MockTokenRepository) {
+			setupMock: func(m *mock.MockDiscordRepository, _ *mock.MockUserRepository, _ *mock.MockTokenProvider, _ *mock.MockTokenRepository, _ *mock.MockAssetRepository) {
 				m.EXPECT().
 					GetDiscordClientID(gomock.Any()).
 					Return("", domainerrors.ErrClientIDNotSet).
@@ -51,7 +51,7 @@ func TestAuthUsecase_GetDiscordAuthURL(t *testing.T) {
 		},
 		{
 			name: "異常系: リダイレクトURL取得失敗",
-			setupMock: func(m *mock.MockDiscordRepository, _ *mock.MockUserRepository, _ *mock.MockTokenProvider, _ *mock.MockTokenRepository) {
+			setupMock: func(m *mock.MockDiscordRepository, _ *mock.MockUserRepository, _ *mock.MockTokenProvider, _ *mock.MockTokenRepository, _ *mock.MockAssetRepository) {
 				m.EXPECT().
 					GetDiscordClientID(gomock.Any()).
 					Return("1234567890", nil).
@@ -72,8 +72,9 @@ func TestAuthUsecase_GetDiscordAuthURL(t *testing.T) {
 			mockUserRepository := mock.NewMockUserRepository(ctrl)
 			mockTokenProvider := mock.NewMockTokenProvider(ctrl)
 			mockTokenRepository := mock.NewMockTokenRepository(ctrl)
-			tt.setupMock(mockDiscordRepository, mockUserRepository, mockTokenProvider, mockTokenRepository)
-			uc := NewAuthUsecase(mockDiscordRepository, mockUserRepository, mockTokenProvider, mockTokenRepository)
+			mockAssetRepository := mock.NewMockAssetRepository(ctrl)
+			tt.setupMock(mockDiscordRepository, mockUserRepository, mockTokenProvider, mockTokenRepository, mockAssetRepository)
+			uc := NewAuthUsecase(mockDiscordRepository, mockUserRepository, mockTokenProvider, mockTokenRepository, mockAssetRepository)
 			got, err := uc.GetDiscordAuthURL(context.Background())
 			if tt.wantErr {
 				assert.Error(t, err)
@@ -89,12 +90,12 @@ func TestAuthUsecase_GetDiscordAuthURL(t *testing.T) {
 func TestAuthUsecase_AuthenticateUser(t *testing.T) {
 	tests := []struct {
 		name      string
-		setupMock func(*mock.MockDiscordRepository, *mock.MockUserRepository, *mock.MockTokenProvider, *mock.MockTokenRepository)
+		setupMock func(*mock.MockDiscordRepository, *mock.MockUserRepository, *mock.MockTokenProvider, *mock.MockTokenRepository, *mock.MockAssetRepository)
 		wantErr   bool
 	}{
 		{
 			name: "正常系: 既存ユーザーのディスコード認証成功",
-			setupMock: func(m *mock.MockDiscordRepository, u *mock.MockUserRepository, tp *mock.MockTokenProvider, tr *mock.MockTokenRepository) {
+			setupMock: func(m *mock.MockDiscordRepository, u *mock.MockUserRepository, tp *mock.MockTokenProvider, tr *mock.MockTokenRepository, _ *mock.MockAssetRepository) {
 				m.EXPECT().
 					GetDiscordToken(gomock.Any(), gomock.Any()).
 					Return(entity.DiscordToken{
@@ -145,7 +146,7 @@ func TestAuthUsecase_AuthenticateUser(t *testing.T) {
 		},
 		{
 			name: "正常系: 新規ユーザーのディスコード認証成功",
-			setupMock: func(m *mock.MockDiscordRepository, u *mock.MockUserRepository, tp *mock.MockTokenProvider, tr *mock.MockTokenRepository) {
+			setupMock: func(m *mock.MockDiscordRepository, u *mock.MockUserRepository, tp *mock.MockTokenProvider, tr *mock.MockTokenRepository, a *mock.MockAssetRepository) {
 				m.EXPECT().
 					GetDiscordToken(gomock.Any(), gomock.Any()).
 					Return(entity.DiscordToken{
@@ -155,7 +156,8 @@ func TestAuthUsecase_AuthenticateUser(t *testing.T) {
 				m.EXPECT().
 					FetchDiscordUser(gomock.Any(), gomock.Any()).
 					Return(entity.DiscordUser{
-						ID: "test",
+						ID:         "test",
+						AvatarHash: "avatarhash",
 					}, nil).
 					Times(1)
 				m.EXPECT().
@@ -169,6 +171,11 @@ func TestAuthUsecase_AuthenticateUser(t *testing.T) {
 				u.EXPECT().
 					GetUserByDiscordUserID(gomock.Any(), gomock.Any()).
 					Return(nil, domainerrors.ErrUserNotFound).
+					Times(1)
+				avatarURL := "https://example.com/avatar.webp"
+				a.EXPECT().
+					UploadAvatar(gomock.Any(), "test", "avatarhash").
+					Return(&avatarURL, nil).
 					Times(1)
 				u.EXPECT().
 					Create(gomock.Any(), gomock.Any()).
@@ -191,7 +198,7 @@ func TestAuthUsecase_AuthenticateUser(t *testing.T) {
 		},
 		{
 			name: "異常系: ディスコード認証失敗",
-			setupMock: func(m *mock.MockDiscordRepository, u *mock.MockUserRepository, tp *mock.MockTokenProvider, tr *mock.MockTokenRepository) {
+			setupMock: func(m *mock.MockDiscordRepository, u *mock.MockUserRepository, tp *mock.MockTokenProvider, tr *mock.MockTokenRepository, _ *mock.MockAssetRepository) {
 				m.EXPECT().
 					GetDiscordToken(gomock.Any(), gomock.Any()).
 					Return(entity.DiscordToken{}, domainerrors.ErrFaileRequestToDiscord).
@@ -201,7 +208,7 @@ func TestAuthUsecase_AuthenticateUser(t *testing.T) {
 		},
 		{
 			name: "異常系: ユーザーが許可されたDiscordギルドに所属していない",
-			setupMock: func(m *mock.MockDiscordRepository, u *mock.MockUserRepository, tp *mock.MockTokenProvider, tr *mock.MockTokenRepository) {
+			setupMock: func(m *mock.MockDiscordRepository, u *mock.MockUserRepository, tp *mock.MockTokenProvider, tr *mock.MockTokenRepository, _ *mock.MockAssetRepository) {
 				m.EXPECT().
 					GetDiscordToken(gomock.Any(), gomock.Any()).
 					Return(entity.DiscordToken{
@@ -234,8 +241,9 @@ func TestAuthUsecase_AuthenticateUser(t *testing.T) {
 			mockUserRepository := mock.NewMockUserRepository(ctrl)
 			mockTokenProvider := mock.NewMockTokenProvider(ctrl)
 			mockTokenRepository := mock.NewMockTokenRepository(ctrl)
-			tt.setupMock(mockDiscordRepository, mockUserRepository, mockTokenProvider, mockTokenRepository)
-			uc := NewAuthUsecase(mockDiscordRepository, mockUserRepository, mockTokenProvider, mockTokenRepository)
+			mockAssetRepository := mock.NewMockAssetRepository(ctrl)
+			tt.setupMock(mockDiscordRepository, mockUserRepository, mockTokenProvider, mockTokenRepository, mockAssetRepository)
+			uc := NewAuthUsecase(mockDiscordRepository, mockUserRepository, mockTokenProvider, mockTokenRepository, mockAssetRepository)
 			appToken, refreshToken, err := uc.AuthenticateUser(context.Background(), "test")
 			if tt.wantErr {
 				assert.Error(t, err)
