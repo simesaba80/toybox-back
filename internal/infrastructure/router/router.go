@@ -63,7 +63,20 @@ func (r *Router) Setup() *echo.Echo {
 	r.echo.GET("/users/:id", r.UserController.GetUserByID)
 
 	// Work
-	r.echo.GET("/works", r.WorkController.GetAllWorks)
+	optionalConfig := echojwt.Config{
+		NewClaimsFunc: func(c echo.Context) jwt.Claims {
+			return new(schema.JWTCustomClaims)
+		},
+		SigningKey: []byte(config.TOKEN_SECRET),
+		Skipper: func(c echo.Context) bool {
+			authHeader := c.Request().Header.Get("Authorization")
+			return authHeader == ""
+		},
+	}
+	o := r.echo.Group("/works", echojwt.WithConfig(optionalConfig))
+
+	o.GET("", r.WorkController.GetAllWorks)
+
 	r.echo.GET("/works/:work_id", r.WorkController.GetWorkByID)
 
 	// Comment

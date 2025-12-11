@@ -58,9 +58,9 @@ func (mr *MockIWorkUseCaseMockRecorder) CreateWork(ctx, title, description, visi
 }
 
 // GetAll mocks base method.
-func (m *MockIWorkUseCase) GetAll(ctx context.Context, limit, page *int) ([]*entity.Work, int, int, int, error) {
+func (m *MockIWorkUseCase) GetAll(ctx context.Context, limit, page *int, userID uuid.UUID) ([]*entity.Work, int, int, int, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAll", ctx, limit, page)
+	ret := m.ctrl.Call(m, "GetAll", ctx, limit, page, userID)
 	ret0, _ := ret[0].([]*entity.Work)
 	ret1, _ := ret[1].(int)
 	ret2, _ := ret[2].(int)
@@ -70,9 +70,9 @@ func (m *MockIWorkUseCase) GetAll(ctx context.Context, limit, page *int) ([]*ent
 }
 
 // GetAll indicates an expected call of GetAll.
-func (mr *MockIWorkUseCaseMockRecorder) GetAll(ctx, limit, page any) *gomock.Call {
+func (mr *MockIWorkUseCaseMockRecorder) GetAll(ctx, limit, page, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAll", reflect.TypeOf((*MockIWorkUseCase)(nil).GetAll), ctx, limit, page)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAll", reflect.TypeOf((*MockIWorkUseCase)(nil).GetAll), ctx, limit, page, userID)
 }
 
 // GetByID mocks base method.

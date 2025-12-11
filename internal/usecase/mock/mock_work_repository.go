@@ -88,6 +88,22 @@ func (mr *MockWorkRepositoryMockRecorder) GetAll(ctx, limit, offset any) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAll", reflect.TypeOf((*MockWorkRepository)(nil).GetAll), ctx, limit, offset)
 }
 
+// GetAllPublic mocks base method.
+func (m *MockWorkRepository) GetAllPublic(ctx context.Context, limit, offset int) ([]*entity.Work, int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllPublic", ctx, limit, offset)
+	ret0, _ := ret[0].([]*entity.Work)
+	ret1, _ := ret[1].(int)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// GetAllPublic indicates an expected call of GetAllPublic.
+func (mr *MockWorkRepositoryMockRecorder) GetAllPublic(ctx, limit, offset any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllPublic", reflect.TypeOf((*MockWorkRepository)(nil).GetAllPublic), ctx, limit, offset)
+}
+
 // GetByID mocks base method.
 func (m *MockWorkRepository) GetByID(ctx context.Context, id uuid.UUID) (*entity.Work, error) {
 	m.ctrl.T.Helper()

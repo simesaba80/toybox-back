@@ -51,7 +51,7 @@ func TestWorkController_GetAllWorks(t *testing.T) {
 			queryParams: "?limit=20&page=1",
 			setupMock: func(mockWorkUsecase *mock.MockIWorkUseCase) {
 				mockWorkUsecase.EXPECT().
-					GetAll(gomock.Any(), util.IntPtr(20), util.IntPtr(1)).
+					GetAll(gomock.Any(), util.IntPtr(20), util.IntPtr(1), uuid.Nil).
 					Return([]*entity.Work{mockWork}, 1, 20, 1, nil)
 			},
 			wantStatus: http.StatusOK,
@@ -62,7 +62,7 @@ func TestWorkController_GetAllWorks(t *testing.T) {
 			queryParams: "",
 			setupMock: func(mockWorkUsecase *mock.MockIWorkUseCase) {
 				mockWorkUsecase.EXPECT().
-					GetAll(gomock.Any(), nil, nil).
+					GetAll(gomock.Any(), nil, nil, uuid.Nil).
 					Return(nil, 0, 0, 0, errors.New("some error"))
 			},
 			wantStatus: http.StatusInternalServerError,

@@ -197,9 +197,9 @@ func TestWorkUseCase_GetAll(t *testing.T) {
 			mockRepo := mock.NewMockWorkRepository(ctrl)
 			tt.setupMock(mockRepo)
 
-			uc := usecase.NewWorkUseCase(mockRepo, 30*time.Second)
+			uc := usecase.NewWorkUseCase(mockRepo)
 
-			got, total, limit, page, err := uc.GetAll(context.Background(), tt.limit, tt.page)
+			got, total, limit, page, err := uc.GetAll(context.Background(), tt.limit, tt.page, uuid.Nil)
 
 			if tt.wantErr {
 				assert.Error(t, err)
@@ -263,7 +263,7 @@ func TestWorkUseCase_GetByID(t *testing.T) {
 			mockRepo := mock.NewMockWorkRepository(ctrl)
 			tt.setupMock(mockRepo, tt.workID)
 
-			uc := usecase.NewWorkUseCase(mockRepo, 30*time.Second)
+			uc := usecase.NewWorkUseCase(mockRepo)
 
 			got, err := uc.GetByID(context.Background(), tt.workID)
 
@@ -387,7 +387,7 @@ func TestWorkUseCase_CreateWork(t *testing.T) {
 
 			mockRepo := mock.NewMockWorkRepository(ctrl)
 			tt.setupMock(mockRepo)
-			uc := usecase.NewWorkUseCase(mockRepo, 30*time.Second)
+			uc := usecase.NewWorkUseCase(mockRepo)
 			got, err := uc.CreateWork(context.Background(), tt.title, tt.description, tt.visibility, tt.thumbnailAssetID, tt.assetIDs, tt.urls, tt.userID)
 
 			if tt.wantErr {

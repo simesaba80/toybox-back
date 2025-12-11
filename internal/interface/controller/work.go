@@ -34,7 +34,12 @@ func NewWorkController(workUsecase usecase.IWorkUseCase) *WorkController {
 // @Failure 400 {object} echo.HTTPError
 // @Failure 500 {object} echo.HTTPError
 // @Router /works [get]
+// @Security BearerAuth
 func (wc *WorkController) GetAllWorks(c echo.Context) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*schema.JWTCustomClaims)
+	userID, _ := uuid.Parse(claims.UserID)
+
 	var query schema.GetWorksQuery
 	if err := c.Bind(&query); err != nil {
 		return handleWorkError(c, err)
@@ -43,7 +48,7 @@ func (wc *WorkController) GetAllWorks(c echo.Context) error {
 		return err
 	}
 
-	works, total, limit, page, err := wc.workUsecase.GetAll(c.Request().Context(), query.Limit, query.Page)
+	works, total, limit, page, err := wc.workUsecase.GetAll(c.Request().Context(), query.Limit, query.Page, userID)
 	if err != nil {
 		return handleWorkError(c, err)
 	}

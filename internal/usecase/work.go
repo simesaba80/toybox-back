@@ -3,7 +3,6 @@ package usecase
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/simesaba80/toybox-back/internal/domain/entity"
@@ -12,27 +11,22 @@ import (
 )
 
 type IWorkUseCase interface {
-	GetAll(ctx context.Context, limit, page *int) ([]*entity.Work, int, int, int, error)
+	GetAll(ctx context.Context, limit, page *int, userID uuid.UUID) ([]*entity.Work, int, int, int, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*entity.Work, error)
 	CreateWork(ctx context.Context, title, description, visibility string, thumbnailAssetID uuid.UUID, assetIDs []uuid.UUID, urls []string, userID uuid.UUID) (*entity.Work, error)
 }
 
 type workUseCase struct {
-	repo    repository.WorkRepository
-	timeout time.Duration
+	repo repository.WorkRepository
 }
 
-func NewWorkUseCase(repo repository.WorkRepository, timeout time.Duration) IWorkUseCase {
+func NewWorkUseCase(repo repository.WorkRepository) IWorkUseCase {
 	return &workUseCase{
-		repo:    repo,
-		timeout: time.Second * 30,
+		repo: repo,
 	}
 }
 
-func (uc *workUseCase) GetAll(ctx context.Context, limit, page *int) ([]*entity.Work, int, int, int, error) {
-	ctx, cancel := context.WithTimeout(ctx, uc.timeout)
-	defer cancel()
-
+func (uc *workUseCase) GetAll(ctx context.Context, limit, page *int, userID uuid.UUID) ([]*entity.Work, int, int, int, error) {
 	actualLimit := 20
 	actualPage := 1
 	if limit != nil {
@@ -43,6 +37,13 @@ func (uc *workUseCase) GetAll(ctx context.Context, limit, page *int) ([]*entity.
 	}
 
 	offset := (actualPage - 1) * actualLimit
+	if userID == uuid.Nil {
+		works, total, err := uc.repo.GetAllPublic(ctx, actualLimit, offset)
+		if err != nil {
+			return nil, 0, 0, 0, fmt.Errorf("failed to get all works by user ID %s: %w", userID.String(), err)
+		}
+		return works, total, actualLimit, actualPage, nil
+	}
 
 	works, total, err := uc.repo.GetAll(ctx, actualLimit, offset)
 	if err != nil {
@@ -52,9 +53,6 @@ func (uc *workUseCase) GetAll(ctx context.Context, limit, page *int) ([]*entity.
 }
 
 func (uc *workUseCase) GetByID(ctx context.Context, id uuid.UUID) (*entity.Work, error) {
-	ctx, cancel := context.WithTimeout(ctx, uc.timeout)
-	defer cancel()
-
 	work, err := uc.repo.GetByID(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get work by ID %s: %w", id.String(), err)
@@ -63,8 +61,6 @@ func (uc *workUseCase) GetByID(ctx context.Context, id uuid.UUID) (*entity.Work,
 }
 
 func (uc *workUseCase) CreateWork(ctx context.Context, title, description, visibility string, thumbnailAssetID uuid.UUID, assetIDs []uuid.UUID, urls []string, userID uuid.UUID) (*entity.Work, error) {
-	ctx, cancel := context.WithTimeout(ctx, uc.timeout)
-	defer cancel()
 	if title == "" {
 		return nil, domainerrors.ErrInvalidTitle
 	}
