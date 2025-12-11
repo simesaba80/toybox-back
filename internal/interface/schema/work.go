@@ -14,6 +14,7 @@ type GetWorkOutput struct {
 	UserID      uuid.UUID       `json:"user_id"`
 	Visibility  string          `json:"visibility"`
 	Assets      []AssetResponse `json:"assets"`
+	Tags        []TagResponse   `json:"tags"`
 	CreatedAt   string          `json:"created_at"`
 	UpdatedAt   string          `json:"updated_at"`
 }
@@ -21,10 +22,11 @@ type GetWorkOutput struct {
 type CreateWorkInput struct {
 	Title            string      `json:"title" validate:"required,max=100"`
 	Description      string      `json:"description" validate:"required"`
-	Visibility       string      `json:"visibility"`
+	Visibility       string      `json:"visibility" validate:"required,oneof=public private draft"`
 	ThumbnailAssetID uuid.UUID   `json:"thumbnail_asset_id" validate:"required,uuid"`
 	AssetIDs         []uuid.UUID `json:"asset_ids" validate:"required,dive,uuid"`
 	URLs             []string    `json:"urls" validate:"required,dive,url"`
+	TagIDs           []uuid.UUID `json:"tag_ids" validate:"required,dive,uuid"`
 }
 
 type CreateWorkOutput struct {
@@ -60,6 +62,11 @@ type AssetResponse struct {
 	UpdatedAt string    `json:"updated_at"`
 }
 
+type TagResponse struct {
+	ID   uuid.UUID `json:"id"`
+	Name string    `json:"name"`
+}
+
 func ToWorkResponse(work *entity.Work) GetWorkOutput {
 	if work == nil {
 		return GetWorkOutput{}
@@ -71,6 +78,7 @@ func ToWorkResponse(work *entity.Work) GetWorkOutput {
 		UserID:      work.UserID,
 		Visibility:  work.Visibility,
 		Assets:      ToAssetResponses(work.Assets),
+		Tags:        ToTagResponses(work.Tags),
 		CreatedAt:   work.CreatedAt.Format(time.RFC3339),
 		UpdatedAt:   work.UpdatedAt.Format(time.RFC3339),
 	}
@@ -120,6 +128,28 @@ func ToAssetResponses(assets []*entity.Asset) []AssetResponse {
 	return res
 }
 
+func ToTagResponse(tag *entity.Tag) TagResponse {
+	if tag == nil {
+		return TagResponse{}
+	}
+
+	return TagResponse{
+		ID:   tag.ID,
+		Name: tag.Name,
+	}
+}
+
+func ToTagResponses(tags []*entity.Tag) []TagResponse {
+	if len(tags) == 0 {
+		return []TagResponse{}
+	}
+
+	res := make([]TagResponse, 0, len(tags))
+	for _, tag := range tags {
+		res = append(res, ToTagResponse(tag))
+	}
+	return res
+}
 func ToWorkListResponse(works []*entity.Work) WorkListResponse {
 	if len(works) == 0 {
 		return WorkListResponse{}

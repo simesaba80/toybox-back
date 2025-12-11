@@ -36,6 +36,8 @@ func (r *WorkRepository) GetAll(ctx context.Context, limit, offset int) ([]*enti
 		Model(&dtoWorks).
 		Where("visibility IN (?)", bun.In([]types.Visibility{types.VisibilityPublic, types.VisibilityPrivate})).
 		Relation("Assets").
+		Relation("URLs").
+		Relation("Tags").
 		Order("created_at DESC").
 		Limit(limit).
 		Offset(offset).
@@ -67,6 +69,8 @@ func (r *WorkRepository) GetAllPublic(ctx context.Context, limit, offset int) ([
 		Model(&dtoWorks).
 		Where("visibility IN (?)", bun.In([]types.Visibility{types.VisibilityPublic})).
 		Relation("Assets").
+		Relation("URLs").
+		Relation("Tags").
 		Order("created_at DESC").
 		Limit(limit).
 		Offset(offset).
@@ -88,25 +92,46 @@ func (r *WorkRepository) GetAllPublic(ctx context.Context, limit, offset int) ([
 
 func (r *WorkRepository) GetByID(ctx context.Context, id uuid.UUID) (*entity.Work, error) {
 	var dtoWork dto.Work
-	err := r.db.NewSelect().Model(&dtoWork).Relation("Assets").Where("id = ?", id).Scan(ctx)
+	err := r.db.NewSelect().
+		Model(&dtoWork).
+		Relation("Assets").
+		Relation("Tags").
+		Relation("URLs").
+		Where("id = ?", id).
+		Scan(ctx)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, domainerrors.ErrWorkNotFound
 		}
 		return nil, domainerrors.ErrFailedToGetWorkById
 	}
+
 	return dtoWork.ToWorkEntity(), nil
 }
 
 func (r *WorkRepository) GetByUserID(ctx context.Context, userID uuid.UUID, public bool) ([]*entity.Work, error) {
 	var dtoWorks []*dto.Work
 	if public {
-		err := r.db.NewSelect().Model(&dtoWorks).Where("user_id = ?", userID).Where("visibility IN (?)", bun.In([]types.Visibility{types.VisibilityPublic})).Relation("Assets").Scan(ctx)
+		err := r.db.NewSelect().
+			Model(&dtoWorks).
+			Where("user_id = ?", userID).
+			Where("visibility IN (?)", bun.In([]types.Visibility{types.VisibilityPublic})).
+			Relation("Assets").
+			Relation("URLs").
+			Relation("Tags").
+			Scan(ctx)
 		if err != nil {
 			return nil, domainerrors.ErrFailedToGetWorksByUserID
 		}
 	} else {
-		err := r.db.NewSelect().Model(&dtoWorks).Where("user_id = ?", userID).Where("visibility IN (?)", bun.In([]types.Visibility{types.VisibilityPublic, types.VisibilityPrivate})).Relation("Assets").Scan(ctx)
+		err := r.db.NewSelect().
+			Model(&dtoWorks).
+			Where("user_id = ?", userID).
+			Where("visibility IN (?)", bun.In([]types.Visibility{types.VisibilityPublic, types.VisibilityPrivate})).
+			Relation("Assets").
+			Relation("URLs").
+			Relation("Tags").
+			Scan(ctx)
 		if err != nil {
 			return nil, domainerrors.ErrFailedToGetWorksByUserID
 		}
@@ -178,6 +203,20 @@ func (r *WorkRepository) Create(ctx context.Context, work *entity.Work) (*entity
 		_, err = tx.NewInsert().Model(&dtoWork.URLs).Exec(ctx)
 		if err != nil {
 			return nil, domainerrors.ErrFailedToCreateURL
+		}
+	}
+
+	if len(dtoWork.TagIDs) > 0 {
+		taggings := make([]*dto.Tagging, len(dtoWork.TagIDs))
+		for i, tagID := range dtoWork.TagIDs {
+			taggings[i] = &dto.Tagging{
+				WorkID: dtoWork.ID,
+				TagID:  tagID,
+			}
+		}
+		_, err = tx.NewInsert().Model(&taggings).Exec(ctx)
+		if err != nil {
+			return nil, domainerrors.ErrFailedToCreateTagging
 		}
 	}
 

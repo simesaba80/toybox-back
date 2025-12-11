@@ -14,16 +14,18 @@ type IWorkUseCase interface {
 	GetAll(ctx context.Context, limit, page *int, userID uuid.UUID) ([]*entity.Work, int, int, int, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*entity.Work, error)
 	GetByUserID(ctx context.Context, userID uuid.UUID, authenticatedUserID uuid.UUID) ([]*entity.Work, error)
-	CreateWork(ctx context.Context, title, description, visibility string, thumbnailAssetID uuid.UUID, assetIDs []uuid.UUID, urls []string, userID uuid.UUID) (*entity.Work, error)
+	CreateWork(ctx context.Context, title, description, visibility string, thumbnailAssetID uuid.UUID, assetIDs []uuid.UUID, urls []string, userID uuid.UUID, tagIDs []uuid.UUID) (*entity.Work, error)
 }
 
 type workUseCase struct {
-	repo repository.WorkRepository
+	workRepo repository.WorkRepository
+	tagRepo  repository.TagRepository
 }
 
-func NewWorkUseCase(repo repository.WorkRepository) IWorkUseCase {
+func NewWorkUseCase(workRepo repository.WorkRepository, tagRepo repository.TagRepository) IWorkUseCase {
 	return &workUseCase{
-		repo: repo,
+		workRepo: workRepo,
+		tagRepo:  tagRepo,
 	}
 }
 
@@ -42,14 +44,14 @@ func (uc *workUseCase) GetAll(ctx context.Context, limit, page *int, userID uuid
 
 	offset := (actualPage - 1) * actualLimit
 	if userID == uuid.Nil {
-		works, total, err := uc.repo.GetAllPublic(ctx, actualLimit, offset)
+		works, total, err := uc.workRepo.GetAllPublic(ctx, actualLimit, offset)
 		if err != nil {
 			return nil, 0, 0, 0, fmt.Errorf("failed to get all works by user ID %s: %w", userID.String(), err)
 		}
 		return works, total, actualLimit, actualPage, nil
 	}
 
-	works, total, err := uc.repo.GetAll(ctx, actualLimit, offset)
+	works, total, err := uc.workRepo.GetAll(ctx, actualLimit, offset)
 	if err != nil {
 		return nil, 0, 0, 0, fmt.Errorf("failed to get all works: %w", err)
 	}
@@ -57,7 +59,7 @@ func (uc *workUseCase) GetAll(ctx context.Context, limit, page *int, userID uuid
 }
 
 func (uc *workUseCase) GetByID(ctx context.Context, id uuid.UUID) (*entity.Work, error) {
-	work, err := uc.repo.GetByID(ctx, id)
+	work, err := uc.workRepo.GetByID(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get work by ID %s: %w", id.String(), err)
 	}
@@ -72,14 +74,14 @@ func (uc *workUseCase) GetByUserID(ctx context.Context, userID uuid.UUID, authen
 		public = false
 	}
 
-	works, err := uc.repo.GetByUserID(ctx, userID, public)
+	works, err := uc.workRepo.GetByUserID(ctx, userID, public)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get works by user ID %s: %w", userID.String(), err)
 	}
 	return works, nil
 }
 
-func (uc *workUseCase) CreateWork(ctx context.Context, title, description, visibility string, thumbnailAssetID uuid.UUID, assetIDs []uuid.UUID, urls []string, userID uuid.UUID) (*entity.Work, error) {
+func (uc *workUseCase) CreateWork(ctx context.Context, title, description, visibility string, thumbnailAssetID uuid.UUID, assetIDs []uuid.UUID, urls []string, userID uuid.UUID, tagIDs []uuid.UUID) (*entity.Work, error) {
 	if title == "" {
 		return nil, domainerrors.ErrInvalidTitle
 	}
@@ -89,6 +91,26 @@ func (uc *workUseCase) CreateWork(ctx context.Context, title, description, visib
 	if visibility == "" {
 		return nil, domainerrors.ErrInvalidVisibility
 	}
+	if len(tagIDs) == 0 {
+		return nil, domainerrors.ErrInvalidTagIDs
+	}
+
+	var tags []*entity.Tag
+	var err error
+
+	exists, err := uc.tagRepo.ExistAll(ctx, tagIDs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check tag existence: %w", err)
+	}
+	if !exists {
+		return nil, domainerrors.ErrTagNotFound
+	}
+
+	tags, err = uc.tagRepo.FindAllByIDs(ctx, tagIDs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find tags by ids: %w", err)
+	}
+
 	assets := make([]*entity.Asset, len(assetIDs))
 	for i, assetID := range assetIDs {
 		assets[i] = &entity.Asset{
@@ -101,9 +123,9 @@ func (uc *workUseCase) CreateWork(ctx context.Context, title, description, visib
 		urlPointers[i] = &url
 	}
 
-	work := entity.NewWork(title, description, userID, visibility, thumbnailAssetID, assets, urlPointers)
+	work := entity.NewWork(title, description, userID, visibility, thumbnailAssetID, assets, urlPointers, tagIDs, tags)
 
-	createdWork, err := uc.repo.Create(ctx, work)
+	createdWork, err := uc.workRepo.Create(ctx, work)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create work: %w", err)
 	}

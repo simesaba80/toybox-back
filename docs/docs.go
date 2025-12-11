@@ -829,9 +829,11 @@ const docTemplate = `{
             "required": [
                 "asset_ids",
                 "description",
+                "tag_ids",
                 "thumbnail_asset_id",
                 "title",
-                "urls"
+                "urls",
+                "visibility"
             ],
             "properties": {
                 "asset_ids": {
@@ -842,6 +844,12 @@ const docTemplate = `{
                 },
                 "description": {
                     "type": "string"
+                },
+                "tag_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "thumbnail_asset_id": {
                     "type": "string"
@@ -857,7 +865,12 @@ const docTemplate = `{
                     }
                 },
                 "visibility": {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                        "public",
+                        "private",
+                        "draft"
+                    ]
                 }
             }
         },
@@ -956,6 +969,12 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.TagResponse"
+                    }
+                },
                 "title": {
                     "type": "string"
                 },
@@ -975,6 +994,17 @@ const docTemplate = `{
             "properties": {
                 "is_favorite": {
                     "type": "boolean"
+                }
+            }
+        },
+        "github_com_simesaba80_toybox-back_internal_interface_schema.TagResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
                 }
             }
         },

@@ -3,41 +3,68 @@ package migration
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/dto"
 	"github.com/uptrace/bun"
 )
 
-func MigrateTags(ctx context.Context, sourceDB, targetDB bun.IDB) error {
+func MigrateTags(ctx context.Context, sourceDB, targetDB bun.IDB) (map[uuid.UUID]uuid.UUID, error) {
 	fmt.Println("Migrating tags...")
 
 	var oldTags []OldTag
 	if err := sourceDB.NewSelect().Model(&oldTags).Scan(ctx); err != nil {
-		return fmt.Errorf("failed to select old tags: %w", err)
+		return nil, fmt.Errorf("failed to select old tags: %w", err)
 	}
 
-	newTags := make([]*dto.Tag, 0, len(oldTags))
+	normalizedNameToRepresentativeId := make(map[string]uuid.UUID)
+	oldIdToRepresentativeId := make(map[uuid.UUID]uuid.UUID)
+	representativeTagsToInsert := make([]*dto.Tag, 0)
+
 	for _, old := range oldTags {
 		parsedOldID, err := uuid.Parse(old.ID)
 		if err != nil {
-			return fmt.Errorf("failed to parse tag UUID %s: %w", old.ID, err)
+			return nil, fmt.Errorf("failed to parse tag UUID %s: %w", old.ID, err)
 		}
-		newTag := &dto.Tag{
-			ID:        parsedOldID,
-			Name:      old.Name,
-			CreatedAt: old.CreatedAt,
-			UpdatedAt: old.UpdatedAt,
+
+		var builder strings.Builder
+		for _, r := range old.Name {
+			switch {
+			case 'Ａ' <= r && r <= 'Ｚ':
+				builder.WriteRune(r - 'Ａ' + 'a')
+			case 'ａ' <= r && r <= 'ｚ':
+				builder.WriteRune(r - 'ａ' + 'a')
+			case 'A' <= r && r <= 'Z':
+				builder.WriteRune(r - 'A' + 'a')
+			case '０' <= r && r <= '９':
+				builder.WriteRune(r - '０' + '0')
+			default:
+				builder.WriteRune(r)
+			}
 		}
-		newTags = append(newTags, newTag)
+		convertedName := builder.String()
+
+		representativeID, exists := normalizedNameToRepresentativeId[convertedName]
+		if !exists {
+			representativeID = parsedOldID
+			normalizedNameToRepresentativeId[convertedName] = representativeID
+			representativeTagsToInsert = append(representativeTagsToInsert, &dto.Tag{
+				ID:        representativeID,
+				Name:      convertedName,
+				CreatedAt: old.CreatedAt,
+				UpdatedAt: old.UpdatedAt,
+			})
+		}
+		oldIdToRepresentativeId[parsedOldID] = representativeID
 	}
 
-	if len(newTags) > 0 {
-		if _, err := targetDB.NewInsert().Model(&newTags).Exec(ctx); err != nil {
-			return fmt.Errorf("failed to insert new tags: %w", err)
+	if len(representativeTagsToInsert) > 0 {
+		if _, err := targetDB.NewInsert().Model(&representativeTagsToInsert).Exec(ctx); err != nil {
+			return nil, fmt.Errorf("failed to insert new representative tags: %w", err)
 		}
 	}
 
-	fmt.Printf("-> Migrated %d tags.\n", len(newTags))
-	return nil
+	fmt.Printf("-> Migrated %d tags.\n", len(representativeTagsToInsert))
+	return oldIdToRepresentativeId, nil
 }

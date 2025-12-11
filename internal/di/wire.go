@@ -17,6 +17,7 @@ import (
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/asset"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/comment"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/favorite"
+	"github.com/simesaba80/toybox-back/internal/infrastructure/database/tag"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/token"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/user"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/work"
@@ -44,6 +45,8 @@ var RepositorySet = wire.NewSet(
 	wire.Bind(new(repository.AssetRepository), new(*asset.AssetRepository)),
 	favorite.NewFavoriteRepository,
 	wire.Bind(new(repository.FavoriteRepository), new(*favorite.FavoriteRepository)),
+	tag.NewTagRepository,
+	wire.Bind(new(repository.TagRepository), new(*tag.TagRepository)),
 )
 
 var UseCaseSet = wire.NewSet(
@@ -98,8 +101,8 @@ func ProvideUserUseCase(repo repository.UserRepository) usecase.IUserUseCase {
 }
 
 // ProvideWorkUseCase はWorkUseCaseを提供します
-func ProvideWorkUseCase(repo repository.WorkRepository) usecase.IWorkUseCase {
-	return usecase.NewWorkUseCase(repo)
+func ProvideWorkUseCase(workRepo repository.WorkRepository, tagRepo repository.TagRepository) usecase.IWorkUseCase {
+	return usecase.NewWorkUseCase(workRepo, tagRepo)
 }
 
 // ProvideCommentUseCase はCommentUseCaseを提供します

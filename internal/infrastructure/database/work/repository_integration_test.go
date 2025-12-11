@@ -31,7 +31,12 @@ func TestWorkRepository_Create(t *testing.T) {
 
 	ctx := context.Background()
 	user := insertTestUser(t, db)
+	tag1 := insertTestTag(t, db, "go")
+	tag2 := insertTestTag(t, db, "rust")
+
 	work := newTestWork(user.ID, "create-title")
+	work.TagIDs = []uuid.UUID{tag1.ID, tag2.ID}
+	work.Tags = []*entity.Tag{tag1, tag2}
 
 	created, err := repo.Create(ctx, work)
 	require.NoError(t, err)
@@ -39,10 +44,13 @@ func TestWorkRepository_Create(t *testing.T) {
 	require.Equal(t, work.Description, created.Description)
 	require.Equal(t, work.UserID, created.UserID)
 	require.Equal(t, work.URLs, created.URLs)
+	require.Equal(t, 2, len(created.Tags))
+	require.Equal(t, 2, len(created.TagIDs))
 
 	fetched, err := repo.GetByID(ctx, created.ID)
 	require.NoError(t, err)
 	require.Equal(t, created.ID, fetched.ID)
+	require.Equal(t, 2, len(fetched.Tags))
 }
 
 func TestWorkRepository_GetAll(t *testing.T) {
@@ -51,9 +59,12 @@ func TestWorkRepository_GetAll(t *testing.T) {
 
 	ctx := context.Background()
 	user := insertTestUser(t, db)
+	tag := insertTestTag(t, db, "test")
 
 	for i := 0; i < 3; i++ {
 		work := newTestWork(user.ID, "title-"+uuid.NewString())
+		work.TagIDs = []uuid.UUID{tag.ID}
+		work.Tags = []*entity.Tag{tag}
 		work.CreatedAt = work.CreatedAt.Add(time.Duration(i) * time.Minute)
 		work.UpdatedAt = work.CreatedAt
 		_, err := repo.Create(ctx, work)
@@ -65,6 +76,11 @@ func TestWorkRepository_GetAll(t *testing.T) {
 	require.Equal(t, 3, total)
 	require.Len(t, works, 3)
 	require.True(t, works[0].CreatedAt.After(works[1].CreatedAt) || works[0].CreatedAt.Equal(works[1].CreatedAt))
+
+	for _, w := range works {
+		require.Equal(t, 1, len(w.Tags))
+		require.Equal(t, tag.Name, w.Tags[0].Name)
+	}
 }
 
 func TestWorkRepository_GetAllPublic(t *testing.T) {
@@ -318,7 +334,11 @@ func TestWorkRepository_ExistsByID(t *testing.T) {
 
 	ctx := context.Background()
 	user := insertTestUser(t, db)
+	tag := insertTestTag(t, db, "test")
+
 	work := newTestWork(user.ID, "exists-title")
+	work.TagIDs = []uuid.UUID{tag.ID}
+	work.Tags = []*entity.Tag{tag}
 	created, err := repo.Create(ctx, work)
 	require.NoError(t, err)
 
@@ -366,7 +386,28 @@ func newTestWork(userID uuid.UUID, title string) *entity.Work {
 		ThumbnailAssetID: uuid.Nil,
 		Assets:           []*entity.Asset{},
 		URLs:             []*string{},
+		TagIDs:           []uuid.UUID{},
+		Tags:             []*entity.Tag{},
 		CreatedAt:        now,
 		UpdatedAt:        now,
 	}
 }
+
+func insertTestTag(t *testing.T, db *bun.DB, name string) *entity.Tag {
+	t.Helper()
+
+	now := time.Now().UTC().Truncate(time.Second)
+	tag := &entity.Tag{
+		ID:        uuid.New(),
+		Name:      name,
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+
+	dtoTag := dto.ToTagDTO(tag)
+	_, err := db.NewInsert().Model(dtoTag).Exec(context.Background())
+	require.NoError(t, err)
+
+	return tag
+}
+

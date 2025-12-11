@@ -20,6 +20,8 @@ type Work struct {
 	ThumbnailAssetID uuid.UUID        `bun:"-"`
 	Assets           []*Asset         `bun:"rel:has-many,join:id=work_id"`
 	URLs             []*URLInfo       `bun:"rel:has-many,join:id=work_id"`
+	Tags             []*Tag           `bun:"m2m:tagging,join:Work=Tag"`
+	TagIDs           []uuid.UUID      `bun:"-"`
 	UserID           uuid.UUID        `bun:"user_id,notnull"`
 	CreatedAt        time.Time        `bun:"created_at,notnull"`
 	UpdatedAt        time.Time        `bun:"updated_at,notnull"`
@@ -36,6 +38,13 @@ func (w *Work) ToWorkEntity() *entity.Work {
 		urls[i] = url.ToURLInfoEntity()
 	}
 
+	entityTags := make([]*entity.Tag, len(w.Tags))
+	tagIDs := make([]uuid.UUID, len(w.Tags))
+	for i, tag := range w.Tags {
+		entityTags[i] = tag.ToTagEntity()
+		tagIDs[i] = tag.ID
+	}
+
 	return &entity.Work{
 		ID:          w.ID,
 		Title:       w.Title,
@@ -44,6 +53,8 @@ func (w *Work) ToWorkEntity() *entity.Work {
 		Visibility:  string(w.Visibility),
 		Assets:      assets,
 		URLs:        urls,
+		TagIDs:      tagIDs,
+		Tags:        entityTags,
 		CreatedAt:   w.CreatedAt,
 		UpdatedAt:   w.UpdatedAt,
 	}
@@ -60,6 +71,11 @@ func ToWorkDTO(entity *entity.Work) *Work {
 		urls[i] = ToURLInfoDTO(entity.ID, *url, entity.UserID)
 	}
 
+	tags := make([]*Tag, len(entity.Tags))
+	for i, tag := range entity.Tags {
+		tags[i] = ToTagDTO(tag)
+	}
+
 	return &Work{
 		ID:               entity.ID,
 		Title:            entity.Title,
@@ -69,6 +85,8 @@ func ToWorkDTO(entity *entity.Work) *Work {
 		Visibility:       types.Visibility(entity.Visibility),
 		Assets:           assets,
 		URLs:             urls,
+		Tags:             tags,
+		TagIDs:           entity.TagIDs,
 		CreatedAt:        entity.CreatedAt,
 		UpdatedAt:        entity.UpdatedAt,
 	}
