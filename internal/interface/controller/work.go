@@ -165,6 +165,8 @@ func handleWorkError(c echo.Context, err error) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "作品の作成に失敗しました")
 	case errors.Is(err, domainerrors.ErrTagNotFound):
 		return echo.NewHTTPError(http.StatusBadRequest, "存在しないタグIDが含まれています")
+	case errors.Is(err, domainerrors.ErrInvalidTagIDs):
+		return echo.NewHTTPError(http.StatusBadRequest, "タグが指定されていません")
 	default:
 		c.Logger().Error("Work error:", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, "サーバーエラーが発生しました")

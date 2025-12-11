@@ -76,23 +76,24 @@ func (uc *workUseCase) CreateWork(ctx context.Context, title, description, visib
 	if visibility == "" {
 		return nil, domainerrors.ErrInvalidVisibility
 	}
+	if len(tagIDs) == 0 {
+		return nil, domainerrors.ErrInvalidTagIDs
+	}
 
 	var tags []*entity.Tag
 	var err error
 
-	if len(tagIDs) > 0 {
-		exists, err := uc.tagRepo.ExistAll(ctx, tagIDs)
-		if err != nil {
-			return nil, fmt.Errorf("failed to check tag existence: %w", err)
-		}
-		if !exists {
-			return nil, domainerrors.ErrTagNotFound
-		}
+	exists, err := uc.tagRepo.ExistAll(ctx, tagIDs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check tag existence: %w", err)
+	}
+	if !exists {
+		return nil, domainerrors.ErrTagNotFound
+	}
 
-		tags, err = uc.tagRepo.FindAllByIDs(ctx, tagIDs)
-		if err != nil {
-			return nil, fmt.Errorf("failed to find tags by ids: %w", err)
-		}
+	tags, err = uc.tagRepo.FindAllByIDs(ctx, tagIDs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find tags by ids: %w", err)
 	}
 
 	assets := make([]*entity.Asset, len(assetIDs))
