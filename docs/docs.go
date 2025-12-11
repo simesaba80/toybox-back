@@ -428,6 +428,11 @@ const docTemplate = `{
         },
         "/works": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get all works with pagination",
                 "produces": [
                     "application/json"

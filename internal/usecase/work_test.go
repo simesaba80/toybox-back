@@ -29,9 +29,9 @@ func TestWorkUseCase_GetAll(t *testing.T) {
 		wantErr   bool
 	}{
 		{
-			name:  "正常系: デフォルトページネーション",
-			limit: nil,
-			page:  nil,
+			name:   "正常系: デフォルトページネーション",
+			limit:  nil,
+			page:   nil,
 			userID: uuid.Nil,
 			setupMock: func(m *mock.MockWorkRepository) {
 				expectedWorks := []*entity.Work{
@@ -50,9 +50,9 @@ func TestWorkUseCase_GetAll(t *testing.T) {
 			wantErr:   false,
 		},
 		{
-			name:  "正常系: カスタムページネーション(limit=10, page=1)",
-			limit: util.IntPtr(10),
-			page:  util.IntPtr(1),
+			name:   "正常系: カスタムページネーション(limit=10, page=1)",
+			limit:  util.IntPtr(10),
+			page:   util.IntPtr(1),
 			userID: uuid.Nil,
 			setupMock: func(m *mock.MockWorkRepository) {
 				expectedWorks := []*entity.Work{
@@ -70,9 +70,9 @@ func TestWorkUseCase_GetAll(t *testing.T) {
 			wantErr:   false,
 		},
 		{
-			name:  "正常系: カスタムページネーション(limit=20, page=2)",
-			limit: util.IntPtr(20),
-			page:  util.IntPtr(2),
+			name:   "正常系: カスタムページネーション(limit=20, page=2)",
+			limit:  util.IntPtr(20),
+			page:   util.IntPtr(2),
 			userID: uuid.Nil,
 			setupMock: func(m *mock.MockWorkRepository) {
 				expectedWorks := []*entity.Work{
@@ -90,9 +90,9 @@ func TestWorkUseCase_GetAll(t *testing.T) {
 			wantErr:   false,
 		},
 		{
-			name:  "正常系: 作品が0件",
-			limit: nil,
-			page:  nil,
+			name:   "正常系: 作品が0件",
+			limit:  nil,
+			page:   nil,
 			userID: uuid.Nil,
 			setupMock: func(m *mock.MockWorkRepository) {
 				m.EXPECT().
@@ -107,9 +107,9 @@ func TestWorkUseCase_GetAll(t *testing.T) {
 			wantErr:   false,
 		},
 		{
-			name:  "エッジケース: limit=0, page=0",
-			limit: util.IntPtr(0),
-			page:  util.IntPtr(0),
+			name:   "エッジケース: limit=0, page=0",
+			limit:  util.IntPtr(0),
+			page:   util.IntPtr(0),
 			userID: uuid.Nil,
 			setupMock: func(m *mock.MockWorkRepository) {
 				m.EXPECT().
@@ -124,9 +124,9 @@ func TestWorkUseCase_GetAll(t *testing.T) {
 			wantErr:   false,
 		},
 		{
-			name:  "エッジケース: 負の値(limit=-1, page=-1)",
-			limit: util.IntPtr(-1),
-			page:  util.IntPtr(-1),
+			name:   "エッジケース: 負の値(limit=-1, page=-1)",
+			limit:  util.IntPtr(-1),
+			page:   util.IntPtr(-1),
 			userID: uuid.Nil,
 			setupMock: func(m *mock.MockWorkRepository) {
 				m.EXPECT().
@@ -141,9 +141,9 @@ func TestWorkUseCase_GetAll(t *testing.T) {
 			wantErr:   false,
 		},
 		{
-			name:  "エッジケース: limitのみ指定、pageはnil",
-			limit: util.IntPtr(5),
-			page:  nil,
+			name:   "エッジケース: limitのみ指定、pageはnil",
+			limit:  util.IntPtr(5),
+			page:   nil,
 			userID: uuid.Nil,
 			setupMock: func(m *mock.MockWorkRepository) {
 				expectedWorks := []*entity.Work{
@@ -161,9 +161,9 @@ func TestWorkUseCase_GetAll(t *testing.T) {
 			wantErr:   false,
 		},
 		{
-			name:  "エッジケース: pageのみ指定、limitはnil",
-			limit: nil,
-			page:  util.IntPtr(3),
+			name:   "エッジケース: pageのみ指定、limitはnil",
+			limit:  nil,
+			page:   util.IntPtr(3),
 			userID: uuid.Nil,
 			setupMock: func(m *mock.MockWorkRepository) {
 				expectedWorks := []*entity.Work{
@@ -181,9 +181,9 @@ func TestWorkUseCase_GetAll(t *testing.T) {
 			wantErr:   false,
 		},
 		{
-			name:  "異常系: リポジトリエラー",
-			limit: nil,
-			page:  nil,
+			name:   "異常系: リポジトリエラー",
+			limit:  nil,
+			page:   nil,
 			userID: uuid.Nil,
 			setupMock: func(m *mock.MockWorkRepository) {
 				m.EXPECT().

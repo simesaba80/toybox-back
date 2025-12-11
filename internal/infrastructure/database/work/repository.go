@@ -11,6 +11,7 @@ import (
 	"github.com/simesaba80/toybox-back/internal/domain/entity"
 	domainerrors "github.com/simesaba80/toybox-back/internal/domain/errors"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/dto"
+	"github.com/simesaba80/toybox-back/internal/infrastructure/database/types"
 )
 
 type WorkRepository struct {
@@ -33,6 +34,38 @@ func (r *WorkRepository) GetAll(ctx context.Context, limit, offset int) ([]*enti
 
 	err = r.db.NewSelect().
 		Model(&dtoWorks).
+		Where("visibility IN (?)", bun.In([]types.Visibility{types.VisibilityPublic, types.VisibilityPrivate})).
+		Relation("Assets").
+		Order("created_at DESC").
+		Limit(limit).
+		Offset(offset).
+		Scan(ctx)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, 0, domainerrors.ErrWorkNotFound
+		}
+		return nil, 0, domainerrors.ErrFailedToGetAllWorksByLimitAndOffset
+	}
+
+	entityWorks := make([]*entity.Work, len(dtoWorks))
+	for i, dtoWork := range dtoWorks {
+		entityWorks[i] = dtoWork.ToWorkEntity()
+	}
+
+	return entityWorks, total, nil
+}
+
+func (r *WorkRepository) GetAllPublic(ctx context.Context, limit, offset int) ([]*entity.Work, int, error) {
+	var dtoWorks []*dto.Work
+
+	total, err := r.db.NewSelect().Model(&dtoWorks).Count(ctx)
+	if err != nil {
+		return nil, 0, domainerrors.ErrFailedToGetAllWorksByLimitAndOffset
+	}
+
+	err = r.db.NewSelect().
+		Model(&dtoWorks).
+		Where("visibility IN (?)", bun.In([]types.Visibility{types.VisibilityPublic})).
 		Relation("Assets").
 		Order("created_at DESC").
 		Limit(limit).

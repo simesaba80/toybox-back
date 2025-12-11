@@ -36,10 +36,19 @@ func NewWorkController(workUsecase usecase.IWorkUseCase) *WorkController {
 // @Router /works [get]
 // @Security BearerAuth
 func (wc *WorkController) GetAllWorks(c echo.Context) error {
-	user := c.Get("user").(*jwt.Token)
-	claims := user.Claims.(*schema.JWTCustomClaims)
-	userID, _ := uuid.Parse(claims.UserID)
-
+	rawUser := c.Get("user")
+	var userID uuid.UUID
+	if rawUser == nil {
+		userID = uuid.Nil
+	} else {
+		user := rawUser.(*jwt.Token)
+		claims := user.Claims.(*schema.JWTCustomClaims)
+		var err error
+		userID, err = uuid.Parse(claims.UserID)
+		if err != nil {
+			return handleWorkError(c, domainerrors.ErrInvalidRequestBody)
+		}
+	}
 	var query schema.GetWorksQuery
 	if err := c.Bind(&query); err != nil {
 		return handleWorkError(c, err)
