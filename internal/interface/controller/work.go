@@ -34,7 +34,21 @@ func NewWorkController(workUsecase usecase.IWorkUseCase) *WorkController {
 // @Failure 400 {object} echo.HTTPError
 // @Failure 500 {object} echo.HTTPError
 // @Router /works [get]
+// @Security BearerAuth
 func (wc *WorkController) GetAllWorks(c echo.Context) error {
+	rawUser := c.Get("user")
+	var userID uuid.UUID
+	if rawUser == nil {
+		userID = uuid.Nil
+	} else {
+		user := rawUser.(*jwt.Token)
+		claims := user.Claims.(*schema.JWTCustomClaims)
+		var err error
+		userID, err = uuid.Parse(claims.UserID)
+		if err != nil {
+			return handleWorkError(c, domainerrors.ErrInvalidRequestBody)
+		}
+	}
 	var query schema.GetWorksQuery
 	if err := c.Bind(&query); err != nil {
 		return handleWorkError(c, err)
@@ -43,7 +57,7 @@ func (wc *WorkController) GetAllWorks(c echo.Context) error {
 		return err
 	}
 
-	works, total, limit, page, err := wc.workUsecase.GetAll(c.Request().Context(), query.Limit, query.Page)
+	works, total, limit, page, err := wc.workUsecase.GetAll(c.Request().Context(), query.Limit, query.Page, userID)
 	if err != nil {
 		return handleWorkError(c, err)
 	}
@@ -88,6 +102,44 @@ func (wc *WorkController) GetWorkByID(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, schema.ToWorkResponse(work))
+}
+
+// GetWorksByUserID godoc
+// @Summary Get works by user ID
+// @Description Get works by user ID
+// @Tags works
+// @Produce json
+// @Param user_id path string true "User ID"
+// @Success 200 {object} schema.WorkListResponse
+// @Failure 400 {object} echo.HTTPError
+// @Failure 500 {object} echo.HTTPError
+// @Router /works/users/{user_id} [get]
+// @Security BearerAuth
+func (wc *WorkController) GetWorksByUserID(c echo.Context) error {
+	rawUser := c.Get("user")
+	var authenticatedUserID uuid.UUID
+	if rawUser == nil {
+		authenticatedUserID = uuid.Nil
+	} else {
+		authenticatedUser := rawUser.(*jwt.Token)
+		authenticatedClaims := authenticatedUser.Claims.(*schema.JWTCustomClaims)
+		var err error
+		authenticatedUserID, err = uuid.Parse(authenticatedClaims.UserID)
+		if err != nil {
+			return handleWorkError(c, domainerrors.ErrInvalidRequestBody)
+		}
+	}
+
+	userIDStr := c.Param("user_id")
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		return handleWorkError(c, domainerrors.ErrInvalidRequestBody)
+	}
+	works, err := wc.workUsecase.GetByUserID(c.Request().Context(), userID, authenticatedUserID)
+	if err != nil {
+		return handleWorkError(c, err)
+	}
+	return c.JSON(http.StatusOK, schema.ToWorkListResponse(works))
 }
 
 // CreateWork godoc
@@ -151,6 +203,8 @@ func handleWorkError(c echo.Context, err error) error {
 	case errors.Is(err, domainerrors.ErrFailedToGetAllWorksByLimitAndOffset):
 		return echo.NewHTTPError(http.StatusInternalServerError, "作品の取得に失敗しました")
 	case errors.Is(err, domainerrors.ErrFailedToGetWorkById):
+		return echo.NewHTTPError(http.StatusInternalServerError, "作品の取得に失敗しました")
+	case errors.Is(err, domainerrors.ErrFailedToGetWorksByUserID):
 		return echo.NewHTTPError(http.StatusInternalServerError, "作品の取得に失敗しました")
 	case errors.Is(err, domainerrors.ErrWorkNotFound):
 		return echo.NewHTTPError(http.StatusNotFound, "作品が見つかりませんでした")

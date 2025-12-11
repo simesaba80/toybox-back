@@ -11,6 +11,7 @@ import (
 	"github.com/simesaba80/toybox-back/internal/domain/entity"
 	domainerrors "github.com/simesaba80/toybox-back/internal/domain/errors"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/dto"
+	"github.com/simesaba80/toybox-back/internal/infrastructure/database/types"
 )
 
 type WorkRepository struct {
@@ -26,13 +27,45 @@ func NewWorkRepository(db *bun.DB) *WorkRepository {
 func (r *WorkRepository) GetAll(ctx context.Context, limit, offset int) ([]*entity.Work, int, error) {
 	var dtoWorks []*dto.Work
 
-	total, err := r.db.NewSelect().Model(&dtoWorks).Count(ctx)
+	total, err := r.db.NewSelect().Model(&dtoWorks).Where("visibility IN (?)", bun.In([]types.Visibility{types.VisibilityPublic, types.VisibilityPrivate})).Count(ctx)
 	if err != nil {
 		return nil, 0, domainerrors.ErrFailedToGetAllWorksByLimitAndOffset
 	}
 
 	err = r.db.NewSelect().
 		Model(&dtoWorks).
+		Where("visibility IN (?)", bun.In([]types.Visibility{types.VisibilityPublic, types.VisibilityPrivate})).
+		Relation("Assets").
+		Order("created_at DESC").
+		Limit(limit).
+		Offset(offset).
+		Scan(ctx)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, 0, domainerrors.ErrWorkNotFound
+		}
+		return nil, 0, domainerrors.ErrFailedToGetAllWorksByLimitAndOffset
+	}
+
+	entityWorks := make([]*entity.Work, len(dtoWorks))
+	for i, dtoWork := range dtoWorks {
+		entityWorks[i] = dtoWork.ToWorkEntity()
+	}
+
+	return entityWorks, total, nil
+}
+
+func (r *WorkRepository) GetAllPublic(ctx context.Context, limit, offset int) ([]*entity.Work, int, error) {
+	var dtoWorks []*dto.Work
+
+	total, err := r.db.NewSelect().Model(&dtoWorks).Where("visibility IN (?)", bun.In([]types.Visibility{types.VisibilityPublic})).Count(ctx)
+	if err != nil {
+		return nil, 0, domainerrors.ErrFailedToGetAllWorksByLimitAndOffset
+	}
+
+	err = r.db.NewSelect().
+		Model(&dtoWorks).
+		Where("visibility IN (?)", bun.In([]types.Visibility{types.VisibilityPublic})).
 		Relation("Assets").
 		Order("created_at DESC").
 		Limit(limit).
@@ -63,6 +96,26 @@ func (r *WorkRepository) GetByID(ctx context.Context, id uuid.UUID) (*entity.Wor
 		return nil, domainerrors.ErrFailedToGetWorkById
 	}
 	return dtoWork.ToWorkEntity(), nil
+}
+
+func (r *WorkRepository) GetByUserID(ctx context.Context, userID uuid.UUID, public bool) ([]*entity.Work, error) {
+	var dtoWorks []*dto.Work
+	if public {
+		err := r.db.NewSelect().Model(&dtoWorks).Where("user_id = ?", userID).Where("visibility IN (?)", bun.In([]types.Visibility{types.VisibilityPublic})).Relation("Assets").Scan(ctx)
+		if err != nil {
+			return nil, domainerrors.ErrFailedToGetWorksByUserID
+		}
+	} else {
+		err := r.db.NewSelect().Model(&dtoWorks).Where("user_id = ?", userID).Where("visibility IN (?)", bun.In([]types.Visibility{types.VisibilityPublic, types.VisibilityPrivate})).Relation("Assets").Scan(ctx)
+		if err != nil {
+			return nil, domainerrors.ErrFailedToGetWorksByUserID
+		}
+	}
+	entityWorks := make([]*entity.Work, len(dtoWorks))
+	for i, dtoWork := range dtoWorks {
+		entityWorks[i] = dtoWork.ToWorkEntity()
+	}
+	return entityWorks, nil
 }
 
 func (r *WorkRepository) ExistsById(ctx context.Context, id uuid.UUID) (bool, error) {

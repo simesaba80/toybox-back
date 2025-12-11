@@ -110,7 +110,7 @@ func ProvideUserUseCase(repo repository.UserRepository) usecase.IUserUseCase {
 
 // ProvideWorkUseCase はWorkUseCaseを提供します
 func ProvideWorkUseCase(repo repository.WorkRepository) usecase.IWorkUseCase {
-	return usecase.NewWorkUseCase(repo, 30*time.Second)
+	return usecase.NewWorkUseCase(repo)
 }
 
 // ProvideCommentUseCase はCommentUseCaseを提供します

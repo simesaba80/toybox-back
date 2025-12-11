@@ -9,7 +9,9 @@ import (
 
 type WorkRepository interface {
 	GetAll(ctx context.Context, limit, offset int) ([]*entity.Work, int, error)
+	GetAllPublic(ctx context.Context, limit, offset int) ([]*entity.Work, int, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*entity.Work, error)
+	GetByUserID(ctx context.Context, userID uuid.UUID, public bool) ([]*entity.Work, error)
 	ExistsById(ctx context.Context, id uuid.UUID) (bool, error)
 	Create(ctx context.Context, work *entity.Work) (*entity.Work, error)
 }
