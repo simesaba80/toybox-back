@@ -24,6 +24,7 @@ import (
 )
 
 func TestWorkController_GetAllWorks(t *testing.T) {
+	userID := uuid.New()
 	mockWork := &entity.Work{
 		ID:        uuid.New(),
 		Title:     "Test Work",
@@ -42,14 +43,31 @@ func TestWorkController_GetAllWorks(t *testing.T) {
 	tests := []struct {
 		name        string
 		queryParams string
-		setupMock   func(mockWorkUsecase *mock.MockIWorkUseCase)
+		withAuth    bool
+		userID      uuid.UUID
+		setupMock   func(mockWorkUsecase *mock.MockIWorkUseCase, userID uuid.UUID)
 		wantStatus  int
 		wantBody    []byte
 	}{
 		{
-			name:        "正常系",
+			name:        "正常系: 認証あり",
 			queryParams: "?limit=20&page=1",
-			setupMock: func(mockWorkUsecase *mock.MockIWorkUseCase) {
+			withAuth:    true,
+			userID:      userID,
+			setupMock: func(mockWorkUsecase *mock.MockIWorkUseCase, userID uuid.UUID) {
+				mockWorkUsecase.EXPECT().
+					GetAll(gomock.Any(), util.IntPtr(20), util.IntPtr(1), userID).
+					Return([]*entity.Work{mockWork}, 1, 20, 1, nil)
+			},
+			wantStatus: http.StatusOK,
+			wantBody:   successResponseBytes,
+		},
+		{
+			name:        "正常系: 認証なし（公開作品のみ）",
+			queryParams: "?limit=20&page=1",
+			withAuth:    false,
+			userID:      uuid.Nil,
+			setupMock: func(mockWorkUsecase *mock.MockIWorkUseCase, userID uuid.UUID) {
 				mockWorkUsecase.EXPECT().
 					GetAll(gomock.Any(), util.IntPtr(20), util.IntPtr(1), uuid.Nil).
 					Return([]*entity.Work{mockWork}, 1, 20, 1, nil)
@@ -58,9 +76,11 @@ func TestWorkController_GetAllWorks(t *testing.T) {
 			wantBody:   successResponseBytes,
 		},
 		{
-			name:        "異常系: Usecaseエラー",
+			name:        "異常系: Usecaseエラー（認証なし）",
 			queryParams: "",
-			setupMock: func(mockWorkUsecase *mock.MockIWorkUseCase) {
+			withAuth:    false,
+			userID:      uuid.Nil,
+			setupMock: func(mockWorkUsecase *mock.MockIWorkUseCase, userID uuid.UUID) {
 				mockWorkUsecase.EXPECT().
 					GetAll(gomock.Any(), nil, nil, uuid.Nil).
 					Return(nil, 0, 0, 0, errors.New("some error"))
@@ -74,18 +94,20 @@ func TestWorkController_GetAllWorks(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			e := echo.New()
 			e.Validator = echovalidator.NewValidator()
-			token := jwt.NewWithClaims(jwt.SigningMethodHS256, &schema.JWTCustomClaims{
-				UserID: "",
-			})
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			mockWorkUsecase := mock.NewMockIWorkUseCase(ctrl)
-			tt.setupMock(mockWorkUsecase)
+			tt.setupMock(mockWorkUsecase, tt.userID)
 
 			workController := controller.NewWorkController(mockWorkUsecase)
 			e.GET("/works", func(c echo.Context) error {
-				c.Set("user", token)
+				if tt.withAuth {
+					token := jwt.NewWithClaims(jwt.SigningMethodHS256, &schema.JWTCustomClaims{
+						UserID: tt.userID.String(),
+					})
+					c.Set("user", token)
+				}
 				return workController.GetAllWorks(c)
 			})
 
