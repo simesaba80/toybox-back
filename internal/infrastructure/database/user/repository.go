@@ -2,10 +2,15 @@ package user
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 
+	"github.com/google/uuid"
 	"github.com/uptrace/bun"
 
 	"github.com/simesaba80/toybox-back/internal/domain/entity"
+	domainerrors "github.com/simesaba80/toybox-back/internal/domain/errors"
+	"github.com/simesaba80/toybox-back/internal/infrastructure/database/dto"
 )
 
 type UserRepository struct {
@@ -19,18 +24,48 @@ func NewUserRepository(db *bun.DB) *UserRepository {
 }
 
 func (r *UserRepository) Create(ctx context.Context, user *entity.User) (*entity.User, error) {
-	_, err := r.db.NewInsert().Model(user).Exec(ctx)
+	dtoUser := dto.ToUserDTO(user)
+
+	_, err := r.db.NewInsert().Model(dtoUser).Exec(ctx)
 	if err != nil {
-		return nil, err
+		return nil, domainerrors.ErrFailedToCreateUser
 	}
-	return user, nil
+
+	return dtoUser.ToUserEntity(), nil
 }
 
 func (r *UserRepository) GetAll(ctx context.Context) ([]*entity.User, error) {
-	var users []*entity.User
-	err := r.db.NewSelect().Model(&users).Scan(ctx)
+	dtoUsers := make([]*dto.User, 0)
+	err := r.db.NewSelect().Model(&dtoUsers).Scan(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return users, nil
+
+	entityUsers := make([]*entity.User, len(dtoUsers))
+	for i, dtoUser := range dtoUsers {
+		entityUsers[i] = dtoUser.ToUserEntity()
+	}
+
+	return entityUsers, nil
+}
+
+func (r *UserRepository) GetByID(ctx context.Context, id uuid.UUID) (*entity.User, error) {
+	dtoUser := new(dto.User)
+	err := r.db.NewSelect().Model(dtoUser).Where("id = ?", id).Scan(ctx)
+	if err != nil {
+		return nil, domainerrors.ErrUserNotFound
+	}
+	return dtoUser.ToUserEntity(), nil
+}
+
+func (r *UserRepository) GetUserByDiscordUserID(ctx context.Context, discordUserID string) (*entity.User, error) {
+	dtoUser := new(dto.User)
+	err := r.db.NewSelect().Model(dtoUser).Where("discord_user_id = ?", discordUserID).Scan(ctx)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domainerrors.ErrUserNotFound
+		}
+		return nil, err
+	}
+	return dtoUser.ToUserEntity(), nil
 }

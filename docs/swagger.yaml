@@ -1,0 +1,646 @@
+basePath: /
+definitions:
+  echo.HTTPError:
+    properties:
+      message: {}
+    type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.AssetResponse:
+    properties:
+      asset_type:
+        type: string
+      created_at:
+        type: string
+      extension:
+        type: string
+      id:
+        type: string
+      updated_at:
+        type: string
+      url:
+        type: string
+      user_id:
+        type: string
+      work_id:
+        type: string
+    type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.CommentResponse:
+    properties:
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      reply_at:
+        type: string
+      updated_at:
+        type: string
+      user:
+        $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.UserInCommentResponse'
+    type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.CountFavoritesByWorkIDResponse:
+    properties:
+      total:
+        type: integer
+    type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.CreateCommentRequest:
+    properties:
+      content:
+        maxLength: 255
+        type: string
+      reply_at:
+        type: string
+      user_id:
+        type: string
+    required:
+    - content
+    type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.CreateCommentResponse:
+    properties:
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      reply_at:
+        type: string
+    type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.CreateWorkInput:
+    properties:
+      asset_ids:
+        items:
+          type: string
+        type: array
+      description:
+        type: string
+      thumbnail_asset_id:
+        type: string
+      title:
+        maxLength: 100
+        type: string
+      urls:
+        items:
+          type: string
+        type: array
+      visibility:
+        type: string
+    required:
+    - asset_ids
+    - description
+    - thumbnail_asset_id
+    - title
+    - urls
+    type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.CreateWorkOutput:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+      visibility:
+        type: string
+    type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.GetDiscordAuthURLResponse:
+    properties:
+      url:
+        type: string
+    type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.GetDiscordTokenResponse:
+    properties:
+      access_token:
+        type: string
+    type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.GetUserOutput:
+    properties:
+      avatar_url:
+        type: string
+      created_at:
+        type: string
+      display_name:
+        type: string
+      email:
+        type: string
+      github_id:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      profile:
+        type: string
+      twitter_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.GetWorkOutput:
+    properties:
+      assets:
+        items:
+          $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.AssetResponse'
+        type: array
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+      visibility:
+        type: string
+    type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.IsFavoriteResponse:
+    properties:
+      is_favorite:
+        type: boolean
+    type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.UploadAssetResponse:
+    properties:
+      id:
+        type: string
+      url:
+        type: string
+    type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.UserInCommentResponse:
+    properties:
+      avatar_url:
+        type: string
+      display_name:
+        type: string
+      id:
+        type: string
+    type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.UserListResponse:
+    properties:
+      users:
+        items:
+          $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.GetUserOutput'
+        type: array
+    type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.WorkListResponse:
+    properties:
+      limit:
+        type: integer
+      page:
+        type: integer
+      total_count:
+        type: integer
+      works:
+        items:
+          $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.GetWorkOutput'
+        type: array
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: This is the API server for the Toybox application.
+  title: Toybox API
+  version: "1.0"
+paths:
+  /auth/discord:
+    get:
+      description: Get Discord authentication URL
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.GetDiscordAuthURLResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Get Discord authentication URL
+      tags:
+      - auth
+  /auth/discord/callback:
+    get:
+      description: Get Discord token by code
+      parameters:
+      - description: Discord code
+        in: query
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.GetDiscordTokenResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Get Discord token by code
+      tags:
+      - auth
+  /auth/refresh:
+    post:
+      description: Regenerate token(need refresh token in cookie)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.GetDiscordTokenResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Regenerate token
+      tags:
+      - auth
+  /auth/works:
+    post:
+      consumes:
+      - application/json
+      description: Create a new work with the input payload
+      parameters:
+      - description: Work to create
+        in: body
+        name: work
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.CreateWorkInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.CreateWorkOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: Create a new work
+      tags:
+      - works
+  /auth/works/:work_id/favorite:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a favorite
+      parameters:
+      - description: Work ID
+        in: path
+        name: work_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: Delete a favorite
+      tags:
+      - favorites
+    post:
+      consumes:
+      - application/json
+      description: Create a favorite
+      parameters:
+      - description: Work ID
+        in: path
+        name: work_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: Create a favorite
+      tags:
+      - favorites
+  /auth/works/:work_id/favorite/is-favorite:
+    get:
+      consumes:
+      - application/json
+      description: Check if a user has favorited a work
+      parameters:
+      - description: Work ID
+        in: path
+        name: work_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.IsFavoriteResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: Check if a user has favorited a work
+      tags:
+      - favorites
+  /auth/works/asset:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload an asset
+      parameters:
+      - description: File to upload
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.UploadAssetResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: Upload an asset
+      tags:
+      - assets
+  /users:
+    get:
+      description: Get all users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.UserListResponse'
+      summary: Get all users
+      tags:
+      - users
+  /users/{id}:
+    get:
+      description: Get a user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.GetUserOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Get a user by ID
+      tags:
+      - users
+  /works:
+    get:
+      description: Get all works with pagination
+      parameters:
+      - description: 'Limit per page (default: 20, max: 100)'
+        in: query
+        name: limit
+        type: integer
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.WorkListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Get all works
+      tags:
+      - works
+  /works/:work_id/favorite:
+    get:
+      consumes:
+      - application/json
+      description: Count favorites by work ID
+      parameters:
+      - description: Work ID
+        in: path
+        name: work_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.CountFavoritesByWorkIDResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Count favorites by work ID
+      tags:
+      - favorites
+  /works/{work_id}:
+    get:
+      description: Get a work by ID
+      parameters:
+      - description: Work ID
+        in: path
+        name: work_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.GetWorkOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Get a work by ID
+      tags:
+      - works
+  /works/{work_id}/comments:
+    get:
+      description: Get all comments for a specific work
+      parameters:
+      - description: Work ID
+        in: path
+        name: work_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.CommentResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Get comments for a work
+      tags:
+      - comments
+    post:
+      consumes:
+      - application/json
+      description: Create a new comment for a specific work. Can be anonymous or by
+        a logged-in user.
+      parameters:
+      - description: Work ID
+        in: path
+        name: work_id
+        required: true
+        type: string
+      - description: Comment to create
+        in: body
+        name: comment
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.CreateCommentRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.CreateCommentResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Create a comment for a work
+      tags:
+      - comments
+securityDefinitions:
+  BearerAuth:
+    description: Bearer token for authentication
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

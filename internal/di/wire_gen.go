@@ -7,15 +7,24 @@
 package di
 
 import (
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/google/uuid"
 	"github.com/google/wire"
 	"github.com/labstack/echo/v4"
 	"github.com/simesaba80/toybox-back/internal/domain/repository"
+	"github.com/simesaba80/toybox-back/internal/infrastructure/database/asset"
+	"github.com/simesaba80/toybox-back/internal/infrastructure/database/comment"
+	"github.com/simesaba80/toybox-back/internal/infrastructure/database/favorite"
+	"github.com/simesaba80/toybox-back/internal/infrastructure/database/token"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/user"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/work"
+	"github.com/simesaba80/toybox-back/internal/infrastructure/external/custome-jwt"
+	"github.com/simesaba80/toybox-back/internal/infrastructure/external/oauth"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/router"
 	"github.com/simesaba80/toybox-back/internal/interface/controller"
 	"github.com/simesaba80/toybox-back/internal/usecase"
 	"github.com/simesaba80/toybox-back/pkg/db"
+	"github.com/simesaba80/toybox-back/pkg/s3_client"
 	"github.com/uptrace/bun"
 	"time"
 )
@@ -27,30 +36,51 @@ func InitializeApp() (*App, func(), error) {
 	echo := ProvideEcho()
 	db := ProvideDatabase()
 	userRepository := user.NewUserRepository(db)
-	userUseCase := ProvideUserUseCase(userRepository)
-	userController := controller.NewUserController(userUseCase)
+	iUserUseCase := ProvideUserUseCase(userRepository)
+	userController := controller.NewUserController(iUserUseCase)
 	workRepository := work.NewWorkRepository(db)
-	workUseCase := ProvideWorkUseCase(workRepository)
-	workController := controller.NewWorkController(workUseCase)
-	routerRouter := router.NewRouter(echo, userController, workController)
-	app := NewApp(routerRouter, db)
+	iWorkUseCase := ProvideWorkUseCase(workRepository)
+	workController := controller.NewWorkController(iWorkUseCase)
+	commentRepository := comment.NewCommentRepository(db)
+	iCommentUsecase := ProvideCommentUseCase(commentRepository, workRepository)
+	commentController := controller.NewCommentController(iCommentUsecase)
+	discordRepository := oauth.NewDiscordRepository()
+	tokenProvider := ProvideTokenProvider()
+	tokenRepository := token.NewTokenRepository(db)
+	iAuthUsecase := ProvideAuthUseCase(discordRepository, userRepository, tokenProvider, tokenRepository)
+	authController := controller.NewAuthController(iAuthUsecase)
+	client := ProvideS3Client()
+	assetRepository := asset.NewAssetRepository(db, client)
+	iAssetUseCase := ProvideAssetUseCase(assetRepository)
+	assetController := controller.NewAssetController(iAssetUseCase)
+	favoriteRepository := favorite.NewFavoriteRepository(db)
+	iFavoriteUsecase := ProvideFavoriteUseCase(favoriteRepository)
+	favoriteController := controller.NewFavoriteController(iFavoriteUsecase)
+	routerRouter := router.NewRouter(echo, userController, workController, commentController, authController, assetController, favoriteController)
+	app := NewApp(routerRouter, db, client)
 	return app, func() {
 	}, nil
 }
 
 // wire.go:
 
-var RepositorySet = wire.NewSet(user.NewUserRepository, wire.Bind(new(repository.UserRepository), new(*user.UserRepository)), work.NewWorkRepository, wire.Bind(new(repository.WorkRepository), new(*work.WorkRepository)))
+var RepositorySet = wire.NewSet(user.NewUserRepository, wire.Bind(new(repository.UserRepository), new(*user.UserRepository)), work.NewWorkRepository, wire.Bind(new(repository.WorkRepository), new(*work.WorkRepository)), comment.NewCommentRepository, wire.Bind(new(repository.CommentRepository), new(*comment.CommentRepository)), oauth.NewDiscordRepository, wire.Bind(new(repository.DiscordRepository), new(*oauth.DiscordRepository)), token.NewTokenRepository, wire.Bind(new(repository.TokenRepository), new(*token.TokenRepository)), asset.NewAssetRepository, wire.Bind(new(repository.AssetRepository), new(*asset.AssetRepository)), favorite.NewFavoriteRepository, wire.Bind(new(repository.FavoriteRepository), new(*favorite.FavoriteRepository)))
 
 var UseCaseSet = wire.NewSet(
 	ProvideUserUseCase,
 	ProvideWorkUseCase,
+	ProvideCommentUseCase,
+	ProvideAuthUseCase,
+	ProvideTokenProvider,
+	ProvideAssetUseCase,
+	ProvideFavoriteUseCase,
 )
 
-var ControllerSet = wire.NewSet(controller.NewUserController, controller.NewWorkController)
+var ControllerSet = wire.NewSet(controller.NewUserController, controller.NewWorkController, controller.NewCommentController, controller.NewAuthController, controller.NewAssetController, controller.NewFavoriteController)
 
 var InfrastructureSet = wire.NewSet(
-	ProvideDatabase, router.NewRouter, ProvideEcho,
+	ProvideDatabase,
+	ProvideS3Client, router.NewRouter, ProvideEcho,
 )
 
 // ProviderSet は依存関係を定義します
@@ -68,14 +98,50 @@ func ProvideDatabase() *bun.DB {
 	return db.DB
 }
 
+func ProvideS3Client() *s3.Client {
+	s3_client.Init()
+	return s3_client.Client
+}
+
 // ProvideUserUseCase はUserUseCaseを提供します
-func ProvideUserUseCase(repo repository.UserRepository) *usecase.UserUseCase {
-	return usecase.NewUserUseCase(repo, 30*time.Second)
+func ProvideUserUseCase(repo repository.UserRepository) usecase.IUserUseCase {
+	return usecase.NewUserUseCase(repo)
 }
 
 // ProvideWorkUseCase はWorkUseCaseを提供します
-func ProvideWorkUseCase(repo repository.WorkRepository) *usecase.WorkUseCase {
+func ProvideWorkUseCase(repo repository.WorkRepository) usecase.IWorkUseCase {
 	return usecase.NewWorkUseCase(repo, 30*time.Second)
+}
+
+// ProvideCommentUseCase はCommentUseCaseを提供します
+func ProvideCommentUseCase(commentRepo repository.CommentRepository, workRepo repository.WorkRepository) usecase.ICommentUsecase {
+	return usecase.NewCommentUsecase(commentRepo, workRepo, 30*time.Second)
+}
+
+// ProvideDiscordUseCase はDiscordUseCaseを提供します
+func ProvideAuthUseCase(authRepo repository.DiscordRepository, userRepo repository.UserRepository, tokenProvider usecase.TokenProvider, tokenRepo repository.TokenRepository) usecase.IAuthUsecase {
+	return usecase.NewAuthUsecase(authRepo, userRepo, tokenProvider, tokenRepo)
+}
+
+// ProvideTokenProvider はTokenProviderを提供します
+func ProvideTokenProvider() usecase.TokenProvider {
+	return tokenProviderFunc(customejwt.GenerateToken)
+}
+
+type tokenProviderFunc func(userID uuid.UUID) (string, error)
+
+func (f tokenProviderFunc) GenerateToken(userID uuid.UUID) (string, error) {
+	return f(userID)
+}
+
+// ProvideAssetUseCase はAssetUseCaseを提供します
+func ProvideAssetUseCase(assetRepo repository.AssetRepository) usecase.IAssetUseCase {
+	return usecase.NewAssetUseCase(assetRepo)
+}
+
+// ProvideFavoriteUseCase はFavoriteUseCaseを提供します
+func ProvideFavoriteUseCase(favoriteRepo repository.FavoriteRepository) usecase.IFavoriteUsecase {
+	return usecase.NewFavoriteUsecase(favoriteRepo)
 }
 
 // ProvideEcho はEchoインスタンスを提供します
@@ -84,16 +150,18 @@ func ProvideEcho() *echo.Echo {
 }
 
 // NewApp はAppインスタンスを作成します
-func NewApp(router2 *router.Router, database *bun.DB) *App {
+func NewApp(router2 *router.Router, database *bun.DB, s3Client *s3.Client) *App {
 	return &App{
 		Router:   router2,
 		Database: database,
+		S3Client: s3Client,
 	}
 }
 
 type App struct {
 	Router   *router.Router
 	Database *bun.DB
+	S3Client *s3.Client
 }
 
 // Start アプリケーションの開始

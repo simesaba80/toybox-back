@@ -3,20 +3,27 @@ package db
 import (
 	"database/sql"
 	"log"
+	"os"
 
+	"github.com/joho/godotenv"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
 	"github.com/uptrace/bun/driver/pgdriver"
 	"github.com/uptrace/bun/extra/bundebug"
-
-	"github.com/simesaba80/toybox-back/pkg/config"
 )
 
 var DB *bun.DB
 
 func Init() {
+	err := godotenv.Load()
+
+	if err != nil {
+		log.Printf("読み込み出来ませんでした: %v", err)
+	}
+
+	DB_DSN := os.Getenv("DB_DSN")
 	sqlDB := sql.OpenDB(pgdriver.NewConnector(
-		pgdriver.WithDSN(config.DB_DSN),
+		pgdriver.WithDSN(DB_DSN),
 	))
 	DB = bun.NewDB(sqlDB, pgdialect.New())
 

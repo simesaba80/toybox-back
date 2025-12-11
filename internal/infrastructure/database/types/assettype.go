@@ -27,8 +27,8 @@ func (at *AssetType) Scan(value interface{}) error {
 		return nil
 	}
 	switch s := value.(type) {
-	case string:
-		*at = AssetType(s)
+	case []byte:
+		*at = AssetType(string(s))
 		return nil
 	default:
 		return fmt.Errorf("cannot scan %T into AssetType", value)

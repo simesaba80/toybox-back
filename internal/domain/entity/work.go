@@ -1,42 +1,36 @@
 package entity
 
 import (
-	"errors"
 	"time"
-	"unicode/utf8"
 
 	"github.com/google/uuid"
-	"github.com/uptrace/bun"
 )
 
 type Work struct {
-	bun.BaseModel   `bun:"table:works"`
-	ID              uuid.UUID `json:"id" bun:"id,pk"`
-	Title           string    `json:"title" bun:"title,notnull"`
-	Description     string    `json:"description" bun:"description,notnull"`
-	DescriptionHTML string    `json:"description_html" bun:"description_html,notnull"`
-	UserID          uuid.UUID `json:"user_id" bun:"user_id,notnull"`
-	Visibility      string    `json:"visibility" bun:"visibility"`
-	Assets          []Asset   `json:"assets" bun:"rel:has-many,join:id=work_id"`
-	CreatedAt       time.Time `json:"created_at" bun:"created_at,notnull"`
-	UpdatedAt       time.Time `json:"updated_at" bun:"updated_at,notnull"`
+	ID               uuid.UUID
+	Title            string
+	Description      string
+	DescriptionHTML  string
+	UserID           uuid.UUID
+	Visibility       string
+	ThumbnailAssetID uuid.UUID
+	Assets           []*Asset
+	URLs             []*string
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
 }
 
-func (w *Work) Validate() error {
-	if w.Title == "" {
-		return errors.New("title is required")
+func NewWork(title string, description string, userID uuid.UUID, visibility string, thumbnailAssetID uuid.UUID, assets []*Asset, urls []*string) *Work {
+	return &Work{
+		ID:               uuid.New(),
+		Title:            title,
+		Description:      description,
+		UserID:           userID,
+		Visibility:       visibility,
+		ThumbnailAssetID: thumbnailAssetID,
+		Assets:           assets,
+		URLs:             urls,
+		CreatedAt:        time.Now(),
+		UpdatedAt:        time.Now(),
 	}
-	if utf8.RuneCountInString(w.Title) > 100 {
-		return errors.New("title must be at most 100 characters")
-	}
-	if w.Description == "" {
-		return errors.New("description is required")
-	}
-	if w.DescriptionHTML == "" {
-		return errors.New("description_html is required")
-	}
-	if w.UserID == uuid.Nil {
-		return errors.New("user ID is required")
-	}
-	return nil
 }

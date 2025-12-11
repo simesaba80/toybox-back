@@ -2,44 +2,36 @@ package usecase
 
 import (
 	"context"
-	"time"
+	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/simesaba80/toybox-back/internal/domain/entity"
 	"github.com/simesaba80/toybox-back/internal/domain/repository"
 )
 
-type UserUseCase struct {
-	repo    repository.UserRepository
-	timeout time.Duration
+type IUserUseCase interface {
+	GetAllUser(ctx context.Context) ([]*entity.User, error)
+	GetByUserID(ctx context.Context, id uuid.UUID) (*entity.User, error)
 }
 
-func NewUserUseCase(repo repository.UserRepository, timeout time.Duration) *UserUseCase {
-	return &UserUseCase{
-		repo:    repo,
-		timeout: time.Second * 30,
+type userUseCase struct {
+	repo repository.UserRepository
+}
+
+func NewUserUseCase(repo repository.UserRepository) IUserUseCase {
+	return &userUseCase{
+		repo: repo,
 	}
 }
 
-func (u *UserUseCase) CreateUser(ctx context.Context, name, email, passwordHash, displayName, avatar_url string) (*entity.User, error) {
-	ctx, cancel := context.WithTimeout(ctx, u.timeout)
-	defer cancel()
+func (u *userUseCase) GetAllUser(ctx context.Context) ([]*entity.User, error) {
+	return u.repo.GetAll(ctx)
+}
 
-	user := &entity.User{
-		Name:         name,
-		Email:        email,
-		PasswordHash: passwordHash,
-		DisplayName:  displayName,
-	}
-	if err := user.Validate(); err != nil {
-		return nil, err
-	}
-	user, err := u.repo.Create(ctx, user)
+func (u *userUseCase) GetByUserID(ctx context.Context, id uuid.UUID) (*entity.User, error) {
+	user, err := u.repo.GetByID(ctx, id)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get user by ID %s: %w", id.String(), err)
 	}
 	return user, nil
-}
-
-func (u *UserUseCase) GetAllUser(ctx context.Context) ([]*entity.User, error) {
-	return u.repo.GetAll(ctx)
 }

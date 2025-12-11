@@ -1,5 +1,15 @@
 package main
 
+// @title Toybox API
+// @version 1.0
+// @description This is the API server for the Toybox application.
+// @host localhost:8080
+// @BasePath /
+// @SecurityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Bearer token for authentication
+
 import (
 	"context"
 	"log"
@@ -8,8 +18,9 @@ import (
 	"syscall"
 	"time"
 
+	_ "github.com/simesaba80/toybox-back/docs"
 	"github.com/simesaba80/toybox-back/internal/di"
-	"github.com/simesaba80/toybox-back/pkg/config"
+	"github.com/simesaba80/toybox-back/internal/infrastructure/config"
 )
 
 func main() {
