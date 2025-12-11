@@ -27,7 +27,12 @@ func NewWorkRepository(db *bun.DB) *WorkRepository {
 func (r *WorkRepository) GetAll(ctx context.Context, limit, offset int) ([]*entity.Work, int, error) {
 	var dtoWorks []*dto.Work
 
-	total, err := r.db.NewSelect().Model(&dtoWorks).Where("visibility IN (?)", bun.In([]types.Visibility{types.VisibilityPublic, types.VisibilityPrivate})).Count(ctx)
+	total, err := r.db.NewSelect().
+		Model(&dtoWorks).
+		Where("visibility IN (?)", bun.In([]types.Visibility{types.VisibilityPublic, types.VisibilityPrivate})).
+		Where("EXISTS (SELECT 1 FROM asset WHERE asset.work_id = work.id)").
+		Where("EXISTS (SELECT 1 FROM tagging WHERE tagging.work_id = work.id)").
+		Count(ctx)
 	if err != nil {
 		return nil, 0, domainerrors.ErrFailedToGetAllWorksByLimitAndOffset
 	}
@@ -35,6 +40,8 @@ func (r *WorkRepository) GetAll(ctx context.Context, limit, offset int) ([]*enti
 	err = r.db.NewSelect().
 		Model(&dtoWorks).
 		Where("visibility IN (?)", bun.In([]types.Visibility{types.VisibilityPublic, types.VisibilityPrivate})).
+		Where("EXISTS (SELECT 1 FROM asset WHERE asset.work_id = work.id)").
+		Where("EXISTS (SELECT 1 FROM tagging WHERE tagging.work_id = work.id)").
 		Relation("Assets").
 		Relation("URLs").
 		Relation("Tags").
@@ -60,7 +67,12 @@ func (r *WorkRepository) GetAll(ctx context.Context, limit, offset int) ([]*enti
 func (r *WorkRepository) GetAllPublic(ctx context.Context, limit, offset int) ([]*entity.Work, int, error) {
 	var dtoWorks []*dto.Work
 
-	total, err := r.db.NewSelect().Model(&dtoWorks).Where("visibility IN (?)", bun.In([]types.Visibility{types.VisibilityPublic})).Count(ctx)
+	total, err := r.db.NewSelect().
+		Model(&dtoWorks).
+		Where("visibility IN (?)", bun.In([]types.Visibility{types.VisibilityPublic})).
+		Where("EXISTS (SELECT 1 FROM asset WHERE asset.work_id = work.id)").
+		Where("EXISTS (SELECT 1 FROM tagging WHERE tagging.work_id = work.id)").
+		Count(ctx)
 	if err != nil {
 		return nil, 0, domainerrors.ErrFailedToGetAllWorksByLimitAndOffset
 	}
@@ -68,6 +80,8 @@ func (r *WorkRepository) GetAllPublic(ctx context.Context, limit, offset int) ([
 	err = r.db.NewSelect().
 		Model(&dtoWorks).
 		Where("visibility IN (?)", bun.In([]types.Visibility{types.VisibilityPublic})).
+		Where("EXISTS (SELECT 1 FROM asset WHERE asset.work_id = work.id)").
+		Where("EXISTS (SELECT 1 FROM tagging WHERE tagging.work_id = work.id)").
 		Relation("Assets").
 		Relation("URLs").
 		Relation("Tags").
@@ -116,6 +130,8 @@ func (r *WorkRepository) GetByUserID(ctx context.Context, userID uuid.UUID, publ
 			Model(&dtoWorks).
 			Where("user_id = ?", userID).
 			Where("visibility IN (?)", bun.In([]types.Visibility{types.VisibilityPublic})).
+			Where("EXISTS (SELECT 1 FROM asset WHERE asset.work_id = work.id)").
+			Where("EXISTS (SELECT 1 FROM tagging WHERE tagging.work_id = work.id)").
 			Relation("Assets").
 			Relation("URLs").
 			Relation("Tags").
@@ -128,6 +144,8 @@ func (r *WorkRepository) GetByUserID(ctx context.Context, userID uuid.UUID, publ
 			Model(&dtoWorks).
 			Where("user_id = ?", userID).
 			Where("visibility IN (?)", bun.In([]types.Visibility{types.VisibilityPublic, types.VisibilityPrivate})).
+			Where("EXISTS (SELECT 1 FROM asset WHERE asset.work_id = work.id)").
+			Where("EXISTS (SELECT 1 FROM tagging WHERE tagging.work_id = work.id)").
 			Relation("Assets").
 			Relation("URLs").
 			Relation("Tags").
