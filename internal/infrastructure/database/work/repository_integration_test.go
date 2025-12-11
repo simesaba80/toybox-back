@@ -101,12 +101,12 @@ func TestWorkRepository_GetAllPublic(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 2, total, "公開作品のみカウントされる")
 	require.Len(t, works, 2, "公開作品のみ取得される")
-	
+
 	// 全ての取得した作品が公開であることを確認
 	for _, work := range works {
 		require.Equal(t, "public", work.Visibility, "取得した作品は全て公開である")
 	}
-	
+
 	// 作成日時の降順でソートされていることを確認
 	require.True(t, works[0].CreatedAt.After(works[1].CreatedAt) || works[0].CreatedAt.Equal(works[1].CreatedAt))
 }
@@ -175,6 +175,143 @@ func TestWorkRepository_GetByID_NotFound(t *testing.T) {
 	require.ErrorIs(t, err, domainerrors.ErrWorkNotFound)
 }
 
+func TestWorkRepository_GetByUserID_Public(t *testing.T) {
+	db := testutil.SetupTestDB(t)
+	repo := work.NewWorkRepository(db)
+
+	ctx := context.Background()
+	user := insertTestUser(t, db)
+
+	// 公開作品を2つ作成
+	publicWork1 := newTestWork(user.ID, "public-work-1")
+	publicWork1.Visibility = "public"
+	publicWork1.CreatedAt = publicWork1.CreatedAt.Add(1 * time.Minute)
+	publicWork1.UpdatedAt = publicWork1.CreatedAt
+	_, err := repo.Create(ctx, publicWork1)
+	require.NoError(t, err)
+
+	publicWork2 := newTestWork(user.ID, "public-work-2")
+	publicWork2.Visibility = "public"
+	_, err = repo.Create(ctx, publicWork2)
+	require.NoError(t, err)
+
+	// 非公開作品を1つ作成
+	privateWork := newTestWork(user.ID, "private-work")
+	privateWork.Visibility = "private"
+	_, err = repo.Create(ctx, privateWork)
+	require.NoError(t, err)
+
+	// 下書き作品を1つ作成
+	draftWork := newTestWork(user.ID, "draft-work")
+	draftWork.Visibility = "draft"
+	_, err = repo.Create(ctx, draftWork)
+	require.NoError(t, err)
+
+	// public=trueの場合、公開作品のみ取得
+	works, err := repo.GetByUserID(ctx, user.ID, true)
+	require.NoError(t, err)
+	require.Len(t, works, 2, "公開作品のみ取得される")
+
+	// 全ての取得した作品が公開であることを確認
+	for _, work := range works {
+		require.Equal(t, "public", work.Visibility, "取得した作品は全て公開である")
+		require.Equal(t, user.ID, work.UserID, "全ての作品が指定したユーザーのもの")
+	}
+}
+
+func TestWorkRepository_GetByUserID_All(t *testing.T) {
+	db := testutil.SetupTestDB(t)
+	repo := work.NewWorkRepository(db)
+
+	ctx := context.Background()
+	user := insertTestUser(t, db)
+
+	// 公開作品を1つ作成
+	publicWork := newTestWork(user.ID, "public-work")
+	publicWork.Visibility = "public"
+	_, err := repo.Create(ctx, publicWork)
+	require.NoError(t, err)
+
+	// 非公開作品を1つ作成
+	privateWork := newTestWork(user.ID, "private-work")
+	privateWork.Visibility = "private"
+	_, err = repo.Create(ctx, privateWork)
+	require.NoError(t, err)
+
+	// 下書き作品を1つ作成
+	draftWork := newTestWork(user.ID, "draft-work")
+	draftWork.Visibility = "draft"
+	_, err = repo.Create(ctx, draftWork)
+	require.NoError(t, err)
+
+	// public=falseの場合、公開・非公開両方取得（下書きは除外）
+	works, err := repo.GetByUserID(ctx, user.ID, false)
+	require.NoError(t, err)
+	require.Len(t, works, 2, "公開・非公開作品が取得される（下書きは除外）")
+
+	// 取得した作品の可視性を確認
+	visibilities := make(map[string]bool)
+	for _, work := range works {
+		visibilities[work.Visibility] = true
+		require.Equal(t, user.ID, work.UserID, "全ての作品が指定したユーザーのもの")
+	}
+	require.True(t, visibilities["public"], "公開作品が含まれる")
+	require.True(t, visibilities["private"], "非公開作品が含まれる")
+	require.False(t, visibilities["draft"], "下書きは含まれない")
+}
+
+func TestWorkRepository_GetByUserID_Empty(t *testing.T) {
+	db := testutil.SetupTestDB(t)
+	repo := work.NewWorkRepository(db)
+
+	ctx := context.Background()
+	user := insertTestUser(t, db)
+
+	// 作品を作成しない状態でテスト
+	works, err := repo.GetByUserID(ctx, user.ID, true)
+	require.NoError(t, err)
+	require.Len(t, works, 0, "作品が0件の場合は空のスライスが返される")
+
+	works, err = repo.GetByUserID(ctx, user.ID, false)
+	require.NoError(t, err)
+	require.Len(t, works, 0, "作品が0件の場合は空のスライスが返される")
+}
+
+func TestWorkRepository_GetByUserID_DifferentUsers(t *testing.T) {
+	db := testutil.SetupTestDB(t)
+	repo := work.NewWorkRepository(db)
+
+	ctx := context.Background()
+	user1 := insertTestUser(t, db)
+	user2 := insertTestUser(t, db)
+
+	// user1の作品を作成
+	work1 := newTestWork(user1.ID, "user1-work")
+	work1.Visibility = "public"
+	_, err := repo.Create(ctx, work1)
+	require.NoError(t, err)
+
+	// user2の作品を作成
+	work2 := newTestWork(user2.ID, "user2-work")
+	work2.Visibility = "public"
+	_, err = repo.Create(ctx, work2)
+	require.NoError(t, err)
+
+	// user1の作品のみ取得
+	works, err := repo.GetByUserID(ctx, user1.ID, true)
+	require.NoError(t, err)
+	require.Len(t, works, 1, "user1の作品のみ取得される")
+	require.Equal(t, user1.ID, works[0].UserID)
+	require.Equal(t, "user1-work", works[0].Title)
+
+	// user2の作品のみ取得
+	works, err = repo.GetByUserID(ctx, user2.ID, true)
+	require.NoError(t, err)
+	require.Len(t, works, 1, "user2の作品のみ取得される")
+	require.Equal(t, user2.ID, works[0].UserID)
+	require.Equal(t, "user2-work", works[0].Title)
+}
+
 func TestWorkRepository_ExistsByID(t *testing.T) {
 	db := testutil.SetupTestDB(t)
 	repo := work.NewWorkRepository(db)
@@ -198,12 +335,15 @@ func insertTestUser(t *testing.T, db *bun.DB) *entity.User {
 	t.Helper()
 
 	now := time.Now().UTC().Truncate(time.Second)
+	userID := uuid.New()
+	// UUIDの最初の8文字を使用して短い識別子を作成
+	shortID := userID.String()[:8]
 	user := &entity.User{
-		ID:            uuid.New(),
-		Name:          "testuser",
-		Email:         "testuser@example.com",
-		DisplayName:   "testuser",
-		DiscordUserID: "testuser",
+		ID:            userID,
+		Name:          "user-" + shortID,
+		Email:         "user-" + shortID + "@example.com",
+		DisplayName:   "User " + shortID,
+		DiscordUserID: "discord-" + shortID,
 		CreatedAt:     now,
 		UpdatedAt:     now,
 	}
