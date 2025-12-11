@@ -823,9 +823,11 @@
             "required": [
                 "asset_ids",
                 "description",
+                "tag_ids",
                 "thumbnail_asset_id",
                 "title",
-                "urls"
+                "urls",
+                "visibility"
             ],
             "properties": {
                 "asset_ids": {
@@ -857,7 +859,12 @@
                     }
                 },
                 "visibility": {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                        "public",
+                        "private",
+                        "draft"
+                    ]
                 }
             }
         },

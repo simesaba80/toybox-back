@@ -36,6 +36,8 @@ func (r *WorkRepository) GetAll(ctx context.Context, limit, offset int) ([]*enti
 		Model(&dtoWorks).
 		Where("visibility IN (?)", bun.In([]types.Visibility{types.VisibilityPublic, types.VisibilityPrivate})).
 		Relation("Assets").
+		Relation("URLs").
+		Relation("Tags").
 		Order("created_at DESC").
 		Limit(limit).
 		Offset(offset).
@@ -67,6 +69,7 @@ func (r *WorkRepository) GetAllPublic(ctx context.Context, limit, offset int) ([
 		Model(&dtoWorks).
 		Where("visibility IN (?)", bun.In([]types.Visibility{types.VisibilityPublic})).
 		Relation("Assets").
+		Relation("URLs").
 		Relation("Tags").
 		Order("created_at DESC").
 		Limit(limit).
@@ -93,6 +96,7 @@ func (r *WorkRepository) GetByID(ctx context.Context, id uuid.UUID) (*entity.Wor
 		Model(&dtoWork).
 		Relation("Assets").
 		Relation("Tags").
+		Relation("URLs").
 		Where("id = ?", id).
 		Scan(ctx)
 	if err != nil {
@@ -108,12 +112,26 @@ func (r *WorkRepository) GetByID(ctx context.Context, id uuid.UUID) (*entity.Wor
 func (r *WorkRepository) GetByUserID(ctx context.Context, userID uuid.UUID, public bool) ([]*entity.Work, error) {
 	var dtoWorks []*dto.Work
 	if public {
-		err := r.db.NewSelect().Model(&dtoWorks).Where("user_id = ?", userID).Where("visibility IN (?)", bun.In([]types.Visibility{types.VisibilityPublic})).Relation("Assets").Scan(ctx)
+		err := r.db.NewSelect().
+			Model(&dtoWorks).
+			Where("user_id = ?", userID).
+			Where("visibility IN (?)", bun.In([]types.Visibility{types.VisibilityPublic})).
+			Relation("Assets").
+			Relation("URLs").
+			Relation("Tags").
+			Scan(ctx)
 		if err != nil {
 			return nil, domainerrors.ErrFailedToGetWorksByUserID
 		}
 	} else {
-		err := r.db.NewSelect().Model(&dtoWorks).Where("user_id = ?", userID).Where("visibility IN (?)", bun.In([]types.Visibility{types.VisibilityPublic, types.VisibilityPrivate})).Relation("Assets").Scan(ctx)
+		err := r.db.NewSelect().
+			Model(&dtoWorks).
+			Where("user_id = ?", userID).
+			Where("visibility IN (?)", bun.In([]types.Visibility{types.VisibilityPublic, types.VisibilityPrivate})).
+			Relation("Assets").
+			Relation("URLs").
+			Relation("Tags").
+			Scan(ctx)
 		if err != nil {
 			return nil, domainerrors.ErrFailedToGetWorksByUserID
 		}

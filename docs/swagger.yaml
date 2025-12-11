@@ -88,13 +88,19 @@ definitions:
           type: string
         type: array
       visibility:
+        enum:
+        - public
+        - private
+        - draft
         type: string
     required:
     - asset_ids
     - description
+    - tag_ids
     - thumbnail_asset_id
     - title
     - urls
+    - visibility
     type: object
   github_com_simesaba80_toybox-back_internal_interface_schema.CreateWorkOutput:
     properties:

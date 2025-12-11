@@ -829,9 +829,11 @@ const docTemplate = `{
             "required": [
                 "asset_ids",
                 "description",
+                "tag_ids",
                 "thumbnail_asset_id",
                 "title",
-                "urls"
+                "urls",
+                "visibility"
             ],
             "properties": {
                 "asset_ids": {
@@ -863,7 +865,12 @@ const docTemplate = `{
                     }
                 },
                 "visibility": {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                        "public",
+                        "private",
+                        "draft"
+                    ]
                 }
             }
         },
