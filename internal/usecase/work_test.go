@@ -17,21 +17,22 @@ import (
 
 func TestWorkUseCase_GetAll(t *testing.T) {
 	tests := []struct {
-		name      string
-		limit     *int
-		page      *int
-		setupMock func(*mock.MockWorkRepository)
-		wantCount int
-		wantTotal int
-		wantLimit int
-		wantPage  int
-		wantErr   bool
+		name          string
+		limit         *int
+		page          *int
+		setupWorkMock func(*mock.MockWorkRepository)
+		setupTagMock  func(*mock.MockTagRepository)
+		wantCount     int
+		wantTotal     int
+		wantLimit     int
+		wantPage      int
+		wantErr       bool
 	}{
 		{
 			name:  "正常系: デフォルトページネーション",
 			limit: nil,
 			page:  nil,
-			setupMock: func(m *mock.MockWorkRepository) {
+			setupWorkMock: func(m *mock.MockWorkRepository) {
 				expectedWorks := []*entity.Work{
 					{ID: uuid.New(), Title: "Work1", Description: "Desc1", UserID: uuid.New()},
 					{ID: uuid.New(), Title: "Work2", Description: "Desc2", UserID: uuid.New()},
@@ -41,17 +42,18 @@ func TestWorkUseCase_GetAll(t *testing.T) {
 					Return(expectedWorks, 50, nil).
 					Times(1)
 			},
-			wantCount: 2,
-			wantTotal: 50,
-			wantLimit: 20,
-			wantPage:  1,
-			wantErr:   false,
+			setupTagMock: func(m *mock.MockTagRepository) {},
+			wantCount:    2,
+			wantTotal:    50,
+			wantLimit:    20,
+			wantPage:     1,
+			wantErr:      false,
 		},
 		{
 			name:  "正常系: カスタムページネーション(limit=10, page=1)",
 			limit: util.IntPtr(10),
 			page:  util.IntPtr(1),
-			setupMock: func(m *mock.MockWorkRepository) {
+			setupWorkMock: func(m *mock.MockWorkRepository) {
 				expectedWorks := []*entity.Work{
 					{ID: uuid.New(), Title: "Work1", Description: "Desc1", UserID: uuid.New()},
 				}
@@ -60,17 +62,18 @@ func TestWorkUseCase_GetAll(t *testing.T) {
 					Return(expectedWorks, 30, nil).
 					Times(1)
 			},
-			wantCount: 1,
-			wantTotal: 30,
-			wantLimit: 10,
-			wantPage:  1,
-			wantErr:   false,
+			setupTagMock: func(m *mock.MockTagRepository) {},
+			wantCount:    1,
+			wantTotal:    30,
+			wantLimit:    10,
+			wantPage:     1,
+			wantErr:      false,
 		},
 		{
 			name:  "正常系: カスタムページネーション(limit=20, page=2)",
 			limit: util.IntPtr(20),
 			page:  util.IntPtr(2),
-			setupMock: func(m *mock.MockWorkRepository) {
+			setupWorkMock: func(m *mock.MockWorkRepository) {
 				expectedWorks := []*entity.Work{
 					{ID: uuid.New(), Title: "Work3", Description: "Desc3", UserID: uuid.New()},
 				}
@@ -79,65 +82,69 @@ func TestWorkUseCase_GetAll(t *testing.T) {
 					Return(expectedWorks, 50, nil).
 					Times(1)
 			},
-			wantCount: 1,
-			wantTotal: 50,
-			wantLimit: 20,
-			wantPage:  2,
-			wantErr:   false,
+			setupTagMock: func(m *mock.MockTagRepository) {},
+			wantCount:    1,
+			wantTotal:    50,
+			wantLimit:    20,
+			wantPage:     2,
+			wantErr:      false,
 		},
 		{
 			name:  "正常系: 作品が0件",
 			limit: nil,
 			page:  nil,
-			setupMock: func(m *mock.MockWorkRepository) {
+			setupWorkMock: func(m *mock.MockWorkRepository) {
 				m.EXPECT().
 					GetAll(gomock.Any(), gomock.Eq(20), gomock.Eq(0)).
 					Return([]*entity.Work{}, 0, nil).
 					Times(1)
 			},
-			wantCount: 0,
-			wantTotal: 0,
-			wantLimit: 20,
-			wantPage:  1,
-			wantErr:   false,
+			setupTagMock: func(m *mock.MockTagRepository) {},
+			wantCount:    0,
+			wantTotal:    0,
+			wantLimit:    20,
+			wantPage:     1,
+			wantErr:      false,
 		},
 		{
 			name:  "エッジケース: limit=0, page=0",
 			limit: util.IntPtr(0),
 			page:  util.IntPtr(0),
-			setupMock: func(m *mock.MockWorkRepository) {
+			setupWorkMock: func(m *mock.MockWorkRepository) {
 				m.EXPECT().
 					GetAll(gomock.Any(), gomock.Eq(0), gomock.Eq(0)).
 					Return([]*entity.Work{}, 0, nil).
 					Times(1)
 			},
-			wantCount: 0,
-			wantTotal: 0,
-			wantLimit: 0,
-			wantPage:  0,
-			wantErr:   false,
+			setupTagMock: func(m *mock.MockTagRepository) {},
+			wantCount:    0,
+			wantTotal:    0,
+			wantLimit:    0,
+			wantPage:     0,
+			wantErr:      false,
 		},
 		{
 			name:  "エッジケース: 負の値(limit=-1, page=-1)",
 			limit: util.IntPtr(-1),
 			page:  util.IntPtr(-1),
-			setupMock: func(m *mock.MockWorkRepository) {
+			setupWorkMock: func(m *mock.MockWorkRepository) {
 				m.EXPECT().
 					GetAll(gomock.Any(), gomock.Eq(-1), gomock.Eq(2)).
 					Return([]*entity.Work{}, 0, nil).
 					Times(1)
 			},
-			wantCount: 0,
-			wantTotal: 0,
-			wantLimit: -1,
-			wantPage:  -1,
-			wantErr:   false,
+			setupTagMock: func(m *mock.MockTagRepository) {},
+			wantCount:    0,
+			wantTotal:    0,
+			wantLimit:    -1,
+			wantPage:     -1,
+			wantErr:      false,
 		},
 		{
 			name:  "エッジケース: limitのみ指定、pageはnil",
 			limit: util.IntPtr(5),
 			page:  nil,
-			setupMock: func(m *mock.MockWorkRepository) {
+			setupWorkMock: func(m *mock.MockWorkRepository) {
 				expectedWorks := []*entity.Work{
 					{ID: uuid.New(), Title: "Work1", Description: "Desc1", UserID: uuid.New()},
 				}
@@ -146,17 +153,18 @@ func TestWorkUseCase_GetAll(t *testing.T) {
 					Return(expectedWorks, 10, nil).
 					Times(1)
 			},
-			wantCount: 1,
-			wantTotal: 10,
-			wantLimit: 5,
-			wantPage:  1,
-			wantErr:   false,
+			setupTagMock: func(m *mock.MockTagRepository) {},
+			wantCount:    1,
+			wantTotal:    10,
+			wantLimit:    5,
+			wantPage:     1,
+			wantErr:      false,
 		},
 		{
 			name:  "エッジケース: pageのみ指定、limitはnil",
 			limit: nil,
 			page:  util.IntPtr(3),
-			setupMock: func(m *mock.MockWorkRepository) {
+			setupWorkMock: func(m *mock.MockWorkRepository) {
 				expectedWorks := []*entity.Work{
 					{ID: uuid.New(), Title: "Work1", Description: "Desc1", UserID: uuid.New()},
 				}
@@ -165,27 +173,29 @@ func TestWorkUseCase_GetAll(t *testing.T) {
 					Return(expectedWorks, 100, nil).
 					Times(1)
 			},
-			wantCount: 1,
-			wantTotal: 100,
-			wantLimit: 20,
-			wantPage:  3,
-			wantErr:   false,
+			setupTagMock: func(m *mock.MockTagRepository) {},
+			wantCount:    1,
+			wantTotal:    100,
+			wantLimit:    20,
+			wantPage:     3,
+			wantErr:      false,
 		},
 		{
 			name:  "異常系: リポジトリエラー",
 			limit: nil,
 			page:  nil,
-			setupMock: func(m *mock.MockWorkRepository) {
+			setupWorkMock: func(m *mock.MockWorkRepository) {
 				m.EXPECT().
 					GetAll(gomock.Any(), gomock.Eq(20), gomock.Eq(0)).
 					Return(nil, 0, errors.New("database connection failed")).
 					Times(1)
 			},
-			wantCount: 0,
-			wantTotal: 0,
-			wantLimit: 0,
-			wantPage:  0,
-			wantErr:   true,
+			setupTagMock: func(m *mock.MockTagRepository) {},
+			wantCount:    0,
+			wantTotal:    0,
+			wantLimit:    0,
+			wantPage:     0,
+			wantErr:      true,
 		},
 	}
 
@@ -194,10 +204,12 @@ func TestWorkUseCase_GetAll(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockRepo := mock.NewMockWorkRepository(ctrl)
-			tt.setupMock(mockRepo)
+			mockWorkRepo := mock.NewMockWorkRepository(ctrl)
+			mockTagRepo := mock.NewMockTagRepository(ctrl)
+			tt.setupWorkMock(mockWorkRepo)
+			tt.setupTagMock(mockTagRepo)
 
-			uc := usecase.NewWorkUseCase(mockRepo, 30*time.Second)
+			uc := usecase.NewWorkUseCase(mockWorkRepo, mockTagRepo, 30*time.Second)
 
 			got, total, limit, page, err := uc.GetAll(context.Background(), tt.limit, tt.page)
 
@@ -218,15 +230,16 @@ func TestWorkUseCase_GetAll(t *testing.T) {
 
 func TestWorkUseCase_GetByID(t *testing.T) {
 	tests := []struct {
-		name      string
-		workID    uuid.UUID
-		setupMock func(*mock.MockWorkRepository, uuid.UUID)
-		wantErr   bool
+		name          string
+		workID        uuid.UUID
+		setupWorkMock func(*mock.MockWorkRepository, uuid.UUID)
+		setupTagMock  func(*mock.MockTagRepository)
+		wantErr       bool
 	}{
 		{
 			name:   "正常系: 作品取得成功",
 			workID: uuid.New(),
-			setupMock: func(m *mock.MockWorkRepository, workID uuid.UUID) {
+			setupWorkMock: func(m *mock.MockWorkRepository, workID uuid.UUID) {
 				expectedWork := &entity.Work{
 					ID:          workID,
 					Title:       "Test Work",
@@ -240,18 +253,20 @@ func TestWorkUseCase_GetByID(t *testing.T) {
 					Return(expectedWork, nil).
 					Times(1)
 			},
-			wantErr: false,
+			setupTagMock: func(m *mock.MockTagRepository) {},
+			wantErr:      false,
 		},
 		{
 			name:   "異常系: リポジトリエラー",
 			workID: uuid.New(),
-			setupMock: func(m *mock.MockWorkRepository, workID uuid.UUID) {
+			setupWorkMock: func(m *mock.MockWorkRepository, workID uuid.UUID) {
 				m.EXPECT().
 					GetByID(gomock.Any(), gomock.Eq(workID)).
 					Return(nil, errors.New("work not found")).
 					Times(1)
 			},
-			wantErr: true,
+			setupTagMock: func(m *mock.MockTagRepository) {},
+			wantErr:      true,
 		},
 	}
 
@@ -260,10 +275,12 @@ func TestWorkUseCase_GetByID(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockRepo := mock.NewMockWorkRepository(ctrl)
-			tt.setupMock(mockRepo, tt.workID)
+			mockWorkRepo := mock.NewMockWorkRepository(ctrl)
+			mockTagRepo := mock.NewMockTagRepository(ctrl)
+			tt.setupWorkMock(mockWorkRepo, tt.workID)
+			tt.setupTagMock(mockTagRepo)
 
-			uc := usecase.NewWorkUseCase(mockRepo, 30*time.Second)
+			uc := usecase.NewWorkUseCase(mockWorkRepo, mockTagRepo, 30*time.Second)
 
 			got, err := uc.GetByID(context.Background(), tt.workID)
 
@@ -289,7 +306,9 @@ func TestWorkUseCase_CreateWork(t *testing.T) {
 		assetIDs         []uuid.UUID
 		urls             []string
 		userID           uuid.UUID
-		setupMock        func(*mock.MockWorkRepository)
+		tagIDs           []uuid.UUID
+		setupWorkMock    func(*mock.MockWorkRepository)
+		setupTagMock     func(*mock.MockTagRepository, []uuid.UUID)
 		wantErr          bool
 	}{
 		{
@@ -301,7 +320,8 @@ func TestWorkUseCase_CreateWork(t *testing.T) {
 			assetIDs:         []uuid.UUID{uuid.New()},
 			urls:             []string{"https://example.com"},
 			userID:           uuid.New(),
-			setupMock: func(m *mock.MockWorkRepository) {
+			tagIDs:           []uuid.UUID{uuid.New(), uuid.New()},
+			setupWorkMock: func(m *mock.MockWorkRepository) {
 				m.EXPECT().
 					Create(gomock.Any(), gomock.Any()).
 					DoAndReturn(func(ctx context.Context, work *entity.Work) (*entity.Work, error) {
@@ -309,6 +329,19 @@ func TestWorkUseCase_CreateWork(t *testing.T) {
 						work.UpdatedAt = time.Now()
 						return work, nil
 					}).
+					Times(1)
+			},
+			setupTagMock: func(m *mock.MockTagRepository, tagIDs []uuid.UUID) {
+				m.EXPECT().
+					ExistAll(gomock.Any(), gomock.Eq(tagIDs)).
+					Return(true, nil).
+					Times(1)
+				m.EXPECT().
+					FindAllByIDs(gomock.Any(), gomock.Eq(tagIDs)).
+					Return([]*entity.Tag{
+						{ID: tagIDs[0], Name: "Tag1"},
+						{ID: tagIDs[1], Name: "Tag2"},
+					}, nil).
 					Times(1)
 			},
 			wantErr: false,
@@ -322,12 +355,14 @@ func TestWorkUseCase_CreateWork(t *testing.T) {
 			assetIDs:         []uuid.UUID{uuid.New()},
 			urls:             []string{"https://example.com"},
 			userID:           uuid.New(),
-			setupMock: func(m *mock.MockWorkRepository) {
+			tagIDs:           []uuid.UUID{},
+			setupWorkMock: func(m *mock.MockWorkRepository) {
 				m.EXPECT().
 					Create(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
-			wantErr: true,
+			setupTagMock: func(m *mock.MockTagRepository, tagIDs []uuid.UUID) {},
+			wantErr:      true,
 		},
 		{
 			name:             "異常系: バリデーションエラー(説明空)",
@@ -338,12 +373,14 @@ func TestWorkUseCase_CreateWork(t *testing.T) {
 			assetIDs:         []uuid.UUID{uuid.New()},
 			urls:             []string{"https://example.com"},
 			userID:           uuid.New(),
-			setupMock: func(m *mock.MockWorkRepository) {
+			tagIDs:           []uuid.UUID{},
+			setupWorkMock: func(m *mock.MockWorkRepository) {
 				m.EXPECT().
 					Create(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
-			wantErr: true,
+			setupTagMock: func(m *mock.MockTagRepository, tagIDs []uuid.UUID) {},
+			wantErr:      true,
 		},
 		{
 			name:             "異常系: バリデーションエラー(可視性空)",
@@ -354,10 +391,53 @@ func TestWorkUseCase_CreateWork(t *testing.T) {
 			assetIDs:         []uuid.UUID{uuid.New()},
 			urls:             []string{"https://example.com"},
 			userID:           uuid.New(),
-			setupMock: func(m *mock.MockWorkRepository) {
+			tagIDs:           []uuid.UUID{uuid.New()},
+			setupWorkMock: func(m *mock.MockWorkRepository) {
 				m.EXPECT().
 					Create(gomock.Any(), gomock.Any()).
 					Times(0)
+			},
+			setupTagMock: func(m *mock.MockTagRepository, tagIDs []uuid.UUID) {},
+			wantErr:      true,
+		},
+		{
+			name:             "異常系: バリデーションエラー(タグなし)",
+			title:            "Title",
+			description:      "Description",
+			visibility:       "public",
+			thumbnailAssetID: uuid.New(),
+			assetIDs:         []uuid.UUID{uuid.New()},
+			urls:             []string{"https://example.com"},
+			userID:           uuid.New(),
+			tagIDs:           []uuid.UUID{},
+			setupWorkMock: func(m *mock.MockWorkRepository) {
+				m.EXPECT().
+					Create(gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			setupTagMock: func(m *mock.MockTagRepository, tagIDs []uuid.UUID) {},
+			wantErr:      true,
+		},
+		{
+			name:             "異常系: タグが存在しない",
+			title:            "New Work",
+			description:      "New Description",
+			visibility:       "public",
+			thumbnailAssetID: uuid.New(),
+			assetIDs:         []uuid.UUID{uuid.New()},
+			urls:             []string{"https://example.com"},
+			userID:           uuid.New(),
+			tagIDs:           []uuid.UUID{uuid.New()},
+			setupWorkMock: func(m *mock.MockWorkRepository) {
+				m.EXPECT().
+					Create(gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			setupTagMock: func(m *mock.MockTagRepository, tagIDs []uuid.UUID) {
+				m.EXPECT().
+					ExistAll(gomock.Any(), gomock.Eq(tagIDs)).
+					Return(false, nil).
+					Times(1)
 			},
 			wantErr: true,
 		},
@@ -370,10 +450,21 @@ func TestWorkUseCase_CreateWork(t *testing.T) {
 			assetIDs:         []uuid.UUID{uuid.New()},
 			urls:             []string{"https://example.com"},
 			userID:           uuid.New(),
-			setupMock: func(m *mock.MockWorkRepository) {
+			tagIDs:           []uuid.UUID{uuid.New()},
+			setupWorkMock: func(m *mock.MockWorkRepository) {
 				m.EXPECT().
 					Create(gomock.Any(), gomock.Any()).
 					Return(nil, errors.New("database error")).
+					Times(1)
+			},
+			setupTagMock: func(m *mock.MockTagRepository, tagIDs []uuid.UUID) {
+				m.EXPECT().
+					ExistAll(gomock.Any(), gomock.Eq(tagIDs)).
+					Return(true, nil).
+					Times(1)
+				m.EXPECT().
+					FindAllByIDs(gomock.Any(), gomock.Eq(tagIDs)).
+					Return([]*entity.Tag{{ID: tagIDs[0], Name: "Tag1"}}, nil).
 					Times(1)
 			},
 			wantErr: true,
@@ -385,10 +476,13 @@ func TestWorkUseCase_CreateWork(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockRepo := mock.NewMockWorkRepository(ctrl)
-			tt.setupMock(mockRepo)
-			uc := usecase.NewWorkUseCase(mockRepo, 30*time.Second)
-			got, err := uc.CreateWork(context.Background(), tt.title, tt.description, tt.visibility, tt.thumbnailAssetID, tt.assetIDs, tt.urls, tt.userID)
+			mockWorkRepo := mock.NewMockWorkRepository(ctrl)
+			mockTagRepo := mock.NewMockTagRepository(ctrl)
+			tt.setupWorkMock(mockWorkRepo)
+			tt.setupTagMock(mockTagRepo, tt.tagIDs)
+
+			uc := usecase.NewWorkUseCase(mockWorkRepo, mockTagRepo, 30*time.Second)
+			got, err := uc.CreateWork(context.Background(), tt.title, tt.description, tt.visibility, tt.thumbnailAssetID, tt.assetIDs, tt.urls, tt.userID, tt.tagIDs)
 
 			if tt.wantErr {
 				assert.Error(t, err)
