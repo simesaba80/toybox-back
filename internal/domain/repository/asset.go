@@ -11,4 +11,5 @@ import (
 type AssetRepository interface {
 	Create(ctx context.Context, asset *entity.Asset) (*entity.Asset, error)
 	UploadFile(ctx context.Context, file *multipart.FileHeader, assetUUID uuid.UUID, extension string) (assetURL *string, assetType *string, err error)
+	UploadAvatar(ctx context.Context, discordUserID string, avatarHash string) (avatarURL *string, err error)
 }

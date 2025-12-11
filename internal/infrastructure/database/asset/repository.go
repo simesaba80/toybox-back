@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"mime/multipart"
+	"net/http"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -36,6 +37,8 @@ const (
 	gilf            mimeType = "model/gltf+json"
 	defaultMimeType mimeType = "application/octet-stream"
 )
+
+const discordAvatarEndpointFormat = "https://cdn.discordapp.com/avatars/%s/%s.webp?size=256"
 
 var ExtensionToDirName = map[string]string{
 	"png":  "image",
@@ -113,4 +116,40 @@ func defineMimeType(extension string) mimeType {
 		mimeType = defaultMimeType
 	}
 	return mimeType
+}
+
+func (r *AssetRepository) UploadAvatar(ctx context.Context, discordUserID string, avatarHash string) (avatarURL *string, err error) {
+	if discordUserID == "" || avatarHash == "" {
+		return nil, fmt.Errorf("discord user id or avatar hash is empty")
+	}
+
+	discordAvatarURL := fmt.Sprintf(discordAvatarEndpointFormat, discordUserID, avatarHash)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, discordAvatarURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create discord avatar request: %w", err)
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to download discord avatar: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("failed to download discord avatar: status %d", resp.StatusCode)
+	}
+
+	s3Key := fmt.Sprintf("%s/avatar/%s.webp", config.S3_DIR, avatarHash)
+	_, err = r.s3.PutObject(ctx, &s3.PutObjectInput{
+		Bucket:      aws.String(config.S3_BUCKET),
+		Key:         aws.String(s3Key),
+		Body:        resp.Body,
+		ContentType: aws.String(string(webp)),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to upload avatar to s3: %w", err)
+	}
+
+	newAvatarURL := fmt.Sprintf("%s/%s/%s", config.S3_BASE_URL, config.S3_BUCKET, s3Key)
+	return &newAvatarURL, nil
 }

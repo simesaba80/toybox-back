@@ -58,6 +58,21 @@ func (mr *MockAssetRepositoryMockRecorder) Create(ctx, asset any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockAssetRepository)(nil).Create), ctx, asset)
 }
 
+// UploadAvatar mocks base method.
+func (m *MockAssetRepository) UploadAvatar(ctx context.Context, discordUserID, avatarHash string) (*string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UploadAvatar", ctx, discordUserID, avatarHash)
+	ret0, _ := ret[0].(*string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UploadAvatar indicates an expected call of UploadAvatar.
+func (mr *MockAssetRepositoryMockRecorder) UploadAvatar(ctx, discordUserID, avatarHash any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UploadAvatar", reflect.TypeOf((*MockAssetRepository)(nil).UploadAvatar), ctx, discordUserID, avatarHash)
+}
+
 // UploadFile mocks base method.
 func (m *MockAssetRepository) UploadFile(ctx context.Context, file *multipart.FileHeader, assetUUID uuid.UUID, extension string) (*string, *string, error) {
 	m.ctrl.T.Helper()
