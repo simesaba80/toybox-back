@@ -1,8 +1,10 @@
 package asset
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"mime/multipart"
 	"net/http"
 
@@ -139,12 +141,18 @@ func (r *AssetRepository) UploadAvatar(ctx context.Context, discordUserID string
 		return nil, fmt.Errorf("failed to download discord avatar: status %d", resp.StatusCode)
 	}
 
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read discord avatar: %w", err)
+	}
+
 	s3Key := fmt.Sprintf("%s/avatar/%s.webp", config.S3_DIR, avatarHash)
 	_, err = r.s3.PutObject(ctx, &s3.PutObjectInput{
-		Bucket:      aws.String(config.S3_BUCKET),
-		Key:         aws.String(s3Key),
-		Body:        resp.Body,
-		ContentType: aws.String(string(webp)),
+		Bucket:        aws.String(config.S3_BUCKET),
+		Key:           aws.String(s3Key),
+		Body:          bytes.NewReader(data),
+		ContentType:   aws.String(string(webp)),
+		ContentLength: aws.Int64(int64(len(data))),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to upload avatar to s3: %w", err)

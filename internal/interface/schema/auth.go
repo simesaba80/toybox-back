@@ -2,7 +2,6 @@ package schema
 
 import (
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/simesaba80/toybox-back/internal/domain/entity"
 )
 
 type GetDiscordAuthURLResponse struct {
@@ -44,15 +43,6 @@ func ToGetDiscordAuthURLResponse(authURL string) GetDiscordAuthURLResponse {
 func ToGetDiscordTokenResponse(appToken string) GetDiscordTokenResponse {
 	return GetDiscordTokenResponse{
 		AccessToken: appToken,
-	}
-}
-
-func ToDiscordUserResponse(user entity.DiscordUser) DiscordUserResponse {
-	return DiscordUserResponse{
-		ID:       user.ID,
-		Username: user.Username,
-		Avatar:   user.Avatar,
-		Email:    user.Email,
 	}
 }
 
