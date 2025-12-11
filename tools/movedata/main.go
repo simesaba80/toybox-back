@@ -40,15 +40,14 @@ func main() {
 		f    func(context.Context, bun.IDB, bun.IDB) error
 	}
 
+	// Tagは旧DBから移行する際に全角半角等の修正を行うため別でマイグレーションを行う
 	migrationFuncs := []migrationFunc{
 		{name: "Users", f: migration.MigrateUsers},
-		{name: "Tags", f: migration.MigrateTags},
 		{name: "Works", f: migration.MigrateWorks},
 		{name: "Assets", f: migration.MigrateAssets},
 		{name: "Comments", f: migration.MigrateComments},
 		{name: "URLInfos", f: migration.MigrateURLInfos},
 		{name: "Favorites", f: migration.MigrateFavorites},
-		{name: "Taggings", f: migration.MigrateTaggings},
 		{name: "Thumbnails", f: migration.MigrateThumbnails},
 		{name: "Tokens", f: migration.MigrateTokens},
 	}
@@ -59,6 +58,22 @@ func main() {
 			tx.Rollback() // Explicitly rollback before exit
 			os.Exit(1)
 		}
+	}
+
+	// Tag関係のマイグレーション
+	fmt.Println("Running migration: Tags...")
+	tagIdMap, err := migration.MigrateTags(ctx, connect.DB, tx)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "ERROR: migration failed on Tags: %v\n", err)
+		tx.Rollback()
+		os.Exit(1)
+	}
+
+	fmt.Println("Running migration: Taggings...")
+	if err := migration.MigrateTaggings(ctx, connect.DB, tx, tagIdMap); err != nil {
+		fmt.Fprintf(os.Stderr, "ERROR: migration failed on Taggings: %v\n", err)
+		tx.Rollback()
+		os.Exit(1)
 	}
 
 	// If all migrations succeed, commit the transaction

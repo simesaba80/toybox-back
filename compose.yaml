@@ -16,6 +16,8 @@ services:
       - 10.0.2.20
     networks:
       - app-network
+    env_file:
+      - .env
 
   db:
     container_name: db

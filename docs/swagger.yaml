@@ -74,6 +74,10 @@ definitions:
         type: array
       description:
         type: string
+      tag_ids:
+        items:
+          type: string
+        type: array
       thumbnail_asset_id:
         type: string
       title:
@@ -84,13 +88,19 @@ definitions:
           type: string
         type: array
       visibility:
+        enum:
+        - public
+        - private
+        - draft
         type: string
     required:
     - asset_ids
     - description
+    - tag_ids
     - thumbnail_asset_id
     - title
     - urls
+    - visibility
     type: object
   github_com_simesaba80_toybox-back_internal_interface_schema.CreateWorkOutput:
     properties:
@@ -154,6 +164,10 @@ definitions:
         type: string
       id:
         type: string
+      tags:
+        items:
+          $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.TagResponse'
+        type: array
       title:
         type: string
       updated_at:
@@ -167,6 +181,13 @@ definitions:
     properties:
       is_favorite:
         type: boolean
+    type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.TagResponse:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
     type: object
   github_com_simesaba80_toybox-back_internal_interface_schema.UploadAssetResponse:
     properties:
@@ -502,6 +523,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/echo.HTTPError'
+      security:
+      - BearerAuth: []
       summary: Get all works
       tags:
       - works
@@ -637,6 +660,35 @@ paths:
       summary: Create a comment for a work
       tags:
       - comments
+  /works/users/{user_id}:
+    get:
+      description: Get works by user ID
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.WorkListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: Get works by user ID
+      tags:
+      - works
 securityDefinitions:
   BearerAuth:
     description: Bearer token for authentication

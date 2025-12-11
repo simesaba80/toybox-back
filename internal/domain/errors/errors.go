@@ -37,12 +37,15 @@ var (
 	ErrInvalidDescription                  = errors.New("invalid description")
 	ErrInvalidVisibility                   = errors.New("invalid visibility")
 	ErrInvalidUserID                       = errors.New("invalid user id")
+	ErrInvalidTagIDs                       = errors.New("invalid tag ids")
 	ErrFailedToCreateWork                  = errors.New("failed to create work")
 	ErrFailedToGetAllWorksByLimitAndOffset = errors.New("failed to get all works by limit and offset")
 	ErrFailedToGetWorkById                 = errors.New("failed to get work by id")
 	ErrWorkNotFound                        = errors.New("work not found")
 	ErrFailedToCreateThumbnail             = errors.New("failed to create thumbnail")
 	ErrFailedToCreateURL                   = errors.New("failed to create url")
+	ErrFailedToCreateTagging               = errors.New("failed to create tagging")
+	ErrFailedToGetWorksByUserID            = errors.New("failed to get works by user id")
 )
 
 // コメント関連のエラー定義
@@ -67,4 +70,9 @@ var (
 	ErrFailedToCountFavoritesByWorkID = errors.New("failed to count favorites by work id")
 	ErrFavoriteAlreadyExists          = errors.New("favorite already exists")
 	ErrFavoriteNotFound               = errors.New("favorite not found")
+)
+
+// タグ関連のエラー定義
+var (
+	ErrTagNotFound = errors.New("tag not found")
 )

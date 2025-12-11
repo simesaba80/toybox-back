@@ -428,6 +428,11 @@ const docTemplate = `{
         },
         "/works": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get all works with pagination",
                 "produces": [
                     "application/json"
@@ -499,6 +504,52 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.CountFavoritesByWorkIDResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/echo.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/echo.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/works/users/{user_id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get works by user ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "works"
+                ],
+                "summary": "Get works by user ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.WorkListResponse"
                         }
                     },
                     "400": {
@@ -778,9 +829,11 @@ const docTemplate = `{
             "required": [
                 "asset_ids",
                 "description",
+                "tag_ids",
                 "thumbnail_asset_id",
                 "title",
-                "urls"
+                "urls",
+                "visibility"
             ],
             "properties": {
                 "asset_ids": {
@@ -791,6 +844,12 @@ const docTemplate = `{
                 },
                 "description": {
                     "type": "string"
+                },
+                "tag_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "thumbnail_asset_id": {
                     "type": "string"
@@ -806,7 +865,12 @@ const docTemplate = `{
                     }
                 },
                 "visibility": {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                        "public",
+                        "private",
+                        "draft"
+                    ]
                 }
             }
         },
@@ -905,6 +969,12 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.TagResponse"
+                    }
+                },
                 "title": {
                     "type": "string"
                 },
@@ -924,6 +994,17 @@ const docTemplate = `{
             "properties": {
                 "is_favorite": {
                     "type": "boolean"
+                }
+            }
+        },
+        "github_com_simesaba80_toybox-back_internal_interface_schema.TagResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
                 }
             }
         },
