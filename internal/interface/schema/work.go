@@ -50,8 +50,9 @@ type UpdateWorkInput struct {
 }
 
 type GetWorksQuery struct {
-	Limit *int `query:"limit" validate:"omitempty,min=1,max=100"`
-	Page  *int `query:"page" validate:"omitempty,min=1"`
+	Limit  *int   `query:"limit" validate:"omitempty,min=1,max=100"`
+	Page   *int   `query:"page" validate:"omitempty,min=1"`
+	TagIDs string `query:"tag_ids" validate:"omitempty"`
 }
 
 type WorkListResponse struct {

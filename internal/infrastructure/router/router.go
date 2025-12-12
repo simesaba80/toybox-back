@@ -57,6 +57,7 @@ func (r *Router) Setup() *echo.Echo {
 	r.echo.GET("/auth/discord", r.AuthController.GetDiscordAuthURL)
 	r.echo.GET("/auth/discord/callback", r.AuthController.AuthenticateUser)
 	r.echo.POST("/auth/refresh", r.AuthController.RegenerateToken)
+	r.echo.POST("/auth/logout", r.AuthController.Logout)
 
 	// User
 	r.echo.GET("/users", r.UserController.GetAllUsers)
@@ -95,6 +96,9 @@ func (r *Router) Setup() *echo.Echo {
 	}
 	e := r.echo.Group("/auth", echojwt.WithConfig(config))
 	e.Use(echojwt.WithConfig(config))
+
+	// User
+	e.PUT("/users", r.UserController.UpdateUser)
 
 	// Work
 	e.POST("/works", r.WorkController.CreateWork)

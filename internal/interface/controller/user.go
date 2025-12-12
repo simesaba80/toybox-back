@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 
@@ -69,10 +70,46 @@ func (uc *UserController) GetUserByID(c echo.Context) error {
 	return c.JSON(http.StatusOK, schema.ToUserResponse(user))
 }
 
+// UpdateUser godoc
+// @Summary Update a user
+// @Description Update a user
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param user body schema.UpdateUserInput true "User to update"
+// @Success 200 {object} schema.GetUserOutput
+// @Failure 400 {object} echo.HTTPError
+// @Failure 404 {object} echo.HTTPError
+// @Failure 500 {object} echo.HTTPError
+// @Router /auth/users [put]
+// @Security BearerAuth
+func (uc *UserController) UpdateUser(c echo.Context) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*schema.JWTCustomClaims)
+	userID, err := uuid.Parse(claims.UserID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "無効なリクエストです")
+	}
+
+	var input schema.UpdateUserInput
+	if err := c.Bind(&input); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "無効なリクエストです")
+	}
+
+	newUser, err := uc.userusecase.UpdateUser(c.Request().Context(), userID, input.Email, input.DisplayName, input.Profile, input.TwitterID, input.GithubID)
+	if err != nil {
+		c.Logger().Error("Failed to update user:", err)
+		return handleUserError(err)
+	}
+	return c.JSON(http.StatusOK, schema.ToUserResponse(newUser))
+}
+
 func handleUserError(err error) error {
 	switch {
 	case errors.Is(err, domainerrors.ErrUserNotFound):
 		return echo.NewHTTPError(http.StatusNotFound, "ユーザーが見つかりませんでした")
+	case errors.Is(err, domainerrors.ErrFailedToUpdateUser):
+		return echo.NewHTTPError(http.StatusInternalServerError, "ユーザーの更新に失敗しました")
 	}
 	return echo.NewHTTPError(http.StatusInternalServerError, "サーバーエラーが発生しました")
 }

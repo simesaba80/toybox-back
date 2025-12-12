@@ -29,6 +29,7 @@ var (
 	ErrUserNotFound       = errors.New("user not found")
 	ErrUserAlreadyExists  = errors.New("user already exists")
 	ErrFailedToCreateUser = errors.New("failed to create user")
+	ErrFailedToUpdateUser = errors.New("failed to update user")
 )
 
 // 作品関連のエラー定義

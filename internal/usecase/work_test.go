@@ -22,6 +22,7 @@ func TestWorkUseCase_GetAll(t *testing.T) {
 		limit          *int
 		page           *int
 		userID         uuid.UUID
+		tagIDs        []uuid.UUID
 		setupWorkMock  func(*mock.MockWorkRepository)
 		setupTagMock   func(*mock.MockTagRepository)
 		setupAssetMock func(*mock.MockAssetRepository)
@@ -36,13 +37,14 @@ func TestWorkUseCase_GetAll(t *testing.T) {
 			limit:  nil,
 			page:   nil,
 			userID: uuid.Nil,
+			tagIDs: nil,
 			setupWorkMock: func(m *mock.MockWorkRepository) {
 				expectedWorks := []*entity.Work{
 					{ID: uuid.New(), Title: "Work1", Description: "Desc1", UserID: uuid.New()},
 					{ID: uuid.New(), Title: "Work2", Description: "Desc2", UserID: uuid.New()},
 				}
 				m.EXPECT().
-					GetAllPublic(gomock.Any(), gomock.Eq(20), gomock.Eq(0)).
+					GetAllPublic(gomock.Any(), gomock.Eq(20), gomock.Eq(0), gomock.Nil()).
 					Return(expectedWorks, 50, nil).
 					Times(1)
 			},
@@ -59,12 +61,13 @@ func TestWorkUseCase_GetAll(t *testing.T) {
 			limit:  util.IntPtr(10),
 			page:   util.IntPtr(1),
 			userID: uuid.Nil,
+			tagIDs: nil,
 			setupWorkMock: func(m *mock.MockWorkRepository) {
 				expectedWorks := []*entity.Work{
 					{ID: uuid.New(), Title: "Work1", Description: "Desc1", UserID: uuid.New()},
 				}
 				m.EXPECT().
-					GetAllPublic(gomock.Any(), gomock.Eq(10), gomock.Eq(0)).
+					GetAllPublic(gomock.Any(), gomock.Eq(10), gomock.Eq(0), gomock.Nil()).
 					Return(expectedWorks, 30, nil).
 					Times(1)
 			},
@@ -81,12 +84,13 @@ func TestWorkUseCase_GetAll(t *testing.T) {
 			limit:  util.IntPtr(20),
 			page:   util.IntPtr(2),
 			userID: uuid.Nil,
+			tagIDs: nil,
 			setupWorkMock: func(m *mock.MockWorkRepository) {
 				expectedWorks := []*entity.Work{
 					{ID: uuid.New(), Title: "Work3", Description: "Desc3", UserID: uuid.New()},
 				}
 				m.EXPECT().
-					GetAllPublic(gomock.Any(), gomock.Eq(20), gomock.Eq(20)).
+					GetAllPublic(gomock.Any(), gomock.Eq(20), gomock.Eq(20), gomock.Nil()).
 					Return(expectedWorks, 50, nil).
 					Times(1)
 			},
@@ -103,9 +107,10 @@ func TestWorkUseCase_GetAll(t *testing.T) {
 			limit:  nil,
 			page:   nil,
 			userID: uuid.Nil,
+			tagIDs: nil,
 			setupWorkMock: func(m *mock.MockWorkRepository) {
 				m.EXPECT().
-					GetAllPublic(gomock.Any(), gomock.Eq(20), gomock.Eq(0)).
+					GetAllPublic(gomock.Any(), gomock.Eq(20), gomock.Eq(0), gomock.Nil()).
 					Return([]*entity.Work{}, 0, nil).
 					Times(1)
 			},
@@ -122,9 +127,10 @@ func TestWorkUseCase_GetAll(t *testing.T) {
 			limit:  util.IntPtr(0),
 			page:   util.IntPtr(0),
 			userID: uuid.Nil,
+			tagIDs: nil,
 			setupWorkMock: func(m *mock.MockWorkRepository) {
 				m.EXPECT().
-					GetAllPublic(gomock.Any(), gomock.Eq(0), gomock.Eq(0)).
+					GetAllPublic(gomock.Any(), gomock.Eq(0), gomock.Eq(0), gomock.Nil()).
 					Return([]*entity.Work{}, 0, nil).
 					Times(1)
 			},
@@ -141,9 +147,10 @@ func TestWorkUseCase_GetAll(t *testing.T) {
 			limit:  util.IntPtr(-1),
 			page:   util.IntPtr(-1),
 			userID: uuid.Nil,
+			tagIDs: nil,
 			setupWorkMock: func(m *mock.MockWorkRepository) {
 				m.EXPECT().
-					GetAllPublic(gomock.Any(), gomock.Eq(-1), gomock.Eq(2)).
+					GetAllPublic(gomock.Any(), gomock.Eq(-1), gomock.Eq(2), gomock.Nil()).
 					Return([]*entity.Work{}, 0, nil).
 					Times(1)
 			},
@@ -160,12 +167,13 @@ func TestWorkUseCase_GetAll(t *testing.T) {
 			limit:  util.IntPtr(5),
 			page:   nil,
 			userID: uuid.Nil,
+			tagIDs: nil,
 			setupWorkMock: func(m *mock.MockWorkRepository) {
 				expectedWorks := []*entity.Work{
 					{ID: uuid.New(), Title: "Work1", Description: "Desc1", UserID: uuid.New()},
 				}
 				m.EXPECT().
-					GetAllPublic(gomock.Any(), gomock.Eq(5), gomock.Eq(0)).
+					GetAllPublic(gomock.Any(), gomock.Eq(5), gomock.Eq(0), gomock.Nil()).
 					Return(expectedWorks, 10, nil).
 					Times(1)
 			},
@@ -182,12 +190,13 @@ func TestWorkUseCase_GetAll(t *testing.T) {
 			limit:  nil,
 			page:   util.IntPtr(3),
 			userID: uuid.Nil,
+			tagIDs: nil,
 			setupWorkMock: func(m *mock.MockWorkRepository) {
 				expectedWorks := []*entity.Work{
 					{ID: uuid.New(), Title: "Work1", Description: "Desc1", UserID: uuid.New()},
 				}
 				m.EXPECT().
-					GetAllPublic(gomock.Any(), gomock.Eq(20), gomock.Eq(40)).
+					GetAllPublic(gomock.Any(), gomock.Eq(20), gomock.Eq(40), gomock.Nil()).
 					Return(expectedWorks, 100, nil).
 					Times(1)
 			},
@@ -204,9 +213,10 @@ func TestWorkUseCase_GetAll(t *testing.T) {
 			limit:  nil,
 			page:   nil,
 			userID: uuid.Nil,
+			tagIDs: nil,
 			setupWorkMock: func(m *mock.MockWorkRepository) {
 				m.EXPECT().
-					GetAllPublic(gomock.Any(), gomock.Eq(20), gomock.Eq(0)).
+					GetAllPublic(gomock.Any(), gomock.Eq(20), gomock.Eq(0), gomock.Nil()).
 					Return(nil, 0, errors.New("database connection failed")).
 					Times(1)
 			},
@@ -223,12 +233,13 @@ func TestWorkUseCase_GetAll(t *testing.T) {
 			limit:  nil,
 			page:   util.IntPtr(2),
 			userID: uuid.New(),
+			tagIDs: nil,
 			setupWorkMock: func(m *mock.MockWorkRepository) {
 				expectedWorks := []*entity.Work{
 					{ID: uuid.New(), Title: "PrivateWork", Description: "Desc", UserID: uuid.New()},
 				}
 				m.EXPECT().
-					GetAll(gomock.Any(), gomock.Eq(20), gomock.Eq(20)).
+					GetAll(gomock.Any(), gomock.Eq(20), gomock.Eq(20), gomock.Nil()).
 					Return(expectedWorks, 30, nil).
 					Times(1)
 			},
@@ -257,7 +268,7 @@ func TestWorkUseCase_GetAll(t *testing.T) {
 
 			uc := usecase.NewWorkUseCase(mockWorkRepo, mockTagRepo, mockAssetRepo)
 
-			got, total, limit, page, err := uc.GetAll(context.Background(), tt.limit, tt.page, tt.userID)
+			got, total, limit, page, err := uc.GetAll(context.Background(), tt.limit, tt.page, tt.userID, tt.tagIDs)
 
 			if tt.wantErr {
 				assert.Error(t, err)

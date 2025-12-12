@@ -257,3 +257,54 @@ func TestAuthUsecase_AuthenticateUser(t *testing.T) {
 		})
 	}
 }
+
+func TestAuthUsecase_Logout(t *testing.T) {
+	tests := []struct {
+		name         string
+		refreshToken uuid.UUID
+		setupMock    func(*mock.MockDiscordRepository, *mock.MockUserRepository, *mock.MockTokenProvider, *mock.MockTokenRepository, *mock.MockAssetRepository)
+		wantErr      bool
+	}{
+		{
+			name:         "正常系: ログアウト成功",
+			refreshToken: uuid.MustParse("11111111-1111-1111-1111-111111111111"),
+			setupMock: func(_ *mock.MockDiscordRepository, _ *mock.MockUserRepository, _ *mock.MockTokenProvider, tr *mock.MockTokenRepository, _ *mock.MockAssetRepository) {
+				tr.EXPECT().
+					DeleteRefreshToken(gomock.Any(), uuid.MustParse("11111111-1111-1111-1111-111111111111")).
+					Return(nil).
+					Times(1)
+			},
+			wantErr: false,
+		},
+		{
+			name:         "異常系: トークン削除失敗",
+			refreshToken: uuid.MustParse("22222222-2222-2222-2222-222222222222"),
+			setupMock: func(_ *mock.MockDiscordRepository, _ *mock.MockUserRepository, _ *mock.MockTokenProvider, tr *mock.MockTokenRepository, _ *mock.MockAssetRepository) {
+				tr.EXPECT().
+					DeleteRefreshToken(gomock.Any(), uuid.MustParse("22222222-2222-2222-2222-222222222222")).
+					Return(domainerrors.ErrRefreshTokenInvalid).
+					Times(1)
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			mockDiscordRepository := mock.NewMockDiscordRepository(ctrl)
+			mockUserRepository := mock.NewMockUserRepository(ctrl)
+			mockTokenProvider := mock.NewMockTokenProvider(ctrl)
+			mockTokenRepository := mock.NewMockTokenRepository(ctrl)
+			mockAssetRepository := mock.NewMockAssetRepository(ctrl)
+			tt.setupMock(mockDiscordRepository, mockUserRepository, mockTokenProvider, mockTokenRepository, mockAssetRepository)
+			uc := NewAuthUsecase(mockDiscordRepository, mockUserRepository, mockTokenProvider, mockTokenRepository, mockAssetRepository)
+			err := uc.Logout(context.Background(), tt.refreshToken)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}

@@ -272,3 +272,91 @@ func TestAuthController_RegenerateToken(t *testing.T) {
 		})
 	}
 }
+
+func TestAuthController_Logout(t *testing.T) {
+	validRefreshToken := uuid.MustParse("11111111-1111-1111-1111-111111111111")
+
+	tests := []struct {
+		name           string
+		cookie         *http.Cookie
+		setupMock      func(mockAuthUsecase *mock.MockIAuthUsecase)
+		wantStatus     int
+		wantCookieGone bool
+	}{
+		{
+			name:   "正常系: ログアウト成功",
+			cookie: &http.Cookie{Name: "refresh_token", Value: validRefreshToken.String()},
+			setupMock: func(mockAuthUsecase *mock.MockIAuthUsecase) {
+				mockAuthUsecase.EXPECT().
+					Logout(gomock.Any(), validRefreshToken).
+					Return(nil)
+			},
+			wantStatus:     http.StatusOK,
+			wantCookieGone: true,
+		},
+		{
+			name:           "正常系: Cookieなしでもログアウト成功",
+			cookie:         nil,
+			setupMock:      nil,
+			wantStatus:     http.StatusOK,
+			wantCookieGone: false,
+		},
+		{
+			name:   "正常系: 無効なトークンでもログアウト成功（Cookieは削除）",
+			cookie: &http.Cookie{Name: "refresh_token", Value: "invalid-uuid"},
+			setupMock: func(mockAuthUsecase *mock.MockIAuthUsecase) {
+				// UUIDパースエラーの場合、Logoutは呼ばれない
+			},
+			wantStatus:     http.StatusOK,
+			wantCookieGone: true,
+		},
+		{
+			name:   "正常系: DBエラーでもログアウト成功（Cookieは削除）",
+			cookie: &http.Cookie{Name: "refresh_token", Value: validRefreshToken.String()},
+			setupMock: func(mockAuthUsecase *mock.MockIAuthUsecase) {
+				mockAuthUsecase.EXPECT().
+					Logout(gomock.Any(), validRefreshToken).
+					Return(errors.New("db error"))
+			},
+			wantStatus:     http.StatusOK,
+			wantCookieGone: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := echo.New()
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockAuthUsecase := mock.NewMockIAuthUsecase(ctrl)
+			if tt.setupMock != nil {
+				tt.setupMock(mockAuthUsecase)
+			}
+
+			authController := controller.NewAuthController(mockAuthUsecase)
+			e.POST("/auth/logout", authController.Logout)
+
+			req := httptest.NewRequest(http.MethodPost, "/auth/logout", nil)
+			if tt.cookie != nil {
+				req.AddCookie(tt.cookie)
+			}
+			rec := httptest.NewRecorder()
+
+			e.ServeHTTP(rec, req)
+
+			assert.Equal(t, tt.wantStatus, rec.Code)
+
+			// Cookieが削除されているか確認
+			if tt.wantCookieGone {
+				cookies := rec.Result().Cookies()
+				for _, c := range cookies {
+					if c.Name == "refresh_token" {
+						assert.Equal(t, "", c.Value)
+						assert.Equal(t, -1, c.MaxAge)
+					}
+				}
+			}
+		})
+	}
+}

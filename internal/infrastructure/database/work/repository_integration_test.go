@@ -73,7 +73,7 @@ func TestWorkRepository_GetAll(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	works, total, err := repo.GetAll(ctx, 10, 0)
+	works, total, err := repo.GetAll(ctx, 10, 0, nil)
 	require.NoError(t, err)
 	require.Equal(t, 3, total)
 	require.Len(t, works, 3)
@@ -128,7 +128,7 @@ func TestWorkRepository_GetAllPublic(t *testing.T) {
 	require.NoError(t, err)
 
 	// GetAllPublicは公開作品のみを取得する
-	works, total, err := repo.GetAllPublic(ctx, 10, 0)
+	works, total, err := repo.GetAllPublic(ctx, 10, 0, nil)
 	require.NoError(t, err)
 	require.Equal(t, 2, total, "公開作品のみカウントされる")
 	require.Len(t, works, 2, "公開作品のみ取得される")
@@ -140,6 +140,136 @@ func TestWorkRepository_GetAllPublic(t *testing.T) {
 
 	// 作成日時の降順でソートされていることを確認
 	require.True(t, works[0].CreatedAt.After(works[1].CreatedAt) || works[0].CreatedAt.Equal(works[1].CreatedAt))
+}
+
+func TestWorkRepository_GetAllPublic_WithTagFilter(t *testing.T) {
+	db := testutil.SetupTestDB(t)
+	repo := work.NewWorkRepository(db)
+
+	ctx := context.Background()
+	user := insertTestUser(t, db)
+	tag1 := insertTestTag(t, db, "go")
+	tag2 := insertTestTag(t, db, "rust")
+	tag3 := insertTestTag(t, db, "python")
+
+	// tag1のみを持つ作品を2つ作成
+	for i := 0; i < 2; i++ {
+		asset := insertTestAsset(t, db, user.ID)
+		w := newTestWork(user.ID, "go-work-"+uuid.NewString())
+		w.Visibility = "public"
+		w.Assets = []*entity.Asset{asset}
+		w.TagIDs = []uuid.UUID{tag1.ID}
+		w.Tags = []*entity.Tag{tag1}
+		_, err := repo.Create(ctx, w)
+		require.NoError(t, err)
+	}
+
+	// tag2のみを持つ作品を1つ作成
+	asset := insertTestAsset(t, db, user.ID)
+	rustWork := newTestWork(user.ID, "rust-work")
+	rustWork.Visibility = "public"
+	rustWork.Assets = []*entity.Asset{asset}
+	rustWork.TagIDs = []uuid.UUID{tag2.ID}
+	rustWork.Tags = []*entity.Tag{tag2}
+	_, err := repo.Create(ctx, rustWork)
+	require.NoError(t, err)
+
+	// tag3のみを持つ作品を1つ作成
+	asset = insertTestAsset(t, db, user.ID)
+	pythonWork := newTestWork(user.ID, "python-work")
+	pythonWork.Visibility = "public"
+	pythonWork.Assets = []*entity.Asset{asset}
+	pythonWork.TagIDs = []uuid.UUID{tag3.ID}
+	pythonWork.Tags = []*entity.Tag{tag3}
+	_, err = repo.Create(ctx, pythonWork)
+	require.NoError(t, err)
+
+	// 単一タグでフィルタリング（tag1のみ）
+	works, total, err := repo.GetAllPublic(ctx, 10, 0, []uuid.UUID{tag1.ID})
+	require.NoError(t, err)
+	require.Equal(t, 2, total, "tag1を持つ作品は2件")
+	require.Len(t, works, 2)
+
+	// OR検索: tag1またはtag2を持つ作品
+	works, total, err = repo.GetAllPublic(ctx, 10, 0, []uuid.UUID{tag1.ID, tag2.ID})
+	require.NoError(t, err)
+	require.Equal(t, 3, total, "tag1またはtag2を持つ作品は3件")
+	require.Len(t, works, 3)
+
+	// OR検索: 全タグを指定
+	works, total, err = repo.GetAllPublic(ctx, 10, 0, []uuid.UUID{tag1.ID, tag2.ID, tag3.ID})
+	require.NoError(t, err)
+	require.Equal(t, 4, total, "いずれかのタグを持つ作品は4件")
+	require.Len(t, works, 4)
+
+	// 存在しないタグでフィルタリング
+	nonExistentTagID := uuid.New()
+	works, total, err = repo.GetAllPublic(ctx, 10, 0, []uuid.UUID{nonExistentTagID})
+	require.NoError(t, err)
+	require.Equal(t, 0, total, "存在しないタグでは0件")
+	require.Len(t, works, 0)
+
+	// タグフィルタなし（nil）は全作品を取得
+	works, total, err = repo.GetAllPublic(ctx, 10, 0, nil)
+	require.NoError(t, err)
+	require.Equal(t, 4, total, "フィルタなしでは全4件")
+	require.Len(t, works, 4)
+
+	// 空のタグスライスも全作品を取得
+	works, total, err = repo.GetAllPublic(ctx, 10, 0, []uuid.UUID{})
+	require.NoError(t, err)
+	require.Equal(t, 4, total, "空のタグスライスでも全4件")
+	require.Len(t, works, 4)
+}
+
+func TestWorkRepository_GetAll_WithTagFilter(t *testing.T) {
+	db := testutil.SetupTestDB(t)
+	repo := work.NewWorkRepository(db)
+
+	ctx := context.Background()
+	user := insertTestUser(t, db)
+	tag1 := insertTestTag(t, db, "frontend")
+	tag2 := insertTestTag(t, db, "backend")
+
+	// tag1を持つ公開作品
+	asset1 := insertTestAsset(t, db, user.ID)
+	publicWork := newTestWork(user.ID, "frontend-public")
+	publicWork.Visibility = "public"
+	publicWork.Assets = []*entity.Asset{asset1}
+	publicWork.TagIDs = []uuid.UUID{tag1.ID}
+	publicWork.Tags = []*entity.Tag{tag1}
+	_, err := repo.Create(ctx, publicWork)
+	require.NoError(t, err)
+
+	// tag2を持つ非公開作品
+	asset2 := insertTestAsset(t, db, user.ID)
+	privateWork := newTestWork(user.ID, "backend-private")
+	privateWork.Visibility = "private"
+	privateWork.Assets = []*entity.Asset{asset2}
+	privateWork.TagIDs = []uuid.UUID{tag2.ID}
+	privateWork.Tags = []*entity.Tag{tag2}
+	_, err = repo.Create(ctx, privateWork)
+	require.NoError(t, err)
+
+	// GetAll（認証済みユーザー向け）でtag1フィルタ
+	works, total, err := repo.GetAll(ctx, 10, 0, []uuid.UUID{tag1.ID})
+	require.NoError(t, err)
+	require.Equal(t, 1, total, "tag1を持つ作品は1件")
+	require.Len(t, works, 1)
+	require.Equal(t, "frontend-public", works[0].Title)
+
+	// GetAllでtag2フィルタ
+	works, total, err = repo.GetAll(ctx, 10, 0, []uuid.UUID{tag2.ID})
+	require.NoError(t, err)
+	require.Equal(t, 1, total, "tag2を持つ作品は1件")
+	require.Len(t, works, 1)
+	require.Equal(t, "backend-private", works[0].Title)
+
+	// GetAllでOR検索（tag1またはtag2）
+	works, total, err = repo.GetAll(ctx, 10, 0, []uuid.UUID{tag1.ID, tag2.ID})
+	require.NoError(t, err)
+	require.Equal(t, 2, total, "tag1またはtag2を持つ作品は2件")
+	require.Len(t, works, 2)
 }
 
 func TestWorkRepository_GetAllPublic_WithPagination(t *testing.T) {
@@ -165,19 +295,19 @@ func TestWorkRepository_GetAllPublic_WithPagination(t *testing.T) {
 	}
 
 	// ページネーション: limit=2, offset=0
-	works, total, err := repo.GetAllPublic(ctx, 2, 0)
+	works, total, err := repo.GetAllPublic(ctx, 2, 0, nil)
 	require.NoError(t, err)
 	require.Equal(t, 5, total, "全体の公開作品数は5")
 	require.Len(t, works, 2, "limit=2なので2件取得")
 
 	// ページネーション: limit=2, offset=2
-	works, total, err = repo.GetAllPublic(ctx, 2, 2)
+	works, total, err = repo.GetAllPublic(ctx, 2, 2, nil)
 	require.NoError(t, err)
 	require.Equal(t, 5, total, "全体の公開作品数は5")
 	require.Len(t, works, 2, "limit=2なので2件取得")
 
 	// ページネーション: limit=2, offset=4
-	works, total, err = repo.GetAllPublic(ctx, 2, 4)
+	works, total, err = repo.GetAllPublic(ctx, 2, 4, nil)
 	require.NoError(t, err)
 	require.Equal(t, 5, total, "全体の公開作品数は5")
 	require.Len(t, works, 1, "残り1件のみ取得")
@@ -202,7 +332,7 @@ func TestWorkRepository_GetAllPublic_Empty(t *testing.T) {
 	require.NoError(t, err)
 
 	// 公開作品がない場合
-	works, total, err := repo.GetAllPublic(ctx, 10, 0)
+	works, total, err := repo.GetAllPublic(ctx, 10, 0, nil)
 	require.NoError(t, err)
 	require.Equal(t, 0, total, "公開作品が0件")
 	require.Len(t, works, 0, "空のスライスが返される")

@@ -160,3 +160,120 @@ func TestUserUseCase_GetByUserID(t *testing.T) {
 		})
 	}
 }
+
+func TestUserUseCase_UpdateUser(t *testing.T) {
+	tests := []struct {
+		name        string
+		userID      uuid.UUID
+		email       string
+		displayName string
+		profile     string
+		twitterID   string
+		githubID    string
+		setupMock   func(*mock.MockUserRepository, uuid.UUID)
+		wantErr     bool
+	}{
+		{
+			name:        "正常系: ユーザー更新成功",
+			userID:      uuid.New(),
+			email:       "updated@example.com",
+			displayName: "Updated User",
+			profile:     "Updated profile",
+			twitterID:   "twitter123",
+			githubID:    "github123",
+			setupMock: func(m *mock.MockUserRepository, userID uuid.UUID) {
+				existingUser := &entity.User{
+					ID:          userID,
+					Name:        "testuser",
+					Email:       "old@example.com",
+					DisplayName: "Old User",
+					CreatedAt:   time.Now(),
+					UpdatedAt:   time.Now(),
+				}
+				m.EXPECT().
+					GetByID(gomock.Any(), gomock.Eq(userID)).
+					Return(existingUser, nil).
+					Times(1)
+				m.EXPECT().
+					Update(gomock.Any(), gomock.Any()).
+					DoAndReturn(func(ctx context.Context, user *entity.User) (*entity.User, error) {
+						return user, nil
+					}).
+					Times(1)
+			},
+			wantErr: false,
+		},
+		{
+			name:        "異常系: ユーザーが見つからない",
+			userID:      uuid.New(),
+			email:       "updated@example.com",
+			displayName: "Updated User",
+			profile:     "Updated profile",
+			twitterID:   "twitter123",
+			githubID:    "github123",
+			setupMock: func(m *mock.MockUserRepository, userID uuid.UUID) {
+				m.EXPECT().
+					GetByID(gomock.Any(), gomock.Eq(userID)).
+					Return(nil, errors.New("user not found")).
+					Times(1)
+			},
+			wantErr: true,
+		},
+		{
+			name:        "異常系: 更新に失敗",
+			userID:      uuid.New(),
+			email:       "updated@example.com",
+			displayName: "Updated User",
+			profile:     "Updated profile",
+			twitterID:   "twitter123",
+			githubID:    "github123",
+			setupMock: func(m *mock.MockUserRepository, userID uuid.UUID) {
+				existingUser := &entity.User{
+					ID:          userID,
+					Name:        "testuser",
+					Email:       "old@example.com",
+					DisplayName: "Old User",
+					CreatedAt:   time.Now(),
+					UpdatedAt:   time.Now(),
+				}
+				m.EXPECT().
+					GetByID(gomock.Any(), gomock.Eq(userID)).
+					Return(existingUser, nil).
+					Times(1)
+				m.EXPECT().
+					Update(gomock.Any(), gomock.Any()).
+					Return(nil, errors.New("update failed")).
+					Times(1)
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockRepo := mock.NewMockUserRepository(ctrl)
+			tt.setupMock(mockRepo, tt.userID)
+
+			uc := usecase.NewUserUseCase(mockRepo)
+
+			got, err := uc.UpdateUser(context.Background(), tt.userID, tt.email, tt.displayName, tt.profile, tt.twitterID, tt.githubID)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+				assert.Nil(t, got)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, got)
+				assert.Equal(t, tt.userID, got.ID)
+				assert.Equal(t, tt.email, got.Email)
+				assert.Equal(t, tt.displayName, got.DisplayName)
+				assert.Equal(t, tt.profile, got.Profile)
+				assert.Equal(t, tt.twitterID, got.TwitterID)
+				assert.Equal(t, tt.githubID, got.GithubID)
+			}
+		})
+	}
+}

@@ -72,6 +72,20 @@ func (mr *MockIAuthUsecaseMockRecorder) GetDiscordAuthURL(ctx any) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDiscordAuthURL", reflect.TypeOf((*MockIAuthUsecase)(nil).GetDiscordAuthURL), ctx)
 }
 
+// Logout mocks base method.
+func (m *MockIAuthUsecase) Logout(ctx context.Context, refreshToken uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Logout", ctx, refreshToken)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Logout indicates an expected call of Logout.
+func (mr *MockIAuthUsecaseMockRecorder) Logout(ctx, refreshToken any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Logout", reflect.TypeOf((*MockIAuthUsecase)(nil).Logout), ctx, refreshToken)
+}
+
 // RegenerateToken mocks base method.
 func (m *MockIAuthUsecase) RegenerateToken(ctx context.Context, refreshToken uuid.UUID) (string, string, error) {
 	m.ctrl.T.Helper()

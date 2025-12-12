@@ -56,7 +56,7 @@ func TestWorkController_GetAllWorks(t *testing.T) {
 			userID:      userID,
 			setupMock: func(mockWorkUsecase *mock.MockIWorkUseCase, userID uuid.UUID) {
 				mockWorkUsecase.EXPECT().
-					GetAll(gomock.Any(), util.IntPtr(20), util.IntPtr(1), userID).
+					GetAll(gomock.Any(), util.IntPtr(20), util.IntPtr(1), userID, []uuid.UUID(nil)).
 					Return([]*entity.Work{mockWork}, 1, 20, 1, nil)
 			},
 			wantStatus: http.StatusOK,
@@ -69,7 +69,7 @@ func TestWorkController_GetAllWorks(t *testing.T) {
 			userID:      uuid.Nil,
 			setupMock: func(mockWorkUsecase *mock.MockIWorkUseCase, userID uuid.UUID) {
 				mockWorkUsecase.EXPECT().
-					GetAll(gomock.Any(), util.IntPtr(20), util.IntPtr(1), uuid.Nil).
+					GetAll(gomock.Any(), util.IntPtr(20), util.IntPtr(1), uuid.Nil, []uuid.UUID(nil)).
 					Return([]*entity.Work{mockWork}, 1, 20, 1, nil)
 			},
 			wantStatus: http.StatusOK,
@@ -82,7 +82,7 @@ func TestWorkController_GetAllWorks(t *testing.T) {
 			userID:      uuid.Nil,
 			setupMock: func(mockWorkUsecase *mock.MockIWorkUseCase, userID uuid.UUID) {
 				mockWorkUsecase.EXPECT().
-					GetAll(gomock.Any(), nil, nil, uuid.Nil).
+					GetAll(gomock.Any(), nil, nil, uuid.Nil, []uuid.UUID(nil)).
 					Return(nil, 0, 0, 0, errors.New("some error"))
 			},
 			wantStatus: http.StatusInternalServerError,

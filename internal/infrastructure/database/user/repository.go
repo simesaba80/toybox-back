@@ -68,3 +68,12 @@ func (r *UserRepository) GetUserByDiscordUserID(ctx context.Context, discordUser
 	}
 	return dtoUser.ToUserEntity(), nil
 }
+
+func (r *UserRepository) Update(ctx context.Context, user *entity.User) (*entity.User, error) {
+	dtoUser := dto.ToUserDTO(user)
+	_, err := r.db.NewUpdate().Model(dtoUser).Where("id = ?", user.ID).Exec(ctx)
+	if err != nil {
+		return nil, domainerrors.ErrFailedToUpdateUser
+	}
+	return dtoUser.ToUserEntity(), nil
+}

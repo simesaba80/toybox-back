@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
@@ -25,11 +26,12 @@ func NewWorkController(workUsecase usecase.IWorkUseCase) *WorkController {
 
 // GetAllWorks godoc
 // @Summary Get all works
-// @Description Get all works with pagination
+// @Description Get all works with pagination and optional tag filter (OR search)
 // @Tags works
 // @Produce json
 // @Param limit query int false "Limit per page (default: 20, max: 100)"
 // @Param page query int false "Page number (default: 1)"
+// @Param tag_ids query string false "Comma-separated tag IDs for filtering (OR search)"
 // @Success 200 {object} schema.WorkListResponse
 // @Failure 400 {object} echo.HTTPError
 // @Failure 500 {object} echo.HTTPError
@@ -57,7 +59,25 @@ func (wc *WorkController) GetAllWorks(c echo.Context) error {
 		return err
 	}
 
-	works, total, limit, page, err := wc.workUsecase.GetAll(c.Request().Context(), query.Limit, query.Page, userID)
+	// タグIDsをパース
+	var tagIDs []uuid.UUID
+	if query.TagIDs != "" {
+		tagIDStrs := strings.Split(query.TagIDs, ",")
+		tagIDs = make([]uuid.UUID, 0, len(tagIDStrs))
+		for _, idStr := range tagIDStrs {
+			idStr = strings.TrimSpace(idStr)
+			if idStr == "" {
+				continue
+			}
+			id, err := uuid.Parse(idStr)
+			if err != nil {
+				return handleWorkError(c, domainerrors.ErrInvalidRequestBody)
+			}
+			tagIDs = append(tagIDs, id)
+		}
+	}
+
+	works, total, limit, page, err := wc.workUsecase.GetAll(c.Request().Context(), query.Limit, query.Page, userID, tagIDs)
 	if err != nil {
 		return handleWorkError(c, err)
 	}
