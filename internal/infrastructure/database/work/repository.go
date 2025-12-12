@@ -245,3 +245,60 @@ func (r *WorkRepository) Create(ctx context.Context, work *entity.Work) (*entity
 
 	return dtoWork.ToWorkEntity(), nil
 }
+
+func (r *WorkRepository) Delete(ctx context.Context, id uuid.UUID, userID uuid.UUID) error {
+
+	work, err := r.GetByID(ctx, id)
+	if err != nil {
+		return err
+	}
+	if work.UserID != userID {
+		return domainerrors.ErrWorkNotOwnedByUser
+	}
+
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return domainerrors.ErrFailedToBeginTransaction
+	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			panic(r)
+		} else if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	_, err = tx.NewDelete().Model(&dto.Tagging{}).Where("work_id = ?", id).Exec(ctx)
+	if err != nil {
+		return domainerrors.ErrFailedToDeleteWork
+	}
+
+	_, err = tx.NewDelete().Model(&dto.Thumbnail{}).Where("work_id = ?", id).Exec(ctx)
+	if err != nil {
+		return domainerrors.ErrFailedToDeleteWork
+	}
+
+	_, err = tx.NewDelete().Model(&dto.URLInfo{}).Where("work_id = ?", id).Exec(ctx)
+	if err != nil {
+		return domainerrors.ErrFailedToDeleteWork
+	}
+
+	_, err = tx.NewDelete().Model(&dto.Work{}).Where("id = ?", id).Exec(ctx)
+	if err != nil {
+		return domainerrors.ErrFailedToDeleteWork
+	}
+
+	_, err = tx.NewDelete().Model(&dto.Asset{}).Where("work_id = ?", id).Exec(ctx)
+	if err != nil {
+		return domainerrors.ErrFailedToDeleteWork
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return domainerrors.ErrFailedToCommitTransaction
+	}
+
+	return nil
+}
