@@ -140,7 +140,7 @@ func (r *WorkRepository) GetByID(ctx context.Context, id uuid.UUID) (*entity.Wor
 		Relation("Tags").
 		Relation("URLs").
 		Relation("User").
-		Where("id = ?", id).
+		Where("work.id = ?", id).
 		Scan(ctx)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
