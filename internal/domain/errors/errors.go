@@ -46,6 +46,8 @@ var (
 	ErrFailedToCreateURL                   = errors.New("failed to create url")
 	ErrFailedToCreateTagging               = errors.New("failed to create tagging")
 	ErrFailedToGetWorksByUserID            = errors.New("failed to get works by user id")
+	ErrWorkNotOwnedByUser                  = errors.New("work not owned by user")
+	ErrFailedToDeleteWork                  = errors.New("failed to delete work")
 )
 
 // コメント関連のエラー定義
@@ -61,6 +63,7 @@ var (
 	ErrFailedToOpenFile    = errors.New("failed to open file")
 	ErrFailedToUploadFile  = errors.New("failed to upload file")
 	ErrFailedToCreateAsset = errors.New("failed to create asset")
+	ErrFailedToDeleteAsset = errors.New("failed to delete asset")
 )
 
 // いいね関連のエラー定義
