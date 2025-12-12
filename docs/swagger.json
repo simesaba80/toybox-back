@@ -1202,6 +1202,9 @@
                         "$ref": "#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.TagResponse"
                     }
                 },
+                "thumbnail_url": {
+                    "type": "string"
+                },
                 "title": {
                     "type": "string"
                 },
