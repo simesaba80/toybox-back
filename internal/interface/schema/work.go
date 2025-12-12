@@ -8,9 +8,9 @@ import (
 )
 
 type UserInWorkResponse struct {
-	ID          string `json:"id"`
-	DisplayName string `json:"display_name"`
-	AvatarURL   string `json:"avatar_url"`
+	ID          uuid.UUID `json:"id"`
+	DisplayName string    `json:"display_name"`
+	AvatarURL   string    `json:"avatar_url"`
 }
 
 type GetWorkOutput struct {
@@ -82,7 +82,7 @@ func ToWorkResponse(work *entity.Work) GetWorkOutput {
 	var user *UserInWorkResponse
 	if work.User != nil {
 		user = &UserInWorkResponse{
-			ID:          work.User.ID.String(),
+			ID:          work.User.ID,
 			DisplayName: work.User.DisplayName,
 			AvatarURL:   work.User.AvatarURL,
 		}
