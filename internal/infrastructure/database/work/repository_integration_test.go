@@ -51,6 +51,9 @@ func TestWorkRepository_Create(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, created.ID, fetched.ID)
 	require.Equal(t, 2, len(fetched.Tags))
+	require.NotNil(t, fetched.User)
+	require.Equal(t, user.ID, fetched.User.ID)
+	require.Equal(t, user.DisplayName, fetched.User.DisplayName)
 }
 
 func TestWorkRepository_GetAll(t *testing.T) {
@@ -82,6 +85,8 @@ func TestWorkRepository_GetAll(t *testing.T) {
 	for _, w := range works {
 		require.Equal(t, 1, len(w.Tags))
 		require.Equal(t, tag.Name, w.Tags[0].Name)
+		require.NotNil(t, w.User)
+		require.Equal(t, user.ID, w.User.ID)
 	}
 }
 
@@ -136,6 +141,8 @@ func TestWorkRepository_GetAllPublic(t *testing.T) {
 	// 全ての取得した作品が公開であることを確認
 	for _, work := range works {
 		require.Equal(t, "public", work.Visibility, "取得した作品は全て公開である")
+		require.NotNil(t, work.User)
+		require.Equal(t, user.ID, work.User.ID)
 	}
 
 	// 作成日時の降順でソートされていることを確認
@@ -404,6 +411,7 @@ func TestWorkRepository_GetByUserID_Public(t *testing.T) {
 	for _, work := range works {
 		require.Equal(t, "public", work.Visibility, "取得した作品は全て公開である")
 		require.Equal(t, user.ID, work.UserID, "全ての作品が指定したユーザーのもの")
+		require.NotNil(t, work.User)
 	}
 }
 
