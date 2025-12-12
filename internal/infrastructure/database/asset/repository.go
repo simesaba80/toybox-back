@@ -161,3 +161,25 @@ func (r *AssetRepository) UploadAvatar(ctx context.Context, discordUserID string
 	newAvatarURL := fmt.Sprintf("%s/%s/%s", config.S3_BASE_URL, config.S3_BUCKET, s3Key)
 	return &newAvatarURL, nil
 }
+
+func (r *AssetRepository) DeleteFile(ctx context.Context, url string) error {
+	prefix := config.S3_BASE_URL + "/" + config.S3_BUCKET + "/"
+	key := ""
+	if len(url) > len(prefix) && url[:len(prefix)] == prefix {
+		key = url[len(prefix):]
+	}
+
+	if key == "" {
+		return fmt.Errorf("invalid asset URL: %s", url)
+	}
+
+	_, err := r.s3.DeleteObject(ctx, &s3.DeleteObjectInput{
+		Bucket: aws.String(config.S3_BUCKET),
+		Key:    aws.String(key),
+	})
+	if err != nil {
+		return domainerrors.ErrFailedToDeleteAsset
+	}
+
+	return nil
+}
