@@ -22,9 +22,10 @@ type Router struct {
 	AuthController     *controller.AuthController
 	AssetController    *controller.AssetController
 	FavoriteController *controller.FavoriteController
+	TagController      *controller.TagController
 }
 
-func NewRouter(e *echo.Echo, uc *controller.UserController, wc *controller.WorkController, cc *controller.CommentController, authc *controller.AuthController, assetc *controller.AssetController, fc *controller.FavoriteController) *Router {
+func NewRouter(e *echo.Echo, uc *controller.UserController, wc *controller.WorkController, cc *controller.CommentController, authc *controller.AuthController, assetc *controller.AssetController, fc *controller.FavoriteController, tagc *controller.TagController) *Router {
 	return &Router{
 		echo:               e,
 		UserController:     uc,
@@ -33,6 +34,7 @@ func NewRouter(e *echo.Echo, uc *controller.UserController, wc *controller.WorkC
 		AuthController:     authc,
 		AssetController:    assetc,
 		FavoriteController: fc,
+		TagController:      tagc,
 	}
 }
 
@@ -57,6 +59,7 @@ func (r *Router) Setup() *echo.Echo {
 	r.echo.GET("/auth/discord", r.AuthController.GetDiscordAuthURL)
 	r.echo.GET("/auth/discord/callback", r.AuthController.AuthenticateUser)
 	r.echo.POST("/auth/refresh", r.AuthController.RegenerateToken)
+	r.echo.POST("/auth/logout", r.AuthController.Logout)
 
 	// User
 	r.echo.GET("/users", r.UserController.GetAllUsers)
@@ -87,6 +90,9 @@ func (r *Router) Setup() *echo.Echo {
 	// Favorite
 	r.echo.GET("/works/:work_id/favorite", r.FavoriteController.CountFavoritesByWorkID)
 
+	// Tag (認証不要 - 一覧取得)
+	r.echo.GET("/tags", r.TagController.GetAllTags)
+
 	config := echojwt.Config{
 		NewClaimsFunc: func(c echo.Context) jwt.Claims {
 			return new(schema.JWTCustomClaims)
@@ -95,6 +101,10 @@ func (r *Router) Setup() *echo.Echo {
 	}
 	e := r.echo.Group("/auth", echojwt.WithConfig(config))
 	e.Use(echojwt.WithConfig(config))
+
+	// User
+	e.PUT("/users", r.UserController.UpdateUser)
+	e.GET("/users/me", r.UserController.GetIconAndURLByUserID)
 
 	// Work
 	e.POST("/works", r.WorkController.CreateWork)
@@ -106,6 +116,9 @@ func (r *Router) Setup() *echo.Echo {
 	e.GET("/works/:work_id/favorite/is-favorite", r.FavoriteController.IsFavorite)
 	e.POST("/works/:work_id/favorite", r.FavoriteController.CreateFavorite)
 	e.DELETE("/works/:work_id/favorite", r.FavoriteController.DeleteFavorite)
+
+	// Tag (認証必要 - 新規作成)
+	e.POST("/tags", r.TagController.CreateTag)
 
 	return r.echo
 }

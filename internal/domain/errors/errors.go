@@ -29,6 +29,7 @@ var (
 	ErrUserNotFound       = errors.New("user not found")
 	ErrUserAlreadyExists  = errors.New("user already exists")
 	ErrFailedToCreateUser = errors.New("failed to create user")
+	ErrFailedToUpdateUser = errors.New("failed to update user")
 )
 
 // 作品関連のエラー定義
@@ -74,5 +75,9 @@ var (
 
 // タグ関連のエラー定義
 var (
-	ErrTagNotFound = errors.New("tag not found")
+	ErrTagNotFound        = errors.New("tag not found")
+	ErrFailedToCreateTag  = errors.New("failed to create tag")
+	ErrFailedToGetAllTags = errors.New("failed to get all tags")
+	ErrTagAlreadyExists   = errors.New("tag already exists")
+	ErrInvalidTagName     = errors.New("invalid tag name")
 )

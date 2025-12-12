@@ -24,27 +24,41 @@ func NewWorkRepository(db *bun.DB) *WorkRepository {
 	}
 }
 
-func (r *WorkRepository) GetAll(ctx context.Context, limit, offset int) ([]*entity.Work, int, error) {
+func (r *WorkRepository) GetAll(ctx context.Context, limit, offset int, tagIDs []uuid.UUID) ([]*entity.Work, int, error) {
 	var dtoWorks []*dto.Work
 
-	total, err := r.db.NewSelect().
+	countQuery := r.db.NewSelect().
 		Model(&dtoWorks).
 		Where("visibility IN (?)", bun.In([]types.Visibility{types.VisibilityPublic, types.VisibilityPrivate})).
 		Where("EXISTS (SELECT 1 FROM asset WHERE asset.work_id = work.id)").
-		Where("EXISTS (SELECT 1 FROM tagging WHERE tagging.work_id = work.id)").
-		Count(ctx)
+		Where("EXISTS (SELECT 1 FROM tagging WHERE tagging.work_id = work.id)")
+
+	// タグIDsが指定されている場合はOR検索でフィルタリング
+	if len(tagIDs) > 0 {
+		countQuery = countQuery.Where("EXISTS (SELECT 1 FROM tagging WHERE tagging.work_id = work.id AND tagging.tag_id IN (?))", bun.In(tagIDs))
+	}
+
+	total, err := countQuery.Count(ctx)
 	if err != nil {
 		return nil, 0, domainerrors.ErrFailedToGetAllWorksByLimitAndOffset
 	}
 
-	err = r.db.NewSelect().
+	selectQuery := r.db.NewSelect().
 		Model(&dtoWorks).
 		Where("visibility IN (?)", bun.In([]types.Visibility{types.VisibilityPublic, types.VisibilityPrivate})).
 		Where("EXISTS (SELECT 1 FROM asset WHERE asset.work_id = work.id)").
-		Where("EXISTS (SELECT 1 FROM tagging WHERE tagging.work_id = work.id)").
+		Where("EXISTS (SELECT 1 FROM tagging WHERE tagging.work_id = work.id)")
+
+	// タグIDsが指定されている場合はOR検索でフィルタリング
+	if len(tagIDs) > 0 {
+		selectQuery = selectQuery.Where("EXISTS (SELECT 1 FROM tagging WHERE tagging.work_id = work.id AND tagging.tag_id IN (?))", bun.In(tagIDs))
+	}
+
+	err = selectQuery.
 		Relation("Assets").
 		Relation("URLs").
 		Relation("Tags").
+		Relation("User").
 		Order("created_at DESC").
 		Limit(limit).
 		Offset(offset).
@@ -64,27 +78,41 @@ func (r *WorkRepository) GetAll(ctx context.Context, limit, offset int) ([]*enti
 	return entityWorks, total, nil
 }
 
-func (r *WorkRepository) GetAllPublic(ctx context.Context, limit, offset int) ([]*entity.Work, int, error) {
+func (r *WorkRepository) GetAllPublic(ctx context.Context, limit, offset int, tagIDs []uuid.UUID) ([]*entity.Work, int, error) {
 	var dtoWorks []*dto.Work
 
-	total, err := r.db.NewSelect().
+	countQuery := r.db.NewSelect().
 		Model(&dtoWorks).
 		Where("visibility IN (?)", bun.In([]types.Visibility{types.VisibilityPublic})).
 		Where("EXISTS (SELECT 1 FROM asset WHERE asset.work_id = work.id)").
-		Where("EXISTS (SELECT 1 FROM tagging WHERE tagging.work_id = work.id)").
-		Count(ctx)
+		Where("EXISTS (SELECT 1 FROM tagging WHERE tagging.work_id = work.id)")
+
+	// タグIDsが指定されている場合はOR検索でフィルタリング
+	if len(tagIDs) > 0 {
+		countQuery = countQuery.Where("EXISTS (SELECT 1 FROM tagging WHERE tagging.work_id = work.id AND tagging.tag_id IN (?))", bun.In(tagIDs))
+	}
+
+	total, err := countQuery.Count(ctx)
 	if err != nil {
 		return nil, 0, domainerrors.ErrFailedToGetAllWorksByLimitAndOffset
 	}
 
-	err = r.db.NewSelect().
+	selectQuery := r.db.NewSelect().
 		Model(&dtoWorks).
 		Where("visibility IN (?)", bun.In([]types.Visibility{types.VisibilityPublic})).
 		Where("EXISTS (SELECT 1 FROM asset WHERE asset.work_id = work.id)").
-		Where("EXISTS (SELECT 1 FROM tagging WHERE tagging.work_id = work.id)").
+		Where("EXISTS (SELECT 1 FROM tagging WHERE tagging.work_id = work.id)")
+
+	// タグIDsが指定されている場合はOR検索でフィルタリング
+	if len(tagIDs) > 0 {
+		selectQuery = selectQuery.Where("EXISTS (SELECT 1 FROM tagging WHERE tagging.work_id = work.id AND tagging.tag_id IN (?))", bun.In(tagIDs))
+	}
+
+	err = selectQuery.
 		Relation("Assets").
 		Relation("URLs").
 		Relation("Tags").
+		Relation("User").
 		Order("created_at DESC").
 		Limit(limit).
 		Offset(offset).
@@ -111,7 +139,8 @@ func (r *WorkRepository) GetByID(ctx context.Context, id uuid.UUID) (*entity.Wor
 		Relation("Assets").
 		Relation("Tags").
 		Relation("URLs").
-		Where("id = ?", id).
+		Relation("User").
+		Where("work.id = ?", id).
 		Scan(ctx)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -135,6 +164,7 @@ func (r *WorkRepository) GetByUserID(ctx context.Context, userID uuid.UUID, publ
 			Relation("Assets").
 			Relation("URLs").
 			Relation("Tags").
+			Relation("User").
 			Scan(ctx)
 		if err != nil {
 			return nil, domainerrors.ErrFailedToGetWorksByUserID
@@ -149,6 +179,7 @@ func (r *WorkRepository) GetByUserID(ctx context.Context, userID uuid.UUID, publ
 			Relation("Assets").
 			Relation("URLs").
 			Relation("Tags").
+			Relation("User").
 			Scan(ctx)
 		if err != nil {
 			return nil, domainerrors.ErrFailedToGetWorksByUserID

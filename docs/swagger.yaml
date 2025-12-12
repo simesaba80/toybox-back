@@ -66,6 +66,15 @@ definitions:
       reply_at:
         type: string
     type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.CreateTagInput:
+    properties:
+      name:
+        maxLength: 50
+        minLength: 1
+        type: string
+    required:
+    - name
+    type: object
   github_com_simesaba80_toybox-back_internal_interface_schema.CreateWorkInput:
     properties:
       asset_ids:
@@ -129,6 +138,13 @@ definitions:
       access_token:
         type: string
     type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.GetIconAndURLResponse:
+    properties:
+      display_name:
+        type: string
+      icon_url:
+        type: string
+    type: object
   github_com_simesaba80_toybox-back_internal_interface_schema.GetUserOutput:
     properties:
       avatar_url:
@@ -172,8 +188,8 @@ definitions:
         type: string
       updated_at:
         type: string
-      user_id:
-        type: string
+      user:
+        $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.UserInWorkResponse'
       visibility:
         type: string
     type: object
@@ -182,12 +198,49 @@ definitions:
       is_favorite:
         type: boolean
     type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.TagDetailResponse:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.TagListResponse:
+    properties:
+      tags:
+        items:
+          $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.TagDetailResponse'
+        type: array
+    type: object
   github_com_simesaba80_toybox-back_internal_interface_schema.TagResponse:
     properties:
       id:
         type: string
       name:
         type: string
+    type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.UpdateUserInput:
+    properties:
+      display_name:
+        maxLength: 32
+        minLength: 1
+        type: string
+      email:
+        type: string
+      github_id:
+        type: string
+      profile:
+        maxLength: 500
+        type: string
+      twitter_id:
+        type: string
+    required:
+    - display_name
+    - email
     type: object
   github_com_simesaba80_toybox-back_internal_interface_schema.UploadAssetResponse:
     properties:
@@ -197,6 +250,15 @@ definitions:
         type: string
     type: object
   github_com_simesaba80_toybox-back_internal_interface_schema.UserInCommentResponse:
+    properties:
+      avatar_url:
+        type: string
+      display_name:
+        type: string
+      id:
+        type: string
+    type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.UserInWorkResponse:
     properties:
       avatar_url:
         type: string
@@ -280,6 +342,19 @@ paths:
       summary: Get Discord token by code
       tags:
       - auth
+  /auth/logout:
+    post:
+      description: Logout user and invalidate refresh token
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Logout user
+      tags:
+      - auth
   /auth/refresh:
     post:
       description: Regenerate token(need refresh token in cookie)
@@ -301,6 +376,105 @@ paths:
       summary: Regenerate token
       tags:
       - auth
+  /auth/tags:
+    post:
+      consumes:
+      - application/json
+      description: Create a new tag (authentication required)
+      parameters:
+      - description: Tag to create
+        in: body
+        name: tag
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.CreateTagInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.TagResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: Create a new tag
+      tags:
+      - tags
+  /auth/users:
+    put:
+      consumes:
+      - application/json
+      description: Update a user
+      parameters:
+      - description: User to update
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.UpdateUserInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.GetUserOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: Update a user
+      tags:
+      - users
+  /auth/users/me:
+    get:
+      description: Get icon and URL by user ID
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.GetIconAndURLResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: Get icon and URL by user ID
+      tags:
+      - users
   /auth/works:
     post:
       consumes:
@@ -452,6 +626,23 @@ paths:
       summary: Upload an asset
       tags:
       - assets
+  /tags:
+    get:
+      description: Get all tags
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.TagListResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Get all tags
+      tags:
+      - tags
   /users:
     get:
       description: Get all users
@@ -498,7 +689,7 @@ paths:
       - users
   /works:
     get:
-      description: Get all works with pagination
+      description: Get all works with pagination and optional tag filter (OR search)
       parameters:
       - description: 'Limit per page (default: 20, max: 100)'
         in: query
@@ -508,6 +699,10 @@ paths:
         in: query
         name: page
         type: integer
+      - description: Comma-separated tag IDs for filtering (OR search)
+        in: query
+        name: tag_ids
+        type: string
       produces:
       - application/json
       responses:

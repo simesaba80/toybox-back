@@ -62,7 +62,7 @@ https://github.com/Kyutech-C3/toybox-server
 
 - 作品の投稿/編集/公開/削除
 - 一覧、検索(ページネーション/ソート/フィルタ)
-- 作品の取得、詳細取得
+- 作品の取得、詳細取得、ユーザー毎の取得
 - コメントの投稿、削除
 - Discord でのログイン、ログアウト
 - ユーザー作成、編集、取得
@@ -95,7 +95,8 @@ https://github.com/Kyutech-C3/toybox-server
   - フィルタ(タグ、ユーザー、作品名)
 
 - メディア
-  // TODO
+  - S3へのアップロード
+  - DiscordのCDNからのダウンロード
 
 - データ移行
   - 旧 DB→ 新 DB への移行
@@ -112,6 +113,8 @@ https://github.com/Kyutech-C3/toybox-server
 - Go
 - Echo(Web フレームワーク)
 - Bun(ORM)
+- PostgreSQL(RDB)
+- localstack,wasabi(S3,開発時にはlocalstack)
 - wire(DI 用の CLI)
 - golang-migrate(migrate 用の CLI)
 - swag(Swagger 生成用の CLI)
@@ -249,12 +252,12 @@ data transfer object の略です。テーブル定義と Go の構造体で 1 �
 
 #### testutil
 
-統合テストを行うためのPostgresqlのテストコンテナ等を定義しています。
+統合テストを行うためのPostgresqlやlocalstackのS3のテストコンテナ等を定義しています。
 
 ### router
 
 Echo を使ったルーティングやルーティングを行うルーターオブジェクトのカスタマイズを行います。
-現在はバリデーションのみカスタマイズを行っています。
+現在はバリデーションやミドルウェアの設定を行っています。
 
 ### external
 
@@ -283,8 +286,11 @@ localstackは一度コンテナを停止するとオブジェクトが消去さ�
 
 # セキュリティ
 
-このアプリケーションでは認証が必要になります。現時点では前 ToyBox と同様に Discord 認証のみを組み込むことを予定しています。Email 認証やその他の認証、SSO などは組み込みません。
-アクセストークン取得後は Discord API (`/users/@me`) を通じてユーザー情報を取得し、アプリケーション側のユーザー作成に利用します。
+- 現時点では前 ToyBox と同様に Discord 認証のみを組み込むことを予定しています。
+- Email 認証やその他の認証、SSO などは組み込みません。
+- Discordのアクセストークン取得後は Discord API (`/users/@me`) を通じてユーザー情報を取得し、アプリケーション側のユーザー作成に利用します。
+- Discordによるログイン後は、アプリケーション側でJWTトークン、リフレッシュトークンを発行しこれにより管理を行います。
+- トークンの確認にはechoが提供しているjwtのミドルウェアを使います。(https://echo.labstack.com/docs/middleware/jwt)
 
 # 運用方針
 
@@ -304,6 +310,30 @@ go test -tags=integration ./internal/infrastructure/...
 またPR作成時にActionsでの確認も行います。現在はdevelopブランチおよびmainブランチへのPR作成時にテストを確認します。
 
 リポジトリ層の統合テストにはテストコンテナを用いてるので特に初回はテストの実行に時間がかかります。注意してください。
+
+# 代替案の検討
+
+ここでは採用するか考慮されたものの、採用されなかった案について述べられています。
+
+## フレームワーク
+- FastAPI
+  ベースがあるため構築は楽な可能性がありました。しかしpythonに破壊的変更が多いため長期的な運用ではアップデートのコストが高すぎると考えました
+
+- Next.js
+  1つのフレームワークで済むことになりますが、Next.jsではこのバックエンドを構築しようとするとファイル管理が複雑になりすぎると考えやめました。またServer Actionsを筆頭にNext.js独自の概念が多かったのも理由です
+
+## ORM
+- GORM
+  GoでメジャーなORMですが、複雑なクエリは自分でSQLを書くことになるためラッパーとして不十分だと判断しました
+
+- sqlc/sqlx
+  同じくメジャーなORMですが、自分でSQLをかける必要があり今回ORMに求める役割と異なっていると考えました
+
+## S3
+- MinIO
+  DockerでS3互換のものを立てる際のメジャーな選択肢だと思います。 https://github.com/minio/minio/commit/27742d469462e1561c776f88ca7a1f26816d69e2 などで示されているように、メンテナンスモードに入ってしまい今後の活発な開発が見込めないこと、以前のアップデートでMinIOのWebUIからパブリックバケットの設定ができないことやlocalstackのようなDockernetwork内外から同じドメインでアクセスするための設定がめんどくさいため断念しました。
+
+
 
 # 更新履歴
 

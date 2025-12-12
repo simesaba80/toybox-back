@@ -67,7 +67,7 @@ func (ac *AuthController) AuthenticateUser(c echo.Context) error {
 			HttpOnly: true,
 			Secure:   true,
 			SameSite: http.SameSiteNoneMode,
-			Path:     "/auth/refresh",
+			Path:     "/auth",
 		}
 		c.SetCookie(cookie)
 	case "dev":
@@ -77,7 +77,7 @@ func (ac *AuthController) AuthenticateUser(c echo.Context) error {
 			HttpOnly: true,
 			Secure:   false,
 			SameSite: http.SameSiteLaxMode,
-			Path:     "/auth/refresh",
+			Path:     "/auth",
 		}
 		c.SetCookie(cookie)
 	}
@@ -116,7 +116,7 @@ func (ac *AuthController) RegenerateToken(c echo.Context) error {
 			HttpOnly: true,
 			Secure:   true,
 			SameSite: http.SameSiteNoneMode,
-			Path:     "/auth/refresh",
+			Path:     "/",
 		}
 		c.SetCookie(cookie)
 	case "dev":
@@ -126,11 +126,60 @@ func (ac *AuthController) RegenerateToken(c echo.Context) error {
 			HttpOnly: true,
 			Secure:   false,
 			SameSite: http.SameSiteLaxMode,
-			Path:     "/auth/refresh",
+			Path:     "/",
 		}
 		c.SetCookie(cookie)
 	}
 	return c.JSON(http.StatusOK, schema.ToRegenerateTokenResponse(appToken))
+}
+
+// Logout godoc
+// @Summary Logout user
+// @Description Logout user and invalidate refresh token
+// @Tags auth
+// @Success 200
+// @Failure 400 {object} echo.HTTPError
+// @Router /auth/logout [post]
+func (ac *AuthController) Logout(c echo.Context) error {
+	cookie, err := c.Cookie("refresh_token")
+	if err != nil {
+		// Cookieがない場合でもログアウト成功として扱う
+		return c.NoContent(http.StatusOK)
+	}
+
+	refreshToken, err := uuid.Parse(cookie.Value)
+	if err == nil {
+		// DBからリフレッシュトークンを削除（エラーは無視）
+		_ = ac.authUsecase.Logout(c.Request().Context(), refreshToken)
+	}
+
+	// Cookieを無効化
+	switch config.ENV {
+	case "prod":
+		invalidCookie := &http.Cookie{
+			Name:     "refresh_token",
+			Value:    "",
+			HttpOnly: true,
+			Secure:   true,
+			SameSite: http.SameSiteNoneMode,
+			Path:     "/",
+			MaxAge:   -1,
+		}
+		c.SetCookie(invalidCookie)
+	case "dev":
+		invalidCookie := &http.Cookie{
+			Name:     "refresh_token",
+			Value:    "",
+			HttpOnly: true,
+			Secure:   false,
+			SameSite: http.SameSiteLaxMode,
+			Path:     "/",
+			MaxAge:   -1,
+		}
+		c.SetCookie(invalidCookie)
+	}
+
+	return c.NoContent(http.StatusOK)
 }
 
 func handleAuthError(c echo.Context, err error) error {
