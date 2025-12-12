@@ -101,3 +101,18 @@ func (mr *MockUserRepositoryMockRecorder) GetUserByDiscordUserID(ctx, discordUse
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByDiscordUserID", reflect.TypeOf((*MockUserRepository)(nil).GetUserByDiscordUserID), ctx, discordUserID)
 }
+
+// Update mocks base method.
+func (m *MockUserRepository) Update(ctx context.Context, user *entity.User) (*entity.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, user)
+	ret0, _ := ret[0].(*entity.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockUserRepositoryMockRecorder) Update(ctx, user any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockUserRepository)(nil).Update), ctx, user)
+}

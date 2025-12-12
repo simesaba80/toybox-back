@@ -116,3 +116,48 @@ func TestUserRepository_GetUserByDiscordUserID(t *testing.T) {
 	require.ErrorIs(t, err, domainerrors.ErrUserNotFound)
 	require.Nil(t, found)
 }
+
+func TestUserRepository_Update(t *testing.T) {
+	db := testutil.SetupTestDB(t)
+	repo := user.NewUserRepository(db)
+
+	ctx := context.Background()
+	testUser := &entity.User{
+		ID:            uuid.New(),
+		Name:          "testuser",
+		Email:         "testuser@example.com",
+		DisplayName:   "testuser",
+		AvatarURL:     "https://example.com/avatar.png",
+		DiscordUserID: "testuser",
+		Profile:       "",
+		TwitterID:     "",
+		GithubID:      "",
+	}
+	created, err := repo.Create(ctx, testUser)
+	require.NoError(t, err)
+
+	// 更新するデータを設定
+	created.Email = "updated@example.com"
+	created.DisplayName = "Updated User"
+	created.Profile = "Updated profile"
+	created.TwitterID = "twitter123"
+	created.GithubID = "github123"
+
+	updated, err := repo.Update(ctx, created)
+	require.NoError(t, err)
+	require.Equal(t, created.ID, updated.ID)
+	require.Equal(t, "updated@example.com", updated.Email)
+	require.Equal(t, "Updated User", updated.DisplayName)
+	require.Equal(t, "Updated profile", updated.Profile)
+	require.Equal(t, "twitter123", updated.TwitterID)
+	require.Equal(t, "github123", updated.GithubID)
+
+	// DBから再取得して確認
+	found, err := repo.GetByID(ctx, created.ID)
+	require.NoError(t, err)
+	require.Equal(t, "updated@example.com", found.Email)
+	require.Equal(t, "Updated User", found.DisplayName)
+	require.Equal(t, "Updated profile", found.Profile)
+	require.Equal(t, "twitter123", found.TwitterID)
+	require.Equal(t, "github123", found.GithubID)
+}
