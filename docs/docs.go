@@ -510,7 +510,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Get all works with pagination",
+                "description": "Get all works with pagination and optional tag filter (OR search)",
                 "produces": [
                     "application/json"
                 ],
@@ -529,6 +529,12 @@ const docTemplate = `{
                         "type": "integer",
                         "description": "Page number (default: 1)",
                         "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Comma-separated tag IDs for filtering (OR search)",
+                        "name": "tag_ids",
                         "in": "query"
                     }
                 ],
