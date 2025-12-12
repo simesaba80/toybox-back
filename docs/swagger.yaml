@@ -566,7 +566,7 @@ paths:
       - users
   /works:
     get:
-      description: Get all works with pagination
+      description: Get all works with pagination and optional tag filter (OR search)
       parameters:
       - description: 'Limit per page (default: 20, max: 100)'
         in: query
@@ -576,6 +576,10 @@ paths:
         in: query
         name: page
         type: integer
+      - description: Comma-separated tag IDs for filtering (OR search)
+        in: query
+        name: tag_ids
+        type: string
       produces:
       - application/json
       responses:
