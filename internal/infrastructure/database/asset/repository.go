@@ -16,7 +16,6 @@ import (
 	"github.com/simesaba80/toybox-back/internal/infrastructure/config"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/dto"
 	"github.com/simesaba80/toybox-back/internal/infrastructure/database/types"
-	"github.com/simesaba80/toybox-back/internal/util"
 	"github.com/uptrace/bun"
 )
 
@@ -164,7 +163,12 @@ func (r *AssetRepository) UploadAvatar(ctx context.Context, discordUserID string
 }
 
 func (r *AssetRepository) DeleteFile(ctx context.Context, url string) error {
-	key := util.ExtractS3KeyFromURL(url)
+	prefix := config.S3_BASE_URL + "/" + config.S3_BUCKET + "/"
+	key := ""
+	if len(url) > len(prefix) && url[:len(prefix)] == prefix {
+		key = url[len(prefix):]
+	}
+
 	if key == "" {
 		return fmt.Errorf("invalid asset URL: %s", url)
 	}
