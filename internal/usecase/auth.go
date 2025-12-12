@@ -15,6 +15,7 @@ type IAuthUsecase interface {
 	GetDiscordAuthURL(ctx context.Context) (string, error)
 	AuthenticateUser(ctx context.Context, code string) (string, string, error)
 	RegenerateToken(ctx context.Context, refreshToken uuid.UUID) (string, string, error)
+	Logout(ctx context.Context, refreshToken uuid.UUID) error
 }
 
 type authUsecase struct {
@@ -122,4 +123,8 @@ func (uc *authUsecase) RegenerateToken(ctx context.Context, refreshToken uuid.UU
 		return "", "", err
 	}
 	return appToken, updatedRefreshToken.RefreshToken.String(), nil
+}
+
+func (uc *authUsecase) Logout(ctx context.Context, refreshToken uuid.UUID) error {
+	return uc.tokenRepository.DeleteRefreshToken(ctx, refreshToken)
 }

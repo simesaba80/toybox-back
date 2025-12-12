@@ -11,4 +11,5 @@ type TokenRepository interface {
 	Create(ctx context.Context, token *entity.Token) (*entity.Token, error)
 	CheckRefreshToken(ctx context.Context, refreshToken uuid.UUID) (uuid.UUID, error)
 	UpdateRefreshToken(ctx context.Context, refreshToken uuid.UUID) (*entity.Token, error)
+	DeleteRefreshToken(ctx context.Context, refreshToken uuid.UUID) error
 }

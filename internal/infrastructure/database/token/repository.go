@@ -72,3 +72,11 @@ func (r *TokenRepository) UpdateRefreshToken(ctx context.Context, refreshToken u
 	}
 	return newRefreshToken, nil
 }
+
+func (r *TokenRepository) DeleteRefreshToken(ctx context.Context, refreshToken uuid.UUID) error {
+	_, err := r.db.NewDelete().
+		Model((*dto.Token)(nil)).
+		Where("refresh_token = ?", refreshToken).
+		Exec(ctx)
+	return err
+}
