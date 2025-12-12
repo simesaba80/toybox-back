@@ -59,6 +59,7 @@ func (r *WorkRepository) GetAll(ctx context.Context, limit, offset int, tagIDs [
 		Relation("URLs").
 		Relation("Tags").
 		Relation("User").
+		Relation("Thumbnail.Asset").
 		Order("created_at DESC").
 		Limit(limit).
 		Offset(offset).
@@ -113,6 +114,7 @@ func (r *WorkRepository) GetAllPublic(ctx context.Context, limit, offset int, ta
 		Relation("URLs").
 		Relation("Tags").
 		Relation("User").
+		Relation("Thumbnail.Asset").
 		Order("created_at DESC").
 		Limit(limit).
 		Offset(offset).
@@ -140,6 +142,7 @@ func (r *WorkRepository) GetByID(ctx context.Context, id uuid.UUID) (*entity.Wor
 		Relation("Tags").
 		Relation("URLs").
 		Relation("User").
+		Relation("Thumbnail.Asset").
 		Where("work.id = ?", id).
 		Scan(ctx)
 	if err != nil {
@@ -165,6 +168,7 @@ func (r *WorkRepository) GetByUserID(ctx context.Context, userID uuid.UUID, publ
 			Relation("URLs").
 			Relation("Tags").
 			Relation("User").
+			Relation("Thumbnail.Asset").
 			Scan(ctx)
 		if err != nil {
 			return nil, domainerrors.ErrFailedToGetWorksByUserID
@@ -180,6 +184,7 @@ func (r *WorkRepository) GetByUserID(ctx context.Context, userID uuid.UUID, publ
 			Relation("URLs").
 			Relation("Tags").
 			Relation("User").
+			Relation("Thumbnail.Asset").
 			Scan(ctx)
 		if err != nil {
 			return nil, domainerrors.ErrFailedToGetWorksByUserID
