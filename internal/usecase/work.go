@@ -204,6 +204,10 @@ func (uc *workUseCase) DeleteWork(ctx context.Context, id uuid.UUID, userID uuid
 		return fmt.Errorf("failed to get work by ID %s: %w", id.String(), err)
 	}
 
+	if work.UserID != userID {
+		return domainerrors.ErrWorkNotOwnedByUser
+	}
+
 	err = uc.workRepo.Delete(ctx, id, userID)
 	if err != nil {
 		return fmt.Errorf("failed to delete work %s: %w", id.String(), err)
