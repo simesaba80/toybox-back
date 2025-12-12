@@ -37,7 +37,7 @@ func (uc *tagUseCase) Create(ctx context.Context, name string) (*entity.Tag, err
 		CreatedAt: now,
 		UpdatedAt: now,
 	}
-
+	tag.NormalizeName()
 	createdTag, err := uc.tagRepo.Create(ctx, tag)
 	if err != nil {
 		return nil, err
@@ -53,4 +53,3 @@ func (uc *tagUseCase) GetAll(ctx context.Context) ([]*entity.Tag, error) {
 	}
 	return tags, nil
 }
-
