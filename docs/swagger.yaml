@@ -184,6 +184,8 @@ definitions:
         items:
           $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.TagResponse'
         type: array
+      thumbnail_url:
+        type: string
       title:
         type: string
       updated_at:
