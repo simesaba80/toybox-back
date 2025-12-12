@@ -13,7 +13,7 @@ import (
 
 type IAuthUsecase interface {
 	GetDiscordAuthURL(ctx context.Context) (string, error)
-	AuthenticateUser(ctx context.Context, code string) (string, string, error)
+	AuthenticateUser(ctx context.Context, code string) (string, string, string, string, error)
 	RegenerateToken(ctx context.Context, refreshToken uuid.UUID) (string, string, error)
 	Logout(ctx context.Context, refreshToken uuid.UUID) error
 }
@@ -46,26 +46,26 @@ func (uc *authUsecase) GetDiscordAuthURL(ctx context.Context) (string, error) {
 	return uc.discordRepository.GetDiscordAuthURL(ctx)
 }
 
-func (uc *authUsecase) AuthenticateUser(ctx context.Context, code string) (string, string, error) {
+func (uc *authUsecase) AuthenticateUser(ctx context.Context, code string) (string, string, string, string, error) {
 	token, err := uc.discordRepository.GetDiscordToken(ctx, code)
 	if err != nil {
-		return "", "", err
+		return "", "", "", "", err
 	}
 
 	discordUser, err := uc.discordRepository.FetchDiscordUser(ctx, token)
 	if err != nil {
-		return "", "", err
+		return "", "", "", "", err
 	}
 	guildIDs, err := uc.discordRepository.GetDiscordGuilds(ctx, token)
 	if err != nil {
-		return "", "", err
+		return "", "", "", "", err
 	}
 	allowedGuildIDs, err := uc.discordRepository.GetAllowedDiscordGuilds(ctx)
 	if err != nil {
-		return "", "", err
+		return "", "", "", "", err
 	}
 	if !userBelongsToAllowedGuild(guildIDs, allowedGuildIDs) {
-		return "", "", domainerrors.ErrUserNotAllowedGuild
+		return "", "", "", "", domainerrors.ErrUserNotAllowedGuild
 	}
 
 	user, err := uc.userRepository.GetUserByDiscordUserID(ctx, discordUser.ID)
@@ -73,30 +73,30 @@ func (uc *authUsecase) AuthenticateUser(ctx context.Context, code string) (strin
 		if errors.Is(err, domainerrors.ErrUserNotFound) {
 			avatarURL, err := uc.assetRepository.UploadAvatar(ctx, discordUser.ID, discordUser.AvatarHash)
 			if err != nil {
-				return "", "", err
+				return "", "", "", "", err
 			}
 			user = entity.NewUser(discordUser.Username, discordUser.Email, discordUser.Username, discordUser.ID, *avatarURL)
 			user, err = uc.userRepository.Create(ctx, user)
 			if err != nil {
-				return "", "", err
+				return "", "", "", "", err
 			}
 		} else {
-			return "", "", err
+			return "", "", "", "", err
 		}
 	}
 
 	appToken, err := uc.tokenProvider.GenerateToken(user.ID)
 	if err != nil {
-		return "", "", err
+		return "", "", "", "", err
 	}
 
 	newRefreshToken := entity.NewToken(user.ID)
 	refreshToken, err := uc.tokenRepository.Create(ctx, newRefreshToken)
 	if err != nil {
-		return "", "", err
+		return "", "", "", "", err
 	}
 
-	return appToken, refreshToken.RefreshToken.String(), nil
+	return appToken, user.DisplayName, user.AvatarURL, refreshToken.RefreshToken.String(), nil
 }
 
 func userBelongsToAllowedGuild(guildIDs []string, allowedGuildIDs []string) bool {

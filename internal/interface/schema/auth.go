@@ -10,6 +10,8 @@ type GetDiscordAuthURLResponse struct {
 
 type GetDiscordTokenResponse struct {
 	AccessToken string `json:"access_token"`
+	DisplayName string `json:"display_name"`
+	AvatarURL   string `json:"avatar_url"`
 }
 
 type DiscordUserResponse struct {
@@ -24,13 +26,13 @@ type RegenerateTokenInput struct {
 }
 
 type RegenerateTokenResponse struct {
-	AppToken string `json:"app_token"`
+	AppToken    string `json:"app_token"`
+	DisplayName string `json:"display_name"`
+	AvatarURL   string `json:"avatar_url"`
 }
 
 type JWTCustomClaims struct {
 	UserID string `json:"user_id"`
-	// RefreshToken is optional and used when embedding refresh token in JWTs.
-	RefreshToken string `json:"refresh_token,omitempty"`
 	jwt.RegisteredClaims
 }
 
@@ -40,9 +42,11 @@ func ToGetDiscordAuthURLResponse(authURL string) GetDiscordAuthURLResponse {
 	}
 }
 
-func ToGetDiscordTokenResponse(appToken string) GetDiscordTokenResponse {
+func ToGetDiscordTokenResponse(appToken string, displayName string, avatarURL string) GetDiscordTokenResponse {
 	return GetDiscordTokenResponse{
 		AccessToken: appToken,
+		DisplayName: displayName,
+		AvatarURL:   avatarURL,
 	}
 }
 

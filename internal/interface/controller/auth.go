@@ -54,7 +54,7 @@ func (ac *AuthController) AuthenticateUser(c echo.Context) error {
 	if code == "" {
 		return echo.NewHTTPError(http.StatusBadRequest, "code is required")
 	}
-	appToken, refreshToken, err := ac.authUsecase.AuthenticateUser(c.Request().Context(), code)
+	appToken, displayName, avatarURL, refreshToken, err := ac.authUsecase.AuthenticateUser(c.Request().Context(), code)
 	if err != nil {
 		c.Logger().Error("Failed to authenticate user: %w", err)
 		return handleAuthError(c, err)
@@ -82,7 +82,7 @@ func (ac *AuthController) AuthenticateUser(c echo.Context) error {
 		c.SetCookie(cookie)
 	}
 
-	return c.JSON(http.StatusOK, schema.ToGetDiscordTokenResponse(appToken))
+	return c.JSON(http.StatusOK, schema.ToGetDiscordTokenResponse(appToken, displayName, avatarURL))
 }
 
 // RegenerateToken godoc
