@@ -138,6 +138,13 @@ definitions:
       access_token:
         type: string
     type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.GetIconAndURLResponse:
+    properties:
+      display_name:
+        type: string
+      icon_url:
+        type: string
+    type: object
   github_com_simesaba80_toybox-back_internal_interface_schema.GetUserOutput:
     properties:
       avatar_url:
@@ -430,6 +437,33 @@ paths:
       security:
       - BearerAuth: []
       summary: Update a user
+      tags:
+      - users
+  /auth/users/me:
+    get:
+      description: Get icon and URL by user ID
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.GetIconAndURLResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: Get icon and URL by user ID
       tags:
       - users
   /auth/works:
