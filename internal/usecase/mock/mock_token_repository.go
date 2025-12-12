@@ -72,6 +72,20 @@ func (mr *MockTokenRepositoryMockRecorder) Create(ctx, token any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockTokenRepository)(nil).Create), ctx, token)
 }
 
+// DeleteRefreshToken mocks base method.
+func (m *MockTokenRepository) DeleteRefreshToken(ctx context.Context, refreshToken uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteRefreshToken", ctx, refreshToken)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteRefreshToken indicates an expected call of DeleteRefreshToken.
+func (mr *MockTokenRepositoryMockRecorder) DeleteRefreshToken(ctx, refreshToken any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRefreshToken", reflect.TypeOf((*MockTokenRepository)(nil).DeleteRefreshToken), ctx, refreshToken)
+}
+
 // UpdateRefreshToken mocks base method.
 func (m *MockTokenRepository) UpdateRefreshToken(ctx context.Context, refreshToken uuid.UUID) (*entity.Token, error) {
 	m.ctrl.T.Helper()
