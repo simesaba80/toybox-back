@@ -15,17 +15,20 @@ type IWorkUseCase interface {
 	GetByID(ctx context.Context, id uuid.UUID) (*entity.Work, error)
 	GetByUserID(ctx context.Context, userID uuid.UUID, authenticatedUserID uuid.UUID) ([]*entity.Work, error)
 	CreateWork(ctx context.Context, title, description, visibility string, thumbnailAssetID uuid.UUID, assetIDs []uuid.UUID, urls []string, userID uuid.UUID, tagIDs []uuid.UUID) (*entity.Work, error)
+	DeleteWork(ctx context.Context, id uuid.UUID, userID uuid.UUID) error
 }
 
 type workUseCase struct {
-	workRepo repository.WorkRepository
-	tagRepo  repository.TagRepository
+	workRepo  repository.WorkRepository
+	tagRepo   repository.TagRepository
+	assetRepo repository.AssetRepository
 }
 
-func NewWorkUseCase(workRepo repository.WorkRepository, tagRepo repository.TagRepository) IWorkUseCase {
+func NewWorkUseCase(workRepo repository.WorkRepository, tagRepo repository.TagRepository, assetRepo repository.AssetRepository) IWorkUseCase {
 	return &workUseCase{
-		workRepo: workRepo,
-		tagRepo:  tagRepo,
+		workRepo:  workRepo,
+		tagRepo:   tagRepo,
+		assetRepo: assetRepo,
 	}
 }
 
@@ -130,4 +133,24 @@ func (uc *workUseCase) CreateWork(ctx context.Context, title, description, visib
 		return nil, fmt.Errorf("failed to create work: %w", err)
 	}
 	return createdWork, nil
+}
+
+func (uc *workUseCase) DeleteWork(ctx context.Context, id uuid.UUID, userID uuid.UUID) error {
+	work, err := uc.workRepo.GetByID(ctx, id)
+	if err != nil {
+		return fmt.Errorf("failed to get work by ID %s: %w", id.String(), err)
+	}
+
+	err = uc.workRepo.Delete(ctx, id, userID)
+	if err != nil {
+		return fmt.Errorf("failed to delete work %s: %w", id.String(), err)
+	}
+
+	for _, asset := range work.Assets {
+		if err := uc.assetRepo.DeleteFile(ctx, asset.URL); err != nil {
+			return fmt.Errorf("failed to delete asset file: %w", err)
+		}
+	}
+
+	return nil
 }
