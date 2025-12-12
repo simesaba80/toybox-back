@@ -15,6 +15,7 @@ type Work struct {
 	User             *User
 	Visibility       string
 	ThumbnailAssetID uuid.UUID
+	ThumbnailURL     string
 	Assets           []*Asset
 	URLs             []*string
 	TagIDs           []uuid.UUID
