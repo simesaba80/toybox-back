@@ -39,6 +39,7 @@ var (
 	ErrInvalidUserID                       = errors.New("invalid user id")
 	ErrInvalidTagIDs                       = errors.New("invalid tag ids")
 	ErrFailedToCreateWork                  = errors.New("failed to create work")
+	ErrFailedToUpdateWork                  = errors.New("failed to update work")
 	ErrFailedToGetAllWorksByLimitAndOffset = errors.New("failed to get all works by limit and offset")
 	ErrFailedToGetWorkById                 = errors.New("failed to get work by id")
 	ErrWorkNotFound                        = errors.New("work not found")
