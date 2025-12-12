@@ -201,6 +201,7 @@ func (wc *WorkController) CreateWork(c echo.Context) error {
 		input.URLs,
 		userID,
 		input.TagIDs,
+		input.CollaboratorIDs,
 	)
 	if err != nil {
 		c.Logger().Error("WorkUseCase.CreateWork error:", err)
@@ -247,7 +248,7 @@ func (wc *WorkController) UpdateWork(c echo.Context) error {
 		return handleWorkError(c, domainerrors.ErrInvalidRequestBody)
 	}
 
-	updatedWork, err := wc.workUsecase.UpdateWork(c.Request().Context(), workID, userID, input.Title, input.Description, input.Visibility, input.ThumbnailAssetID, input.AssetIDs, input.URLs, input.TagIDs)
+	updatedWork, err := wc.workUsecase.UpdateWork(c.Request().Context(), workID, userID, input.Title, input.Description, input.Visibility, input.ThumbnailAssetID, input.AssetIDs, input.URLs, input.TagIDs, input.CollaboratorIDs)
 	if err != nil {
 		return handleWorkError(c, err)
 	}
@@ -321,6 +322,8 @@ func handleWorkError(c echo.Context, err error) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "存在しないタグIDが含まれています")
 	case errors.Is(err, domainerrors.ErrInvalidTagIDs):
 		return echo.NewHTTPError(http.StatusBadRequest, "タグが指定されていません")
+	case errors.Is(err, domainerrors.ErrOwnerCannotBeCollaborator):
+		return echo.NewHTTPError(http.StatusBadRequest, "作品のオーナーを共同制作者として追加することはできません")
 	case errors.Is(err, domainerrors.ErrWorkNotOwnedByUser):
 		return echo.NewHTTPError(http.StatusForbidden, "この作品を削除する権限がありません")
 	case errors.Is(err, domainerrors.ErrFailedToDeleteWork):
