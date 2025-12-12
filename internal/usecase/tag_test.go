@@ -35,7 +35,7 @@ func TestTagUseCase_Create(t *testing.T) {
 					Times(1)
 			},
 			wantErr:  false,
-			wantName: "Go",
+			wantName: "go",
 		},
 		{
 			name:      "異常系: タグ名が空",
@@ -161,4 +161,3 @@ func TestTagUseCase_GetAll(t *testing.T) {
 		})
 	}
 }
-
