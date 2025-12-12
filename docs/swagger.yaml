@@ -421,6 +421,39 @@ paths:
       summary: Check if a user has favorited a work
       tags:
       - favorites
+  /auth/works/{work_id}:
+    delete:
+      description: Delete a work by ID (only owner can delete)
+      parameters:
+      - description: Work ID
+        in: path
+        name: work_id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: Delete a work
+      tags:
+      - works
   /auth/works/asset:
     post:
       consumes:
