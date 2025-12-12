@@ -94,7 +94,7 @@ func TestAuthController_GetDiscordAuthURL(t *testing.T) {
 }
 
 func TestAuthController_AuthenticateUser(t *testing.T) {
-	successResponseBytes, _ := json.Marshal(schema.ToGetDiscordTokenResponse("app-token"))
+	successResponseBytes, _ := json.Marshal(schema.ToGetDiscordTokenResponse("app-token", "display-name", "avatar-url"))
 	codeRequiredResponseBytes, _ := json.Marshal(map[string]string{"message": "code is required"})
 	userNotAllowedResponseBytes, _ := json.Marshal(map[string]string{"message": "ユーザーは許可されたDiscordギルドに所属していません"})
 	internalErrorResponseBytes, _ := json.Marshal(map[string]string{"message": "Internal server error"})
@@ -113,7 +113,7 @@ func TestAuthController_AuthenticateUser(t *testing.T) {
 			setupMock: func(mockAuthUsecase *mock.MockIAuthUsecase) {
 				mockAuthUsecase.EXPECT().
 					AuthenticateUser(gomock.Any(), "test-code").
-					Return("app-token", "refresh-token", nil)
+					Return("app-token", "display-name", "avatar-url", "refresh-token", nil)
 			},
 			wantStatus: http.StatusOK,
 			wantBody:   successResponseBytes,
@@ -131,7 +131,7 @@ func TestAuthController_AuthenticateUser(t *testing.T) {
 			setupMock: func(mockAuthUsecase *mock.MockIAuthUsecase) {
 				mockAuthUsecase.EXPECT().
 					AuthenticateUser(gomock.Any(), "another-code").
-					Return("", "", domainerrors.ErrUserNotAllowedGuild)
+					Return("", "", "", "", domainerrors.ErrUserNotAllowedGuild)
 			},
 			wantStatus: http.StatusForbidden,
 			wantBody:   userNotAllowedResponseBytes,
@@ -142,7 +142,7 @@ func TestAuthController_AuthenticateUser(t *testing.T) {
 			setupMock: func(mockAuthUsecase *mock.MockIAuthUsecase) {
 				mockAuthUsecase.EXPECT().
 					AuthenticateUser(gomock.Any(), "discord-error").
-					Return("", "", domainerrors.ErrFaileRequestToDiscord)
+					Return("", "", "", "", domainerrors.ErrFaileRequestToDiscord)
 			},
 			wantStatus: http.StatusInternalServerError,
 			wantBody:   failedRequestResponseBytes,
@@ -153,7 +153,7 @@ func TestAuthController_AuthenticateUser(t *testing.T) {
 			setupMock: func(mockAuthUsecase *mock.MockIAuthUsecase) {
 				mockAuthUsecase.EXPECT().
 					AuthenticateUser(gomock.Any(), "unexpected").
-					Return("", "", errors.New("unexpected error"))
+					Return("", "", "", "", errors.New("unexpected error"))
 			},
 			wantStatus: http.StatusInternalServerError,
 			wantBody:   internalErrorResponseBytes,

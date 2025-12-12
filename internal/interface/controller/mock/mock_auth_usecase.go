@@ -42,13 +42,15 @@ func (m *MockIAuthUsecase) EXPECT() *MockIAuthUsecaseMockRecorder {
 }
 
 // AuthenticateUser mocks base method.
-func (m *MockIAuthUsecase) AuthenticateUser(ctx context.Context, code string) (string, string, error) {
+func (m *MockIAuthUsecase) AuthenticateUser(ctx context.Context, code string) (string, string, string, string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AuthenticateUser", ctx, code)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(string)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
+	ret2, _ := ret[2].(string)
+	ret3, _ := ret[3].(string)
+	ret4, _ := ret[4].(error)
+	return ret0, ret1, ret2, ret3, ret4
 }
 
 // AuthenticateUser indicates an expected call of AuthenticateUser.

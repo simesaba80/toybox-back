@@ -244,11 +244,13 @@ func TestAuthUsecase_AuthenticateUser(t *testing.T) {
 			mockAssetRepository := mock.NewMockAssetRepository(ctrl)
 			tt.setupMock(mockDiscordRepository, mockUserRepository, mockTokenProvider, mockTokenRepository, mockAssetRepository)
 			uc := NewAuthUsecase(mockDiscordRepository, mockUserRepository, mockTokenProvider, mockTokenRepository, mockAssetRepository)
-			appToken, refreshToken, err := uc.AuthenticateUser(context.Background(), "test")
+			appToken, displayName, avatarURL, refreshToken, err := uc.AuthenticateUser(context.Background(), "test")
 			if tt.wantErr {
 				assert.Error(t, err)
 				assert.Empty(t, appToken)
 				assert.Empty(t, refreshToken)
+				assert.Empty(t, displayName)
+				assert.Empty(t, avatarURL)
 			} else {
 				assert.NoError(t, err)
 				assert.NotEmpty(t, appToken)
