@@ -23,6 +23,7 @@ type Work struct {
 	Tags             []*Tag           `bun:"m2m:tagging,join:Work=Tag"`
 	TagIDs           []uuid.UUID      `bun:"-"`
 	UserID           uuid.UUID        `bun:"user_id,notnull"`
+	User             *User            `bun:"rel:belongs-to,join:user_id=id"`
 	CreatedAt        time.Time        `bun:"created_at,notnull"`
 	UpdatedAt        time.Time        `bun:"updated_at,notnull"`
 }
@@ -45,11 +46,17 @@ func (w *Work) ToWorkEntity() *entity.Work {
 		tagIDs[i] = tag.ID
 	}
 
+	var userEntity *entity.User
+	if w.User != nil {
+		userEntity = w.User.ToUserEntity()
+	}
+
 	return &entity.Work{
 		ID:          w.ID,
 		Title:       w.Title,
 		Description: w.Description,
 		UserID:      w.UserID,
+		User:        userEntity,
 		Visibility:  string(w.Visibility),
 		Assets:      assets,
 		URLs:        urls,

@@ -188,8 +188,8 @@ definitions:
         type: string
       updated_at:
         type: string
-      user_id:
-        type: string
+      user:
+        $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.UserInWorkResponse'
       visibility:
         type: string
     type: object
@@ -250,6 +250,15 @@ definitions:
         type: string
     type: object
   github_com_simesaba80_toybox-back_internal_interface_schema.UserInCommentResponse:
+    properties:
+      avatar_url:
+        type: string
+      display_name:
+        type: string
+      id:
+        type: string
+    type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.UserInWorkResponse:
     properties:
       avatar_url:
         type: string

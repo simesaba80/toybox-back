@@ -1214,8 +1214,8 @@ const docTemplate = `{
                 "updated_at": {
                     "type": "string"
                 },
-                "user_id": {
-                    "type": "string"
+                "user": {
+                    "$ref": "#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.UserInWorkResponse"
                 },
                 "visibility": {
                     "type": "string"
@@ -1308,6 +1308,20 @@ const docTemplate = `{
             }
         },
         "github_com_simesaba80_toybox-back_internal_interface_schema.UserInCommentResponse": {
+            "type": "object",
+            "properties": {
+                "avatar_url": {
+                    "type": "string"
+                },
+                "display_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_simesaba80_toybox-back_internal_interface_schema.UserInWorkResponse": {
             "type": "object",
             "properties": {
                 "avatar_url": {
