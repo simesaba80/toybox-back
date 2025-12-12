@@ -24,6 +24,14 @@ type UserListResponse struct {
 	Users []GetUserOutput `json:"users"`
 }
 
+type UpdateUserInput struct {
+	Email       string `json:"email" validate:"required,email"`
+	DisplayName string `json:"display_name" validate:"required,min=1,max=32"`
+	Profile     string `json:"profile" validate:"omitempty,max=500"`
+	TwitterID   string `json:"twitter_id" validate:"omitempty"`
+	GithubID    string `json:"github_id" validate:"omitempty"`
+}
+
 func ToUserResponse(user *entity.User) GetUserOutput {
 	if user == nil {
 		return GetUserOutput{}

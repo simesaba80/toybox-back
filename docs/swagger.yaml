@@ -189,6 +189,25 @@ definitions:
       name:
         type: string
     type: object
+  github_com_simesaba80_toybox-back_internal_interface_schema.UpdateUserInput:
+    properties:
+      display_name:
+        maxLength: 32
+        minLength: 1
+        type: string
+      email:
+        type: string
+      github_id:
+        type: string
+      profile:
+        maxLength: 500
+        type: string
+      twitter_id:
+        type: string
+    required:
+    - display_name
+    - email
+    type: object
   github_com_simesaba80_toybox-back_internal_interface_schema.UploadAssetResponse:
     properties:
       id:
@@ -301,6 +320,42 @@ paths:
       summary: Regenerate token
       tags:
       - auth
+  /auth/users:
+    put:
+      consumes:
+      - application/json
+      description: Update a user
+      parameters:
+      - description: User to update
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.UpdateUserInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.GetUserOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - BearerAuth: []
+      summary: Update a user
+      tags:
+      - users
   /auth/works:
     post:
       consumes:

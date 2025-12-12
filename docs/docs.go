@@ -120,6 +120,63 @@ const docTemplate = `{
                 }
             }
         },
+        "/auth/users": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update a user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Update a user",
+                "parameters": [
+                    {
+                        "description": "User to update",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.UpdateUserInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_simesaba80_toybox-back_internal_interface_schema.GetUserOutput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/echo.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/echo.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/echo.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/works": {
             "post": {
                 "security": [
@@ -1004,6 +1061,33 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_simesaba80_toybox-back_internal_interface_schema.UpdateUserInput": {
+            "type": "object",
+            "required": [
+                "display_name",
+                "email"
+            ],
+            "properties": {
+                "display_name": {
+                    "type": "string",
+                    "maxLength": 32,
+                    "minLength": 1
+                },
+                "email": {
+                    "type": "string"
+                },
+                "github_id": {
+                    "type": "string"
+                },
+                "profile": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "twitter_id": {
                     "type": "string"
                 }
             }
