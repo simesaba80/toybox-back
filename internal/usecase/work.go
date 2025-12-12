@@ -11,7 +11,7 @@ import (
 )
 
 type IWorkUseCase interface {
-	GetAll(ctx context.Context, limit, page *int, userID uuid.UUID) ([]*entity.Work, int, int, int, error)
+	GetAll(ctx context.Context, limit, page *int, userID uuid.UUID, tagIDs []uuid.UUID) ([]*entity.Work, int, int, int, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*entity.Work, error)
 	GetByUserID(ctx context.Context, userID uuid.UUID, authenticatedUserID uuid.UUID) ([]*entity.Work, error)
 	CreateWork(ctx context.Context, title, description, visibility string, thumbnailAssetID uuid.UUID, assetIDs []uuid.UUID, urls []string, userID uuid.UUID, tagIDs []uuid.UUID) (*entity.Work, error)
@@ -29,7 +29,7 @@ func NewWorkUseCase(workRepo repository.WorkRepository, tagRepo repository.TagRe
 	}
 }
 
-func (uc *workUseCase) GetAll(ctx context.Context, limit, page *int, userID uuid.UUID) ([]*entity.Work, int, int, int, error) {
+func (uc *workUseCase) GetAll(ctx context.Context, limit, page *int, userID uuid.UUID, tagIDs []uuid.UUID) ([]*entity.Work, int, int, int, error) {
 	actualLimit := 20
 	actualPage := 1
 	if limit != nil {
@@ -44,14 +44,14 @@ func (uc *workUseCase) GetAll(ctx context.Context, limit, page *int, userID uuid
 
 	offset := (actualPage - 1) * actualLimit
 	if userID == uuid.Nil {
-		works, total, err := uc.workRepo.GetAllPublic(ctx, actualLimit, offset)
+		works, total, err := uc.workRepo.GetAllPublic(ctx, actualLimit, offset, tagIDs)
 		if err != nil {
 			return nil, 0, 0, 0, fmt.Errorf("failed to get all works by user ID %s: %w", userID.String(), err)
 		}
 		return works, total, actualLimit, actualPage, nil
 	}
 
-	works, total, err := uc.workRepo.GetAll(ctx, actualLimit, offset)
+	works, total, err := uc.workRepo.GetAll(ctx, actualLimit, offset, tagIDs)
 	if err != nil {
 		return nil, 0, 0, 0, fmt.Errorf("failed to get all works: %w", err)
 	}
